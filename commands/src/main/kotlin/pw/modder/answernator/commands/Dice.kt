@@ -2,30 +2,45 @@ package pw.modder.answernator.commands
 
 import com.jessecorbett.diskord.api.model.Message
 import com.jessecorbett.diskord.api.rest.EmbedImage
+import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.dsl.field
 import com.jessecorbett.diskord.util.ClientStore
-import com.jessecorbett.diskord.util.sendMessage
 import com.jessecorbett.diskord.util.words
 import kotlinx.serialization.UnstableDefault
-import pw.modder.answernator.utils.Command
+import pw.modder.answernator.utils.LocalizedCommand
+import java.util.*
 import kotlin.random.Random
+import com.jessecorbett.diskord.dsl.message as dslmessage
 
 @UnstableDefault
-class Dice: Command {
+class Dice: LocalizedCommand {
     override val name: String = "dice"
+    private val diceLimit: Int
+    private val throwsLimit: Int
+    private val throwsSumLimit: Int
+    private val triesLimit: Int
 
-    override suspend fun action(clientStore: ClientStore, message: Message) {
+    init {
+        val props = Properties()
+        props.load(javaClass.classLoader.getResourceAsStream("properties/dice.properties"))
+        diceLimit = props.getProperty("dice.diceLimit").toInt()
+        throwsLimit = props.getProperty("dice.throwsLimit").toInt()
+        throwsSumLimit = props.getProperty("dice.throwsSumLimit").toInt()
+        triesLimit = props.getProperty("dice.triesLimit").toInt()
+    }
+
+    override suspend fun action(clientStore: ClientStore, message: Message, locale: Locale): CombinedMessageEmbed {
         val sum = message.words.getOrNull(4) == "sum"
         val dice = message.words.getOrNull(1)?.toInt() ?: 6
         val throws = message.words.getOrNull(2)?.toInt() ?: 1
         val tries = message.words.getOrNull(3)?.toInt() ?: 1
 
-        if (tries > 20 || tries < 1) error("Tries count limited to 20")
-        if (!sum && throws > 20) error("Throws count limited to 20 without summing")
-        if (throws > 1000 || throws < 1) error("Throws count limited to 1000")
-        if (dice > 64 || dice < 2) error("Dice must be 2 to 64")
+        if (tries > triesLimit || tries < 1) return textMessage(formatString(locale, "triesLimit", triesLimit))
+        if (!sum && throws > throwsLimit) return textMessage(formatString(locale, "throwsLimit", throwsLimit))
+        if (throws > throwsSumLimit || throws < 1) return textMessage(formatString(locale, "throwsSumLimit", throwsSumLimit))
+        if (dice > diceLimit || dice < 2) return textMessage(formatString(locale, "diceLimit", diceLimit))
 
-        val msg = com.jessecorbett.diskord.dsl.message {
+        return dslmessage {
             title = "Dice"
             color = Random.nextInt(0, 16777215)
             thumbnail = EmbedImage("https://files.mcmodder.ru/answernator/dice.jpg")
@@ -42,7 +57,6 @@ class Dice: Command {
                 field("Try $it", list.joinToString(" "), false)
             }
         }
-        clientStore.channels[message.channelId].sendMessage(msg.text, msg.embed())
     }
 
 }

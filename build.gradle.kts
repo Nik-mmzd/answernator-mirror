@@ -20,6 +20,7 @@ dependencies {
     implementation("com.jessecorbett:diskord-jvm:1.5.3")
     implementation("org.slf4j:slf4j-simple:1.7.26")
     implementation("commons-io:commons-io:2.6")
+    implementation("io.github.microutils:kotlin-logging:1.7.8")
 }
 
 val jar by tasks.getting(Jar::class) {

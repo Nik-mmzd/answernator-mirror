@@ -8,7 +8,10 @@ import com.jessecorbett.diskord.api.rest.client.GuildClient
 import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.DiskordDsl
 import kotlinx.serialization.UnstableDefault
+import mu.KotlinLogging
+import com.jessecorbett.diskord.dsl.message as dslmessage
 
+private val logger = KotlinLogging.logger {}
 @UnstableDefault
 @DiskordDsl
 fun Bot.loadCommandService() {
@@ -16,14 +19,21 @@ fun Bot.loadCommandService() {
 
     messageCreated { message: Message ->
         if (message.content.isEmpty()) return@messageCreated
+        logger.debug { "received message, message text: ${message.content}" }
         if (!message.content.startsWith(config.prefix)) return@messageCreated
         CommandList.commands.single { command ->
             message.content.startsWith(config.prefix + command.name)
         }.run {
-            println("Found command: $name, checking")
+            logger.debug { "found command $name, running" }
             if (check(message, message.guildId?.run { clientStore.guilds[this] })) {
-                println("$name: checked")
-                action(clientStore, message)
+                try {
+                    action(clientStore, message, config.locale)
+                } catch (_: NotImplementedError) {
+                    dslmessage { text = "Command `${config.prefix}$name` is not implemented yet." }
+                } catch (e: Exception) {
+                    logger.error(e) { "got error while running command" }
+                    dslmessage { text = "Invalid request. Please use `${config.prefix}help` for help" }
+                }.run { message.reply(text, embed()) }
             }
         }
     }

@@ -1,19 +1,22 @@
 package pw.modder.answernator.commands
 
 import com.jessecorbett.diskord.api.model.Message
+import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.dsl.field
 import com.jessecorbett.diskord.util.ClientStore
-import com.jessecorbett.diskord.util.sendMessage
+import com.jessecorbett.diskord.dsl.message as dslmessage
 import kotlinx.serialization.UnstableDefault
 import org.apache.commons.io.FileUtils
 import pw.modder.answernator.utils.*
+import java.util.*
 
 @UnstableDefault
 class About: Command {
     override val name: String = "about"
+    override val userGroup = UserGroup.ADMIN
 
-    override suspend fun action(clientStore: ClientStore, message: Message) {
-        val msg = com.jessecorbett.diskord.dsl.message {
+    override suspend fun action(clientStore: ClientStore, message: Message, locale: Locale): CombinedMessageEmbed {
+        return dslmessage {
             title = "Answernator"
             description = "Third iteration of Answernator. Now in Kotlin!"
             System.getProperty("java.vendor")?.also { field("Java Vendor", it, true) }
@@ -33,6 +36,5 @@ class About: Command {
             field("OS arch", System.getProperty("os.arch", "Unknown"), true)
             field("Uptime", Utils.getReadableUptime(), true)
         }
-        clientStore.channels[message.channelId].sendMessage(msg.text, msg.embed())
     }
 }

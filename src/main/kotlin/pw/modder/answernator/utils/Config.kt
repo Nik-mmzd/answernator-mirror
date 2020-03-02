@@ -1,10 +1,12 @@
 package pw.modder.answernator.utils
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 import java.io.File
+import java.util.*
 
 @Serializable
 class Config(
@@ -13,6 +15,9 @@ class Config(
     val prefix: Char,
     val author: String
 ) {
+    @Transient
+    val locale = Locale(lang)
+
     companion object {
         val DEFAULT = Config("", "ru", '!', "135017849604276224")
 
