@@ -14,7 +14,7 @@ class Config(
     val author: String
 ) {
     companion object {
-        val DEFAULT = Config("", "ru_RU", '!', "135017849604276224")
+        val DEFAULT = Config("", "ru", '!', "135017849604276224")
 
         @UnstableDefault
         fun loadFrom(file: File): Config {
@@ -29,7 +29,7 @@ object GlobalConfig {
     init {
         val configFile = File(".").resolve("config.json")
         if (!configFile.exists()) {
-            Json(JsonConfiguration(prettyPrint = true)).stringify(Config.serializer(), Config.DEFAULT)
+            configFile.writeText(Json(JsonConfiguration(prettyPrint = true)).stringify(Config.serializer(), Config.DEFAULT))
             throw Exception("Missing config")
         }
         config = Config.loadFrom(configFile)

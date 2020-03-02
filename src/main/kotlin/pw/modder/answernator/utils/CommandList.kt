@@ -17,5 +17,6 @@ object CommandList {
         )
 
         commands = ServiceLoader.load(Command::class.java, classLoader).toList()
+        println("Loaded ${commands.size} commands")
     }
 }

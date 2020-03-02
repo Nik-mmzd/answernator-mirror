@@ -33,7 +33,7 @@ enum class ChannelTypes {
 @UnstableDefault
 @DiskordDsl
 interface Command {
-    val command: String
+    val name: String
     val lang: List<String> get() = listOf("RU_ru", "EN_us")
     val userGroup: UserGroup get() = UserGroup.ALL
     val permission: Permission? get() = null
@@ -57,5 +57,9 @@ interface Command {
         if (userGroup == UserGroup.PERMISSION && !permissions.contains(permission ?: return false)) return false
 
         return true
+    }
+
+    fun error(cause: String) {
+        throw CommandError(cause, this)
     }
 }

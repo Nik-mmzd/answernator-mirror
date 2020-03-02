@@ -5,8 +5,10 @@ plugins {
     id("com.github.johnrengelman.shadow") version "5.2.0"
 }
 
+val gitVersion: groovy.lang.Closure<*> by extra
+
 group = "pw.modder"
-version = "3.0.0"
+version = gitVersion.call()
 
 repositories {
     mavenCentral()
@@ -16,11 +18,13 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation("com.jessecorbett:diskord-jvm:1.5.3")
+    implementation("org.slf4j:slf4j-simple:1.7.26")
+    implementation("commons-io:commons-io:2.6")
 }
 
 val jar by tasks.getting(Jar::class) {
     manifest {
-        attributes["Main-Class"] = "pw.modder.tlbot.MainKt"
+        attributes["Main-Class"] = "pw.modder.answernator.MainKt"
     }
 }
 

@@ -12,16 +12,19 @@ import kotlinx.serialization.UnstableDefault
 @UnstableDefault
 @DiskordDsl
 fun Bot.loadCommandService() {
-    CommandList.load()
     val config = GlobalConfig.get()
 
-    messageCreated {message: Message ->
+    messageCreated { message: Message ->
         if (message.content.isEmpty()) return@messageCreated
         if (!message.content.startsWith(config.prefix)) return@messageCreated
         CommandList.commands.single { command ->
-            message.content.startsWith(config.prefix + command.command)
+            message.content.startsWith(config.prefix + command.name)
         }.run {
-            if (check(message, message.guildId?.run { clientStore.guilds[this] })) action(clientStore, message)
+            println("Found command: $name, checking")
+            if (check(message, message.guildId?.run { clientStore.guilds[this] })) {
+                println("$name: checked")
+                action(clientStore, message)
+            }
         }
     }
 }
