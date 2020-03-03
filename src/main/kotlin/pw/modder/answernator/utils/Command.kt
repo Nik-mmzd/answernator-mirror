@@ -7,6 +7,7 @@ import com.jessecorbett.diskord.dsl.DiskordDsl
 import com.jessecorbett.diskord.util.ClientStore
 import com.jessecorbett.diskord.util.authorId
 import kotlinx.serialization.UnstableDefault
+import mu.KLogger
 import mu.KotlinLogging
 import java.util.*
 
@@ -33,7 +34,7 @@ enum class ChannelTypes {
     GUILD, DIRECT, ALL
 }
 
-private val logger = KotlinLogging.logger {}
+private val logger: KLogger = KotlinLogging.logger {}
 @UnstableDefault
 @DiskordDsl
 interface Command {

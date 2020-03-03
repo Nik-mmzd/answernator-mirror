@@ -41,12 +41,12 @@ class Dice: LocalizedCommand {
         if (dice > diceLimit || dice < 2) return textMessage(formatString(locale, "diceLimit", diceLimit))
 
         return dslmessage {
-            title = "Dice"
+            title = getString(locale, "title")
             color = Random.nextInt(0, 16777215)
             thumbnail = EmbedImage("https://files.mcmodder.ru/answernator/dice.jpg")
             repeat(tries) {
                 if (sum) {
-                    field("Try $it", Random.nextInt(1*throws, dice*throws).toString(), false)
+                    field(formatString(locale, "try", it), Random.nextInt(1*throws, dice*throws).toString(), false)
                     return@repeat
                 }
 
@@ -54,7 +54,7 @@ class Dice: LocalizedCommand {
                 repeat(throws) {
                     list.add(Random.nextInt(1, dice))
                 }
-                field("Try $it", list.joinToString(" "), false)
+                field(formatString(locale, "try", it), list.joinToString(" "), false)
             }
         }
     }
