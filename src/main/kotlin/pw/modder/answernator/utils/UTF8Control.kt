@@ -29,16 +29,17 @@ class UTF8Control : ResourceBundle.Control() {
             stream = loader.getResourceAsStream(resourceName)
         }
         if (stream != null) {
-            bundle = try { // Only this line is changed to make it to read properties files as UTF-8.
-                PropertyResourceBundle(stream.reader(Charsets.UTF_8))
-            } finally {
-                stream.close()
-            }
+            bundle = stream.use { PropertyResourceBundle(it.reader(Charsets.UTF_8)) }
         }
         return bundle
     }
 
-    override fun getFallbackLocale(p0: String?, p1: Locale?): Locale {
-        return Locale.ROOT
+    override fun getFallbackLocale(p0: String?, p1: Locale?): Locale? {
+        return if (p0 == null) {
+            throw NullPointerException()
+        } else {
+            val p2 = Locale.ROOT
+            if (p1 == p2) null else p2
+        }
     }
 }
