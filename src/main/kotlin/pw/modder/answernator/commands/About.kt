@@ -15,6 +15,10 @@ class About: Command {
     override val name: String = "about"
     override val userGroup = UserGroup.ADMIN
 
+    override fun getHelp(locale: Locale): String? {
+        return "Shows some technical information about the bot. Usage: `$name`. Not localized."
+    }
+
     override suspend fun action(clientStore: ClientStore, message: Message, locale: Locale): CombinedMessageEmbed {
         return dslmessage {
             title = "Answernator"
@@ -32,8 +36,7 @@ class About: Command {
             field("Current heap size", FileUtils.byteCountToDisplaySize(Runtime.getRuntime().totalMemory()), true)
             field("Heap used", FileUtils.byteCountToDisplaySize(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()), true)
             field("Heap free", FileUtils.byteCountToDisplaySize(Runtime.getRuntime().freeMemory()), true)
-            field("OS name", System.getProperty("os.name", "Unknown"), true)
-            field("OS arch", System.getProperty("os.arch", "Unknown"), true)
+            field("OS", System.getProperty("os.name", "Unknown") + ' ' + System.getProperty("os.arch", "Unknown"), true)
             field("Uptime", Utils.getReadableUptime(), true)
         }
     }
