@@ -22,4 +22,8 @@ interface LocalizedCommand: Command {
     fun formatString(locale: Locale, str: String, vararg arguments: Any?): String {
         return String.format(getString(locale, str), args = *arguments)
     }
+
+    override fun getHelp(locale: Locale): String? {
+        return getString(locale, "help")
+    }
 }

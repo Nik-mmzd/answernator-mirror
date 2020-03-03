@@ -77,4 +77,8 @@ interface Command {
     fun textMessage(message: String): CombinedMessageEmbed {
         return com.jessecorbett.diskord.dsl.message { text = message }
     }
+
+    fun getHelp(locale: Locale): String? {
+        return null
+    }
 }

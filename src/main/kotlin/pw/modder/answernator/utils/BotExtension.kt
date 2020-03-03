@@ -21,9 +21,9 @@ fun Bot.loadCommandService() {
         if (message.content.isEmpty()) return@messageCreated
         logger.debug { "received message, message text: ${message.content}" }
         if (!message.content.startsWith(config.prefix)) return@messageCreated
-        CommandList.commands.single { command ->
+        CommandList.commands.singleOrNull { command ->
             message.content.startsWith(config.prefix + command.name)
-        }.run {
+        }?.run {
             logger.debug { "found command $name, running" }
             if (check(message, message.guildId?.run { clientStore.guilds[this] })) {
                 try {
