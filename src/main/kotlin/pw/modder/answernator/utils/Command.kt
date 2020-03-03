@@ -47,7 +47,7 @@ interface Command {
 
     suspend fun action(clientStore: ClientStore, message: Message, locale: Locale): CombinedMessageEmbed
 
-    suspend fun check(message: Message, guildClient: GuildClient? = null): Boolean {
+    private fun check(message: Message): Boolean? {
         logger.debug { "checking command $name" }
         logger.debug { "checking channel type" }
         if (channels == ChannelTypes.DIRECT && message.partialMember != null) return false
@@ -60,18 +60,33 @@ interface Command {
             return true
         }
 
+        return null
+    }
+
+    private fun check(permissions: Permissions): Boolean {
+        logger.debug { "checking permissions" }
+        if (userGroup == UserGroup.ADMIN && !permissions.contains(Permission.ADMINISTRATOR)) return false
+        if (userGroup == UserGroup.PERMISSION && !permissions.contains(permission ?: return false)) return false
+
+        return true
+    }
+
+    suspend fun check(message: Message, guildClient: GuildClient? = null): Boolean {
+        check(message)?.run { return this }
+
         logger.debug { "getting permissions" }
         val permissions = when (val member = guildClient?.getMember(message.authorId)) {
             null -> Permissions.NONE
             else -> member.computePermissions(guildClient)
         }
 
-        logger.debug { "checking permissions" }
-        if (userGroup == UserGroup.ADMIN && !permissions.contains(Permission.ADMINISTRATOR)) return false
-        if (userGroup == UserGroup.PERMISSION && !permissions.contains(permission ?: return false)) return false
+        return check(permissions)
+    }
 
-        logger.debug { "all checks passed" }
-        return true
+    fun check(message: Message, permissions: Permissions): Boolean {
+        check(message)?.run { return this }
+
+        return check(permissions)
     }
 
     fun textMessage(message: String): CombinedMessageEmbed {

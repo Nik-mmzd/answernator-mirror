@@ -1,12 +1,15 @@
 package pw.modder.answernator.commands
 
 import com.jessecorbett.diskord.api.model.Message
+import com.jessecorbett.diskord.api.model.Permissions
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.util.ClientStore
+import com.jessecorbett.diskord.util.authorId
 import com.jessecorbett.diskord.util.words
 import kotlinx.serialization.UnstableDefault
 import pw.modder.answernator.utils.CommandList
 import pw.modder.answernator.utils.LocalizedCommand
+import pw.modder.answernator.utils.computePermissions
 import java.util.*
 import com.jessecorbett.diskord.dsl.message as dslmessage
 
@@ -15,9 +18,16 @@ class Help: LocalizedCommand {
     override val name: String = "help"
 
     override suspend fun action(clientStore: ClientStore, message: Message, locale: Locale): CombinedMessageEmbed {
-        if (message.words.size == 1) return dslmessage {
-            title = getString(locale, "title_cmdlist")
-            description = CommandList.commands.joinToString(separator = "\n") { "`${it.name}`" }
+        if (message.words.size == 1) {
+            val guildClient = message.guildId?.run { clientStore.guilds[this] }
+            val permissions = when (val member = guildClient?.getMember(message.authorId)) {
+                null -> Permissions.NONE
+                else -> member.computePermissions(guildClient)
+            }
+            return dslmessage {
+                title = getString(locale, "title_cmdlist")
+                description = CommandList.commands.filter { it.check(message, permissions) }.joinToString(separator = "\n") { "`${it.name}`" }
+            }
         }
 
         return CommandList.commands.singleOrNull { it.name == message.words[1] }?.run {

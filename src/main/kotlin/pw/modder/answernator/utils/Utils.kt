@@ -20,7 +20,7 @@ object Utils {
         val uptime = ManagementFactory.getRuntimeMXBean().uptime
 
         return String.format(
-            "%d days\n%d hours\n%d mins\n%d secs",
+            "%d days %02d:%02d:%02d",
             TimeUnit.MILLISECONDS.toDays(uptime),
             TimeUnit.MILLISECONDS.toHours(uptime) % TimeUnit.DAYS.toHours(1),
             TimeUnit.MILLISECONDS.toMinutes(uptime) % TimeUnit.HOURS.toMinutes(1),

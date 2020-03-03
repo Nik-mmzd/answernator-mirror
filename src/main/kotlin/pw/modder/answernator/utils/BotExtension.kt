@@ -7,6 +7,7 @@ import com.jessecorbett.diskord.api.model.Permissions
 import com.jessecorbett.diskord.api.rest.client.GuildClient
 import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.DiskordDsl
+import com.jessecorbett.diskord.util.authorId
 import kotlinx.serialization.UnstableDefault
 import mu.KotlinLogging
 import com.jessecorbett.diskord.dsl.message as dslmessage
