@@ -8,6 +8,7 @@ import com.jessecorbett.diskord.api.rest.client.GuildClient
 import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.DiskordDsl
 import com.jessecorbett.diskord.util.authorId
+import com.jessecorbett.diskord.util.sendMessage
 import kotlinx.serialization.UnstableDefault
 import mu.KotlinLogging
 import com.jessecorbett.diskord.dsl.message as dslmessage
@@ -40,6 +41,21 @@ fun Bot.loadCommandService() {
 
                 message.reply(reply.text, reply.embed())
             }
+        }
+    }
+}
+
+@UnstableDefault
+@DiskordDsl
+fun Bot.greetingsService() {
+    userJoinedGuild {
+        val config = GuildConfigs.get(it.guildId)
+        if (config.greetNewUsers && config.greetingsChannel.isNotEmpty()) {
+            clientStore.channels[config.greetingsChannel].sendMessage(String.format(
+                config.greetingText,
+                it.nickname ?: it.user?.username ?: "new user",
+                clientStore.guilds[it.guildId].get().name
+            ))
         }
     }
 }
