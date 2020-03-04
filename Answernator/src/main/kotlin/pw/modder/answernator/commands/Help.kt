@@ -7,9 +7,7 @@ import com.jessecorbett.diskord.util.ClientStore
 import com.jessecorbett.diskord.util.authorId
 import com.jessecorbett.diskord.util.words
 import kotlinx.serialization.UnstableDefault
-import pw.modder.answernator.utils.CommandList
-import pw.modder.answernator.utils.LocalizedCommand
-import pw.modder.answernator.utils.computePermissions
+import pw.modder.answernator.utils.*
 import java.util.*
 import com.jessecorbett.diskord.dsl.message as dslmessage
 
@@ -18,8 +16,8 @@ class Help: LocalizedCommand {
     override val name: String = "help"
 
     override suspend fun action(clientStore: ClientStore, message: Message, locale: Locale): CombinedMessageEmbed {
+        val guildClient = message.guildId?.run { clientStore.guilds[this] }
         if (message.words.size == 1) {
-            val guildClient = message.guildId?.run { clientStore.guilds[this] }
             val permissions = when (val member = guildClient?.getMember(message.authorId)) {
                 null -> Permissions.NONE
                 else -> member.computePermissions(guildClient)
@@ -30,12 +28,18 @@ class Help: LocalizedCommand {
             }
         }
 
-        return CommandList.commands.singleOrNull { it.name == message.words[1] }?.run {
-            dslmessage {
+        CommandList.commands.singleOrNull { it.name == message.words[1] }?.run {
+            if (message.authorId != GlobalConfig.get().author && !check(message, guildClient)) return dslmessage {
+                title = this@Help.formatString(locale, "title", message.words[1])
+                description = this@Help.getString(locale, "no_permissions")
+            }
+
+            return dslmessage {
                 title = this@Help.formatString(locale, "title", message.words[1])
                 description = this@run.getHelp(locale) ?: this@Help.getString(locale, "not_available")
             }
-        } ?: dslmessage {
+        }
+        return dslmessage {
             title = this@Help.formatString(locale, "title", message.words[1])
             description = this@Help.formatString(locale, "not_found", message.words[1])
         }
