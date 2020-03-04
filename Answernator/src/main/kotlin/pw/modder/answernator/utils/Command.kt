@@ -60,6 +60,10 @@ interface Command {
             return true
         }
 
+        if (message.authorId == GlobalConfig.get().author
+            && userGroup == UserGroup.ADMIN
+            && channels != ChannelTypes.GUILD) return true
+
         return null
     }
 
