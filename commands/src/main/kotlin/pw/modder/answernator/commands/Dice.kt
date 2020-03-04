@@ -12,6 +12,7 @@ import java.util.*
 import kotlin.random.Random
 import com.jessecorbett.diskord.dsl.message as dslmessage
 
+private val random = Random(System.currentTimeMillis())
 @UnstableDefault
 class Dice: LocalizedCommand {
     override val name: String = "dice"
@@ -42,17 +43,17 @@ class Dice: LocalizedCommand {
 
         return dslmessage {
             title = getString(locale, "title")
-            color = Random.nextInt(0, 16777215)
+            color = random.nextInt(0, 16777215)
             thumbnail = EmbedImage("https://files.mcmodder.ru/answernator/dice.jpg")
             repeat(tries) {
                 if (sum) {
-                    field(formatString(locale, "try", it), Random.nextInt(1*throws, dice*throws).toString(), false)
+                    field(formatString(locale, "try", it), random.nextInt(1*throws, dice*throws).toString(), false)
                     return@repeat
                 }
 
                 val list: MutableList<Int> = mutableListOf()
                 repeat(throws) {
-                    list.add(Random.nextInt(1, dice))
+                    list.add(random.nextInt(1, dice))
                 }
                 field(formatString(locale, "try", it), list.joinToString(" "), false)
             }
