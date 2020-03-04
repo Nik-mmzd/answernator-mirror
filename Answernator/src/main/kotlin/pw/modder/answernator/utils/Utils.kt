@@ -5,7 +5,7 @@ import java.lang.management.ManagementFactory
 import java.util.concurrent.TimeUnit
 
 object Utils {
-    fun getResource(path: String): InputStream {
+    private fun getResource(path: String): InputStream {
         return javaClass.classLoader.getResourceAsStream(path)
             ?: throw Exception("Resource $path not found")
     }

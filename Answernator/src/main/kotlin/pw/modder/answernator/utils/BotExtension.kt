@@ -22,19 +22,23 @@ fun Bot.loadCommandService() {
         if (message.content.isEmpty()) return@messageCreated
         logger.debug { "received message, message text: ${message.content}" }
         if (!message.content.startsWith(config.prefix)) return@messageCreated
+
+        val locale = message.guildId?.run { GuildConfigs.get(this).locale } ?: config.locale
         CommandList.commands.singleOrNull { command ->
-            message.content.startsWith(config.prefix + command.name)
+            message.content.startsWith(config.prefix + command.name) && locale in command.lang
         }?.run {
             logger.debug { "found command $name, running" }
             if (check(message, message.guildId?.run { clientStore.guilds[this] })) {
-                try {
-                    action(clientStore, message, config.locale)
+                val reply = try {
+                    action(clientStore, message, locale)
                 } catch (_: NotImplementedError) {
                     dslmessage { text = "Command `${config.prefix}$name` is not implemented yet." }
                 } catch (e: Exception) {
                     logger.error(e) { "got error while running command" }
                     dslmessage { text = "Invalid request. Please use `${config.prefix}help` for help" }
-                }.run { message.reply(text, embed()) }
+                }
+
+                message.reply(reply.text, reply.embed())
             }
         }
     }

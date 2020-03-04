@@ -14,6 +14,10 @@ class Reload: Command {
     override val name: String = "reload"
     override val userGroup: UserGroup = UserGroup.OWNER
 
+    override fun getHelp(locale: Locale): String? {
+        return "Reloads bot. Not a restart! Not localized."
+    }
+
     override suspend fun action(clientStore: ClientStore, message: Message, locale: Locale): CombinedMessageEmbed {
         CommandList.load()
         return textMessage("Reloaded. Loaded ${CommandList.commands.size} commands.")
