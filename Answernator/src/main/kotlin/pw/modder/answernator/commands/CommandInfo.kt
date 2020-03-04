@@ -42,7 +42,7 @@ class CommandInfo: Command {
         val cmd = CommandList.commands.singleOrNull { it.name == message.words[1] }
             ?: return textMessage("Command `${message.words[1]}` not found")
         return dslmessage {
-            title = "Command information: `{$cmd.name}`"
+            title = "Command information"
 
             field("Command name", cmd.name, true)
             field("Command publicity", getCommandTypeString(cmd), true)
