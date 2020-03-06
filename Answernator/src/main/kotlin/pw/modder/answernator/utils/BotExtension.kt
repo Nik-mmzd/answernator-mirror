@@ -12,7 +12,29 @@ import pw.modder.answernator.cache.GuildOwnerCache.getOwnerCached
 import com.jessecorbett.diskord.util.sendMessage
 import kotlinx.serialization.UnstableDefault
 import mu.KotlinLogging
+import java.util.*
 import com.jessecorbett.diskord.dsl.message as dslmessage
+
+@UnstableDefault
+object BotGlobalLocale {
+    private val locales = GlobalConfig.get().langs.associateBy({ Locale(it) }, {
+        ResourceBundle.clearCache(javaClass.classLoader)
+        ResourceBundle.getBundle("locale.botGlobal", Locale(it), javaClass.classLoader, UTF8Control())
+    })
+
+    fun getString(locale: Locale, str: String): String {
+        logger.debug { "getting string \"$str\" for locale ${locale.toLanguageTag()}" }
+        return try {
+            locales[locale]?.getString("bot.$str") ?: "bot.$str"
+        } catch (_: MissingResourceException) {
+            "bot.$str"
+        }
+    }
+
+    fun formatString(locale: Locale, str: String, vararg arguments: Any?): String {
+        return String.format(getString(locale, str), args = *arguments)
+    }
+}
 
 private val logger = KotlinLogging.logger {}
 @UnstableDefault
@@ -35,14 +57,19 @@ fun Bot.loadCommandService() {
                 val reply = try {
                     action(clientStore, message, locale)
                 } catch (_: NotImplementedError) {
-                    dslmessage { text = "Command `${config.prefix}$name` is not implemented yet." }
+                    message.reply(BotGlobalLocale.formatString(locale, "notImplemented", "${config.prefix}$name"))
+                    return@run
                 } catch (e: Exception) {
                     logger.error(e) { "got error while running command" }
-                    dslmessage { text = "Invalid request. Please use `${config.prefix}help` for help" }
+                    message.reply(BotGlobalLocale.getString(locale, "error"))
+                    return@run
                 }
 
                 message.reply(reply.text, reply.embed())
+                return@run
             }
+
+            message.reply(BotGlobalLocale.getString(locale, "noPerms"))
         }
     }
 }
