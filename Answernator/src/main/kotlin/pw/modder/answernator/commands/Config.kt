@@ -15,8 +15,8 @@ import java.util.*
 class Config: LocalizedCommand {
     override val name = "config"
 
-    override val channels = ChannelTypes.GUILD
-    override val userGroup = UserGroup.ADMIN
+    override val channels = EnumSet.of(Command.ChannelTypes.GUILD)
+    override val userGroup = Command.UserGroup.ADMIN
 
     private suspend fun getGreetingsChannelName(clientStore: ClientStore, config: GuildConfig, locale: Locale): String {
         val channel = try {

@@ -6,13 +6,12 @@ import com.jessecorbett.diskord.util.ClientStore
 import kotlinx.serialization.UnstableDefault
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.CommandList
-import pw.modder.answernator.utils.UserGroup
 import java.util.*
 
 @UnstableDefault
 class Reload: Command {
     override val name: String = "reload"
-    override val userGroup: UserGroup = UserGroup.OWNER
+    override val userGroup = Command.UserGroup.OWNER
 
     override fun getHelp(locale: Locale): String? {
         return "Reloads bot. Not a restart! Not localized."

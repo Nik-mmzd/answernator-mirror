@@ -31,7 +31,7 @@ object GuildConfigs {
         }
     }
 
-    public fun write() {
+    private fun save() {
         GlobalConfig.get().dataPath.resolve(filename).writer().use {
             it.write(Json(JsonConfiguration.Default).stringify(GuildConfig.serializer().list, guilds))
         }
@@ -42,12 +42,12 @@ object GuildConfigs {
     fun get(guildId: String): GuildConfig {
         return guilds.singleOrNull { it.guildId == guildId } ?: GuildConfig(guildId).also {
             guilds = guilds + it
-            write()
+            save()
         }
     }
 
     fun replace(guildId: String, config: GuildConfig) {
         guilds = guilds.filterNot { it.guildId == guildId } + config
-        write()
+        save()
     }
 }

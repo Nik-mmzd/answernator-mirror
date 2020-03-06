@@ -26,15 +26,6 @@ import pw.modder.answernator.cache.GuildMemberRolesCache
 //        -- body...
 //      end
 //    ) -- yep :code must be LAST
-
-enum class UserGroup {
-    OWNER, ADMIN, ALL, PERMISSION
-}
-
-enum class ChannelTypes {
-    GUILD, DIRECT, ALL
-}
-
 private val logger: KLogger = KotlinLogging.logger {}
 @UnstableDefault
 @DiskordDsl
@@ -44,16 +35,12 @@ interface Command {
     val userGroup: UserGroup get() = UserGroup.ALL
     val permission: Permission? get() = null
 //    val timeout: Int get() = 0
-    val channels: ChannelTypes get() = ChannelTypes.ALL
+    val channels: EnumSet<ChannelTypes> get() = EnumSet.of(ChannelTypes.DIRECT, ChannelTypes.GUILD)
 
     suspend fun action(clientStore: ClientStore, message: Message, locale: Locale): CombinedMessageEmbed
 
     private fun check(message: Message): Boolean? {
         logger.debug { "checking command $name" }
-        logger.debug { "checking channel type" }
-        if (channels == ChannelTypes.DIRECT && message.partialMember != null) return false
-        if (channels == ChannelTypes.GUILD && message.partialMember == null) return false
-
         logger.debug { "checking command is owner only" }
         if (userGroup == UserGroup.OWNER && message.authorId != GlobalConfig.get().author) return false
         if (userGroup == UserGroup.OWNER || userGroup == UserGroup.ALL) {
@@ -63,7 +50,7 @@ interface Command {
 
         if (message.authorId == GlobalConfig.get().author
             && userGroup == UserGroup.ADMIN
-            && channels != ChannelTypes.GUILD) return true
+            && channels.contains(ChannelTypes.DIRECT)) return true
 
         return null
     }
@@ -100,5 +87,13 @@ interface Command {
 
     fun getHelp(locale: Locale): String? {
         return null
+    }
+
+    enum class UserGroup {
+        OWNER, ADMIN, ALL, PERMISSION
+    }
+
+    enum class ChannelTypes {
+        GUILD, DIRECT
     }
 }

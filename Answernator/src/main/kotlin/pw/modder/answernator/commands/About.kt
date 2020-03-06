@@ -13,7 +13,7 @@ import java.util.*
 @UnstableDefault
 class About: Command {
     override val name: String = "about"
-    override val userGroup = UserGroup.ADMIN
+    override val userGroup = Command.UserGroup.ADMIN
 
     override fun getHelp(locale: Locale): String? {
         return "Shows some technical information about the bot. Usage: `$name`. Not localized."

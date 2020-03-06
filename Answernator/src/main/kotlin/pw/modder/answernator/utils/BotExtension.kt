@@ -1,6 +1,5 @@
 package pw.modder.answernator.utils
 
-import com.jessecorbett.diskord.api.model.GuildMember
 import com.jessecorbett.diskord.api.model.Message
 import com.jessecorbett.diskord.api.model.Permission
 import com.jessecorbett.diskord.api.model.Permissions
@@ -27,8 +26,9 @@ fun Bot.loadCommandService() {
         if (!message.content.startsWith(config.prefix)) return@messageCreated
 
         val locale = message.guildId?.run { GuildConfigs.get(this).locale } ?: config.locale
+        val channelType =if (message.guildId == null) Command.ChannelTypes.DIRECT else Command.ChannelTypes.GUILD
         CommandList.commands.singleOrNull { command ->
-            message.content.startsWith(config.prefix + command.name) && locale in command.lang
+            message.content.startsWith(config.prefix + command.name) && locale in command.lang && channelType in command.channels
         }?.run {
             logger.debug { "found command $name, running" }
             if (check(message, message.guildId?.run { clientStore.guilds[this] })) {
