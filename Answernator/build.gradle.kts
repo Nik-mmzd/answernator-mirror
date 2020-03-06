@@ -21,6 +21,7 @@ dependencies {
     implementation("org.slf4j:slf4j-simple:1.7.26")
     implementation("commons-io:commons-io:2.6")
     implementation("io.github.microutils:kotlin-logging:1.7.8")
+    implementation("com.google.guava:guava:28.2-jre")
 }
 
 val jar by tasks.getting(Jar::class) {

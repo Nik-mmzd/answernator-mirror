@@ -10,6 +10,7 @@ import kotlinx.serialization.UnstableDefault
 import mu.KLogger
 import mu.KotlinLogging
 import java.util.*
+import pw.modder.answernator.cache.GuildMemberRolesCache
 
 //   return Command:new("help string", beta) -- beta boolean is optional
 //    :langs("lang1", "lang2") -- optional
@@ -79,9 +80,9 @@ interface Command {
         check(message)?.run { return this }
 
         logger.debug { "getting permissions" }
-        val permissions = when (val member = guildClient?.getMember(message.authorId)) {
+        val permissions = when (guildClient) {
             null -> Permissions.NONE
-            else -> member.computePermissions(guildClient)
+            else -> guildClient.computePermissions(message.authorId)
         }
 
         return check(permissions)

@@ -7,7 +7,9 @@ import com.jessecorbett.diskord.api.model.Permissions
 import com.jessecorbett.diskord.api.rest.client.GuildClient
 import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.DiskordDsl
-import com.jessecorbett.diskord.util.authorId
+import pw.modder.answernator.cache.RolesCache.getRolesCached
+import pw.modder.answernator.cache.GuildMemberRolesCache.getMemberRolesCached
+import pw.modder.answernator.cache.GuildOwnerCache.getOwnerCached
 import com.jessecorbett.diskord.util.sendMessage
 import kotlinx.serialization.UnstableDefault
 import mu.KotlinLogging
@@ -60,13 +62,13 @@ fun Bot.greetingsService() {
     }
 }
 
-suspend fun GuildMember.computePermissions(guild: GuildClient): Permissions {
-    user?.run {
-        if (guild.get().ownerId == id) return Permissions.ALL
-    }
+suspend fun GuildClient.computePermissions(memberId: String): Permissions {
+    if (getOwnerCached() == memberId) return Permissions.ALL
+
 
     var permissions = Permissions.NONE
-    val roles = guild.getRoles().filter { it.id in roleIds }
+    val memberRoles = getMemberRolesCached(memberId)
+    val roles = getRolesCached().filter { it.id in memberRoles }
 
     roles.forEach { role ->
         if (role.permissions.contains(Permission.ADMINISTRATOR)) return Permissions.ALL

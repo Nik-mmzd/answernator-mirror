@@ -18,9 +18,9 @@ class Help: LocalizedCommand {
     override suspend fun action(clientStore: ClientStore, message: Message, locale: Locale): CombinedMessageEmbed {
         val guildClient = message.guildId?.run { clientStore.guilds[this] }
         if (message.words.size == 1) {
-            val permissions = when (val member = guildClient?.getMember(message.authorId)) {
+            val permissions = when (guildClient) {
                 null -> Permissions.NONE
-                else -> member.computePermissions(guildClient)
+                else -> guildClient.computePermissions(message.authorId)
             }
             return dslmessage {
                 title = getString(locale, "title_cmdlist")
