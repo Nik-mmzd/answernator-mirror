@@ -40,8 +40,8 @@ class Help: LocalizedCommand {
             }
         }
         return dslmessage {
-            title = this@Help.formatString(locale, "title", message.words[1])
-            description = this@Help.formatString(locale, "not_found", message.words[1])
+            title = this@Help.formatString(locale, "title", message.words[1].removeGraves())
+            description = this@Help.formatString(locale, "not_found", message.words[1].removeGraves())
         }
     }
 }
