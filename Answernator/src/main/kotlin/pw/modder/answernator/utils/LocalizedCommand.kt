@@ -16,7 +16,11 @@ interface LocalizedCommand: Command {
 
     fun getString(locale: Locale, str: String): String {
         logger.debug { "getting string \"$str\" for locale ${locale.toLanguageTag()}" }
-        return texts[locale]?.getString("$name.$str") ?: "$name.$str"
+        return try {
+            texts[locale]?.getString("$name.$str") ?: "$name.$str"
+        } catch (_: MissingResourceException) {
+            "$name.$str"
+        }
     }
 
     fun formatString(locale: Locale, str: String, vararg arguments: Any?): String {
