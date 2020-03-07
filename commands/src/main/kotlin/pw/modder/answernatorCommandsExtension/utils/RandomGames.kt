@@ -1,4 +1,4 @@
-package pw.modder.answernator.commandsExtension.utils
+package pw.modder.answernatorCommandsExtension.utils
 
 import kotlin.random.Random
 

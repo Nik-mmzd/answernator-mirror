@@ -1,4 +1,4 @@
-package pw.modder.answernator.commandsExtension
+package pw.modder.answernatorCommandsExtension.commands.localized
 
 import com.jessecorbett.diskord.api.model.Message
 import com.jessecorbett.diskord.api.rest.EmbedImage
@@ -7,7 +7,7 @@ import com.jessecorbett.diskord.dsl.field
 import com.jessecorbett.diskord.util.ClientStore
 import com.jessecorbett.diskord.util.mention
 import kotlinx.serialization.UnstableDefault
-import pw.modder.answernator.commandsExtension.commandTypes.LocalizedGuildOnlyCommand
+import pw.modder.answernatorCommandsExtension.commandTypes.LocalizedGuildOnlyCommand
 import pw.modder.answernator.utils.Command
 import java.util.*
 import com.jessecorbett.diskord.dsl.message as dslmessage

@@ -1,4 +1,4 @@
-package pw.modder.answernator.commandsExtension
+package pw.modder.answernatorCommandsExtension.commands.localized
 
 import com.jessecorbett.diskord.api.model.Message
 import com.jessecorbett.diskord.api.rest.EmbedImage

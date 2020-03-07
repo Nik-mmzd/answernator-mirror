@@ -1,4 +1,4 @@
-package pw.modder.answernator.commandsExtension
+package pw.modder.answernatorCommandsExtension.commands
 
 import com.jessecorbett.diskord.api.model.Message
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
@@ -8,7 +8,7 @@ import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 import kotlinx.serialization.list
-import pw.modder.answernator.commandsExtension.utils.UbuntuWord
+import pw.modder.answernatorCommandsExtension.utils.UbuntuWord
 import pw.modder.answernator.utils.Command
 import java.util.*
 

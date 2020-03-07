@@ -1,4 +1,4 @@
-package pw.modder.answernator.commandsExtension
+package pw.modder.answernatorCommandsExtension.commands.localized
 
 import com.jessecorbett.diskord.api.model.Message
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
@@ -6,7 +6,7 @@ import com.jessecorbett.diskord.util.ClientStore
 import com.jessecorbett.diskord.util.mention
 import com.jessecorbett.diskord.util.words
 import kotlinx.serialization.UnstableDefault
-import pw.modder.answernator.commandsExtension.utils.RandomGames
+import pw.modder.answernatorCommandsExtension.utils.RandomGames
 import pw.modder.answernator.utils.LocalizedCommand
 import java.util.*
 

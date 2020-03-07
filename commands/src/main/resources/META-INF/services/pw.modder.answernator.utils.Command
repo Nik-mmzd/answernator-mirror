@@ -1,4 +1,4 @@
-pw.modder.answernator.commandsExtension.Ubuntu
-pw.modder.answernator.commandsExtension.Dice
-pw.modder.answernator.commandsExtension.Guild
-pw.modder.answernator.commandsExtension.RandomGame
+pw.modder.answernatorCommandsExtension.commands.Ubuntu
+pw.modder.answernatorCommandsExtension.commands.localized.Dice
+pw.modder.answernatorCommandsExtension.commands.localized.Guild
+pw.modder.answernatorCommandsExtension.commands.localized.RandomGame
