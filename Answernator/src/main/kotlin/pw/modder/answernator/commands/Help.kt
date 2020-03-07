@@ -28,11 +28,11 @@ class Help: LocalizedCommand {
             }
         }
 
-        val cmd = CommandList.commands.singleOrNull { it.name == message.words[1] }
-        if (cmd == null) return dslmessage {
-            title = texts.formatString("title", message.words[1].removeGraves())
-            description = texts.formatString("not_found", message.words[1].removeGraves())
-        }
+        val cmd = CommandList.commands.singleOrNull { it.name == message.words[1].toLowerCase() }
+            ?: return dslmessage {
+                title = texts.formatString("title", message.words[1].removeGraves())
+                description = texts.formatString("not_found", message.words[1].removeGraves())
+            }
 
         if (message.authorId != GlobalConfig.get().author && !cmd.check(message, guildClient)) return dslmessage {
             title = texts.formatString("title", message.words[1])

@@ -10,6 +10,7 @@ import pw.modder.answernator.cache.RolesCache.getRolesCached
 import pw.modder.answernator.cache.GuildMemberRolesCache.getMemberRolesCached
 import pw.modder.answernator.cache.GuildOwnerCache.getOwnerCached
 import com.jessecorbett.diskord.util.sendMessage
+import com.jessecorbett.diskord.util.words
 import kotlinx.serialization.UnstableDefault
 import mu.KotlinLogging
 import java.util.*
@@ -50,7 +51,8 @@ fun Bot.loadCommandService() {
         val locale = message.guildId?.run { GuildConfigs.get(this).locale } ?: config.locale
         val channelType =if (message.guildId == null) Command.ChannelTypes.DIRECT else Command.ChannelTypes.GUILD
         CommandList.commands.singleOrNull { command ->
-            message.content.startsWith(config.prefix + command.name) && locale in command.lang && channelType in command.channels
+            logger.debug { "probing command ${command.name}, searching for ${message.words.first()}" }
+            message.words.first().equals("${config.prefix}${command.name}", true) && channelType in command.channels
         }?.run {
             logger.debug { "found command $name, running" }
             if (check(message, message.guildId?.run { clientStore.guilds[this] })) {

@@ -31,7 +31,6 @@ private val logger: KLogger = KotlinLogging.logger {}
 @DiskordDsl
 interface Command {
     val name: String
-    val lang: List<Locale> get() = listOf(Locale("en"), Locale("ru"))
     val userGroup: UserGroup get() = UserGroup.ALL
     val permission: Permission? get() = null
 //    val timeout: Int get() = 0
