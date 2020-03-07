@@ -15,7 +15,7 @@ import com.jessecorbett.diskord.dsl.message as dslmessage
 class Help: LocalizedCommand {
     override val name: String = "help"
 
-    override suspend fun action(clientStore: ClientStore, message: Message, locale: Locale): CombinedMessageEmbed {
+    override suspend fun action(clientStore: ClientStore, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
         val guildClient = message.guildId?.run { clientStore.guilds[this] }
         if (message.words.size == 1) {
             val permissions = when (guildClient) {
@@ -23,25 +23,25 @@ class Help: LocalizedCommand {
                 else -> guildClient.computePermissions(message.authorId)
             }
             return dslmessage {
-                title = getString(locale, "title_cmdlist")
+                title = texts.getStringOrKey("title_cmdlist")
                 description = CommandList.commands.filter { it.check(message, permissions) }.joinToString(separator = "\n") { "`${it.name}`" }
             }
         }
 
-        CommandList.commands.singleOrNull { it.name == message.words[1] }?.run {
-            if (message.authorId != GlobalConfig.get().author && !check(message, guildClient)) return dslmessage {
-                title = this@Help.formatString(locale, "title", message.words[1])
-                description = this@Help.getString(locale, "no_permissions")
-            }
-
-            return dslmessage {
-                title = this@Help.formatString(locale, "title", message.words[1])
-                description = this@run.getHelp(locale) ?: this@Help.getString(locale, "not_available")
-            }
+        val cmd = CommandList.commands.singleOrNull { it.name == message.words[1] }
+        if (cmd == null) return dslmessage {
+            title = texts.formatString("title", message.words[1].removeGraves())
+            description = texts.formatString("not_found", message.words[1].removeGraves())
         }
+
+        if (message.authorId != GlobalConfig.get().author && !cmd.check(message, guildClient)) return dslmessage {
+            title = texts.formatString("title", message.words[1])
+            description = texts.getStringOrKey("no_permissions")
+        }
+
         return dslmessage {
-            title = this@Help.formatString(locale, "title", message.words[1].removeGraves())
-            description = this@Help.formatString(locale, "not_found", message.words[1].removeGraves())
+            title = texts.formatString("title", message.words[1])
+            description = cmd.getHelp(texts.locale) ?: texts.getString("not_available")
         }
     }
 }

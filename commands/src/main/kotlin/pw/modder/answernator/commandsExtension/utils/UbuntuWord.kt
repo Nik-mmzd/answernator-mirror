@@ -1,4 +1,4 @@
-package pw.modder.answernator.commands.utils
+package pw.modder.answernator.commandsExtension.utils
 
 import kotlinx.serialization.Serializable
 

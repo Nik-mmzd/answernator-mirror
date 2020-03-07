@@ -1,4 +1,4 @@
-package pw.modder.answernator.commands
+package pw.modder.answernator.commandsExtension
 
 import com.jessecorbett.diskord.api.model.Message
 import com.jessecorbett.diskord.api.rest.EmbedImage
@@ -30,24 +30,24 @@ class Dice: LocalizedCommand {
         triesLimit = props.getProperty("dice.triesLimit").toInt()
     }
 
-    override suspend fun action(clientStore: ClientStore, message: Message, locale: Locale): CombinedMessageEmbed {
+    override suspend fun action(clientStore: ClientStore, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
         val sum = message.words.getOrNull(4) == "sum"
         val dice = message.words.getOrNull(1)?.toInt() ?: 6
         val throws = message.words.getOrNull(2)?.toInt() ?: 1
         val tries = message.words.getOrNull(3)?.toInt() ?: 1
 
-        if (tries > triesLimit || tries < 1) return textMessage(formatString(locale, "triesLimit", triesLimit))
-        if (!sum && throws > throwsLimit) return textMessage(formatString(locale, "throwsLimit", throwsLimit))
-        if (throws > throwsSumLimit || throws < 1) return textMessage(formatString(locale, "throwsSumLimit", throwsSumLimit))
-        if (dice > diceLimit || dice < 2) return textMessage(formatString(locale, "diceLimit", diceLimit))
+        if (tries > triesLimit || tries < 1) return textMessage(texts.formatString("triesLimit", triesLimit))
+        if (!sum && throws > throwsLimit) return textMessage(texts.formatString("throwsLimit", throwsLimit))
+        if (throws > throwsSumLimit || throws < 1) return textMessage(texts.formatString("throwsSumLimit", throwsSumLimit))
+        if (dice > diceLimit || dice < 2) return textMessage(texts.formatString("diceLimit", diceLimit))
 
         return dslmessage {
-            title = getString(locale, "title")
+            title = texts.getStringOrKey("title")
             color = random.nextInt(0, 16777215)
             thumbnail = EmbedImage("https://files.mcmodder.ru/answernator/dice.jpg")
             repeat(tries) {
                 if (sum) {
-                    field(formatString(locale, "try", it), random.nextInt(1*throws, dice*throws).toString(), false)
+                    field(texts.formatString("try", it), random.nextInt(1*throws, dice*throws).toString(), false)
                     return@repeat
                 }
 
@@ -55,7 +55,7 @@ class Dice: LocalizedCommand {
                 repeat(throws) {
                     list.add(random.nextInt(1, dice))
                 }
-                field(formatString(locale, "try", it), list.joinToString(" "), false)
+                field(texts.formatString("try", it), list.joinToString(" "), false)
             }
         }
     }

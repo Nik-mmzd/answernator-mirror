@@ -1,4 +1,4 @@
-package pw.modder.answernator.commands
+package pw.modder.answernator.commandsExtension
 
 import com.jessecorbett.diskord.api.model.Message
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
@@ -6,7 +6,7 @@ import com.jessecorbett.diskord.util.ClientStore
 import com.jessecorbett.diskord.util.mention
 import com.jessecorbett.diskord.util.words
 import kotlinx.serialization.UnstableDefault
-import pw.modder.answernator.commands.utils.RandomGames
+import pw.modder.answernator.commandsExtension.utils.RandomGames
 import pw.modder.answernator.utils.LocalizedCommand
 import java.util.*
 
@@ -15,9 +15,9 @@ private val gamesdb = RandomGames()
 class RandomGame: LocalizedCommand {
     override val name = "randomgame"
 
-    override suspend fun action(clientStore: ClientStore, message: Message, locale: Locale): CombinedMessageEmbed {
+    override suspend fun action(clientStore: ClientStore, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
         val num = message.words.getOrNull(1)?.toIntOrNull() ?: 1
-        if (num > 64) return textMessage(getString(locale, "error"))
+        if (num > 64) return textMessage(texts.getStringOrKey("error"))
 
         val gameNames = mutableListOf<String>()
         repeat(num) {

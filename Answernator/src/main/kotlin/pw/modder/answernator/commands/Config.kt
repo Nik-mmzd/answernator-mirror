@@ -18,34 +18,25 @@ class Config: LocalizedCommand {
     override val channels = EnumSet.of(Command.ChannelTypes.GUILD)
     override val userGroup = Command.UserGroup.ADMIN
 
-    private suspend fun getGreetingsChannelName(clientStore: ClientStore, config: GuildConfig, locale: Locale): String {
-        val channel = try {
-            clientStore.channels[config.greetingsChannel]
-        } catch (_: Exception) {
-            return getString(locale, "greeting.channel.error")
-        }
-        return channel.get().name ?: getString(locale, "greeting.channel.error")
-    }
-
-    override suspend fun action(clientStore: ClientStore, message: Message, locale: Locale): CombinedMessageEmbed {
-        val guildClient = message.guildId?.run { clientStore.guilds[this] } ?: return textMessage(getString(locale, "noguild"))
+    override suspend fun action(clientStore: ClientStore, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
+        val guildClient = message.guildId?.run { clientStore.guilds[this] } ?: return textMessage(texts.getStringOrKey("noguild"))
         val guild = guildClient.get()
         val config = GuildConfigs.get(guild.id)
         var newConfig: GuildConfig? = null
 
         val answer = when(message.words.getOrNull(1)) {
             "get" -> {
-                val chName= getGreetingsChannelName(clientStore, config, locale)
+                val chName= getGreetingsChannelName(clientStore, config, texts)
                 dslmessage {
                     title = guild.name
-                    description = getString(locale, "description")
+                    description = texts.getStringOrKey("description")
 
-                    field(getString(locale, "lang"), config.lang, false)
-                    field(getString(locale, "lang.available"), GlobalConfig.get().langs.joinToString(separator = ", ") { "`$it`" }, false)
-                    field(getString(locale, "greeter"), getString(locale, "greeter.${config.greetNewUsers}"), false)
-                    field(getString(locale, "greeting"), String.format(config.greetingText, message.author.username, guild.name), false)
-                    field(getString(locale, "greeting.help"), getString(locale, "greeting.help.value"), false)
-                    field(getString(locale, "greeting.channel"), chName, false)
+                    field(texts.getStringOrKey("lang"), config.lang, false)
+                    field(texts.getStringOrKey("lang.available"), GlobalConfig.get().langs.joinToString(separator = ", ") { "`$it`" }, false)
+                    field(texts.getStringOrKey("greeter"), texts.getStringOrKey("greeter.${config.greetNewUsers}"), false)
+                    field(texts.getStringOrKey("greeting"), String.format(config.greetingText, message.author.username, guild.name), false)
+                    field(texts.getStringOrKey("greeting.help"), texts.getStringOrKey("greeting.help.value"), false)
+                    field(texts.getStringOrKey("greeting.channel"), chName, false)
                 }
             }
             "set" -> {
@@ -53,8 +44,8 @@ class Config: LocalizedCommand {
                     "lang" -> {
                         if (message.words[3] in GlobalConfig.get().langs) {
                             newConfig = config.copy(lang = message.words[3])
-                            textMessage(formatString(locale, "locale.updated", message.words[3]))
-                        } else textMessage(formatString(locale, "locale.notfound", message.words[3]))
+                            textMessage(texts.formatString("locale.updated", message.words[3]))
+                        } else textMessage(texts.formatString("locale.notfound", message.words[3]))
                     }
                     "greet" -> {
                         when(message.words.getOrNull(3)) {
@@ -66,34 +57,34 @@ class Config: LocalizedCommand {
                                         .replace("%user%", "%1\$s")
                                         .replace("%guild%", "%2\$s")
                                 )
-                                textMessage(getString(locale, "greeting.applied"))
+                                textMessage(texts.getStringOrKey("greeting.applied"))
                             }
                             "enable" -> {
                                 newConfig = config.copy(greetNewUsers = true)
-                                textMessage(getString(locale, "greeting.enabled"))
+                                textMessage(texts.getStringOrKey("greeting.enabled"))
                             }
                             "disable" -> {
                                 newConfig = config.copy(greetNewUsers = false)
-                                textMessage(getString(locale, "greeting.disabled"))
+                                textMessage(texts.getStringOrKey("greeting.disabled"))
                             }
                             "channel" -> {
                                 val channel = try {
                                     clientStore.channels[message.words[4].drop(2).dropLast(1)]
                                 } catch (_: Exception) {
-                                    return textMessage(getString(locale, "help"))
+                                    return textMessage(texts.getStringOrKey("help"))
                                 }
 
                                 newConfig = config.copy(greetingsChannel = channel.channelId)
-                                textMessage(formatString(locale, "greeting.channelset", channel.get().mention))
+                                textMessage(texts.formatString("greeting.channelset", channel.get().mention))
                             }
-                            else -> textMessage(getString(locale, "help"))
+                            else -> textMessage(texts.getStringOrKey("help"))
                         }
                     }
 
-                    else -> textMessage(getString(locale, "help"))
+                    else -> textMessage(texts.getStringOrKey("help"))
                 }
             }
-            else -> textMessage(getString(locale, "help"))
+            else -> textMessage(texts.getStringOrKey("help"))
 
         }
         newConfig?.run {
@@ -102,4 +93,12 @@ class Config: LocalizedCommand {
         return answer
     }
 
+    private suspend fun getGreetingsChannelName(clientStore: ClientStore, config: GuildConfig, texts: ResourceBundle): String {
+        val channel = try {
+            clientStore.channels[config.greetingsChannel]
+        } catch (_: Exception) {
+            return texts.getStringOrKey("greeting.channel.error")
+        }
+        return channel.get().name ?: texts.getStringOrKey("greeting.channel.error")
+    }
 }
