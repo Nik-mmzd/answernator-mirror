@@ -26,7 +26,6 @@ class Config: LocalizedCommand {
 
         val answer = when(message.words.getOrNull(1)) {
             "get" -> {
-                val chName= getGreetingsChannelName(clientStore, config, texts)
                 dslmessage {
                     title = guild.name
                     description = texts.getStringOrKey("description")
@@ -34,9 +33,9 @@ class Config: LocalizedCommand {
                     field(texts.getStringOrKey("lang"), config.lang, false)
                     field(texts.getStringOrKey("lang.available"), GlobalConfig.get().langs.joinToString(separator = ", ") { "`$it`" }, false)
                     field(texts.getStringOrKey("greeter"), texts.getStringOrKey("greeter.${config.greetNewUsers}"), false)
-                    field(texts.getStringOrKey("greeting"), String.format(config.greetingText, message.author.username, guild.name), false)
+                    field(texts.getStringOrKey("greeting"), String.format(config.greetingText, "%user%", "%guild%"), false)
                     field(texts.getStringOrKey("greeting.help"), texts.getStringOrKey("greeting.help.value"), false)
-                    field(texts.getStringOrKey("greeting.channel"), chName, false)
+                    field(texts.getStringOrKey("greeting.channel"), getGreetingsChannelName(clientStore, config, texts), false)
                 }
             }
             "set" -> {
@@ -93,12 +92,15 @@ class Config: LocalizedCommand {
         return answer
     }
 
-    private suspend fun getGreetingsChannelName(clientStore: ClientStore, config: GuildConfig, texts: ResourceBundle): String {
+    private fun getGreetingsChannelName(clientStore: ClientStore, config: GuildConfig, texts: ResourceBundle): String {
+        if (config.greetingsChannel.isEmpty()) return texts.getStringOrKey("greeting.channel.notset")
+
         val channel = try {
             clientStore.channels[config.greetingsChannel]
         } catch (_: Exception) {
             return texts.getStringOrKey("greeting.channel.error")
         }
-        return channel.get().name ?: texts.getStringOrKey("greeting.channel.error")
+
+        return "<#${channel.channelId}>"
     }
 }

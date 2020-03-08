@@ -14,8 +14,6 @@ import pw.modder.answernator.utils.GlobalConfig
 import pw.modder.answernator.utils.GuildConfigs
 import pw.modder.answernator.utils.LocalizedCommand
 import pw.modder.answernator.utils.extensions.setCurrentTimestamp
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 import com.jessecorbett.diskord.dsl.message as dslmessage
 import java.util.*
 import kotlin.random.Random

@@ -27,7 +27,7 @@ class Guild: LocalizedGuildOnlyCommand {
             field(texts.getStringOrKey("emojis"), guild.emojis.size.toString(), true)
             field(texts.getStringOrKey("roles"), guild.roles.joinToString("\n") { it.mention }, true)
             field(texts.getStringOrKey("region"), guild.region, true)
-            field(texts.getStringOrKey("features"), guild.features.joinToString(", "), true)
+            field(texts.getStringOrKey("features"), guild.features.joinToString(", ").ifEmpty { texts.getStringOrKey("features.empty") }, true)
             field(texts.getStringOrKey("verificationLevel"), guild.verificationLevel.name, true)
             field(texts.getStringOrKey("mfaEnabled"), guild.mfaLevel.name, true)
             field(texts.getStringOrKey("explicitContentFilterLevel"), guild.explicitContentFilterLevel.name, true)
