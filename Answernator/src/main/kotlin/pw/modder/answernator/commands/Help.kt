@@ -8,6 +8,7 @@ import com.jessecorbett.diskord.util.authorId
 import com.jessecorbett.diskord.util.words
 import kotlinx.serialization.UnstableDefault
 import pw.modder.answernator.utils.*
+import pw.modder.answernator.utils.extensions.computePermissions
 import java.util.*
 import com.jessecorbett.diskord.dsl.message as dslmessage
 

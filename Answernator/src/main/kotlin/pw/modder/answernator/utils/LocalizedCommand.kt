@@ -4,6 +4,7 @@ import com.jessecorbett.diskord.api.model.Message
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.util.ClientStore
 import kotlinx.serialization.UnstableDefault
+import pw.modder.answernator.utils.extensions.getStringOrKey as getStringOrKey1
 import java.util.*
 
 //private val logger: KLogger = KotlinLogging.logger {}
@@ -14,11 +15,7 @@ interface LocalizedCommand: Command {
     }
 
     fun ResourceBundle.getStringOrKey(key: String): String {
-        return try {
-            getString("$name.$key")
-        } catch (_: MissingResourceException) {
-            "$name.$key"
-        }
+        return getStringOrKey1("$name.$key")
     }
 
     fun ResourceBundle.formatString(key: String, vararg args: Any): String {

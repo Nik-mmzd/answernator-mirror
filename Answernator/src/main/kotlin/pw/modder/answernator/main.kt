@@ -7,7 +7,7 @@ import pw.modder.answernator.cache.GuildOwnerCache.enableGuildOwnerCache
 import pw.modder.answernator.cache.RolesCache.enableRolesCache
 import pw.modder.answernator.utils.CommandList
 import pw.modder.answernator.utils.GlobalConfig
-import pw.modder.answernator.utils.loadCommandService
+import pw.modder.answernator.utils.extensions.loadCommandService
 
 @UnstableDefault
 suspend fun main() {

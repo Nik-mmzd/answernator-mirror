@@ -1,4 +1,4 @@
-package pw.modder.answernator.utils
+package pw.modder.answernator.utils.extensions
 
 import com.jessecorbett.diskord.api.model.Message
 import com.jessecorbett.diskord.api.model.Permission
@@ -13,29 +13,8 @@ import com.jessecorbett.diskord.util.sendMessage
 import com.jessecorbett.diskord.util.words
 import kotlinx.serialization.UnstableDefault
 import mu.KotlinLogging
+import pw.modder.answernator.utils.*
 import java.util.*
-import com.jessecorbett.diskord.dsl.message as dslmessage
-
-@UnstableDefault
-object BotGlobalLocale {
-    private val locales = GlobalConfig.get().langs.associateBy({ Locale(it) }, {
-        ResourceBundle.clearCache(javaClass.classLoader)
-        ResourceBundle.getBundle("locale.botGlobal", Locale(it), javaClass.classLoader, UTF8Control())
-    })
-
-    fun getString(locale: Locale, str: String): String {
-        logger.debug { "getting string \"$str\" for locale ${locale.toLanguageTag()}" }
-        return try {
-            locales[locale]?.getString("bot.$str") ?: "bot.$str"
-        } catch (_: MissingResourceException) {
-            "bot.$str"
-        }
-    }
-
-    fun formatString(locale: Locale, str: String, vararg arguments: Any?): String {
-        return String.format(getString(locale, str), args = *arguments)
-    }
-}
 
 private val logger = KotlinLogging.logger {}
 @UnstableDefault
@@ -46,9 +25,12 @@ fun Bot.loadCommandService() {
     messageCreated { message: Message ->
         if (message.content.isEmpty()) return@messageCreated
         logger.debug { "received message, message text: ${message.content}" }
-        if (!message.content.startsWith(config.prefix)) return@messageCreated
+        if (message.content.first() != config.prefix) return@messageCreated
 
         val locale = message.guildId?.run { GuildConfigs.get(this).locale } ?: config.locale
+        val texts = ResourceBundle.getBundle("locale.botGlobal", locale,
+            UTF8Control()
+        )
         val channelType =if (message.guildId == null) Command.ChannelTypes.DIRECT else Command.ChannelTypes.GUILD
         CommandList.commands.singleOrNull { command ->
             logger.debug { "probing command ${command.name}, searching for ${message.words.first()}" }
@@ -59,11 +41,15 @@ fun Bot.loadCommandService() {
                 val reply = try {
                     action(clientStore, message, locale)
                 } catch (_: NotImplementedError) {
-                    message.reply(BotGlobalLocale.formatString(locale, "notImplemented", "${config.prefix}$name"))
+                    message.reply(
+                        texts.formatString("bot.notImplemented", "${config.prefix}$name")
+                    )
                     return@run
                 } catch (e: Exception) {
                     logger.error(e) { "got error while running command" }
-                    message.reply(BotGlobalLocale.getString(locale, "error"))
+                    message.reply(
+                        texts.formatString("bot.error", "${config.prefix}$name")
+                    )
                     return@run
                 }
 
@@ -71,7 +57,9 @@ fun Bot.loadCommandService() {
                 return@run
             }
 
-            message.reply(BotGlobalLocale.getString(locale, "noPerms"))
+            message.reply(
+                texts.getStringOrKey("bot.noPerms")
+            )
         }
     }
 }

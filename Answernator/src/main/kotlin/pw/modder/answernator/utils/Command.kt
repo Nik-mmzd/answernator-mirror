@@ -10,7 +10,7 @@ import kotlinx.serialization.UnstableDefault
 import mu.KLogger
 import mu.KotlinLogging
 import java.util.*
-import pw.modder.answernator.cache.GuildMemberRolesCache
+import pw.modder.answernator.utils.extensions.computePermissions
 
 //   return Command:new("help string", beta) -- beta boolean is optional
 //    :langs("lang1", "lang2") -- optional
