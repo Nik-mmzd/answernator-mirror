@@ -36,19 +36,18 @@ interface Command {
 //    val timeout: Int get() = 0
     val channels: EnumSet<ChannelTypes> get() = EnumSet.of(ChannelTypes.DIRECT, ChannelTypes.GUILD)
 
-    @DiskordDsl
     suspend fun action(bot: Bot, message: Message, locale: Locale): CombinedMessageEmbed
 
     private fun check(message: Message): Boolean? {
         logger.debug { "checking command $name" }
         logger.debug { "checking command is owner only" }
-        if (userGroup == UserGroup.OWNER && message.authorId != GlobalConfig.get().author) return false
+        if (userGroup == UserGroup.OWNER && message.authorId != Globals.config.author) return false
         if (userGroup == UserGroup.OWNER || userGroup == UserGroup.ALL) {
             logger.debug { "early exit because no permission checks is needed" }
             return true
         }
 
-        if (message.authorId == GlobalConfig.get().author
+        if (message.authorId == Globals.config.author
             && userGroup == UserGroup.ADMIN
             && channels.contains(ChannelTypes.DIRECT)) return true
 

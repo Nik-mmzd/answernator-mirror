@@ -3,7 +3,10 @@ package pw.modder.answernator.utils.extensions
 import com.jessecorbett.diskord.api.model.Message
 import com.jessecorbett.diskord.api.model.Permission
 import com.jessecorbett.diskord.api.model.Permissions
+import com.jessecorbett.diskord.api.model.UserStatus
 import com.jessecorbett.diskord.api.rest.client.GuildClient
+import com.jessecorbett.diskord.api.websocket.model.ActivityType
+import com.jessecorbett.diskord.api.websocket.model.UserStatusActivity
 import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.DiskordDsl
 import pw.modder.answernator.cache.RolesCache.getRolesCached
@@ -20,14 +23,14 @@ private val logger = KotlinLogging.logger {}
 @UnstableDefault
 @DiskordDsl
 fun Bot.loadCommandService() {
-    val config = GlobalConfig.get()
+    val config = Globals.config
 
     messageCreated { message: Message ->
         if (message.content.isEmpty()) return@messageCreated
         logger.debug { "received message, message text: ${message.content}" }
         if (message.content.first() != config.prefix) return@messageCreated
 
-        val locale = message.guildId?.run { GuildConfigs.get(this).locale } ?: config.locale
+        val locale = message.guildId?.run { Globals.getGuildConfig(this).locale } ?: config.locale
         val texts = ResourceBundle.getBundle("locale.botGlobal", locale,
             UTF8Control()
         )
@@ -68,7 +71,7 @@ fun Bot.loadCommandService() {
 @DiskordDsl
 fun Bot.greetingsService() {
     userJoinedGuild {
-        val config = GuildConfigs.get(it.guildId)
+        val config = Globals.getGuildConfig(it.guildId)
         if (config.greetNewUsers && config.greetingsChannel.isNotEmpty()) {
             clientStore.channels[config.greetingsChannel].sendMessage(String.format(
                 config.greetingText,
@@ -76,6 +79,20 @@ fun Bot.greetingsService() {
                 clientStore.guilds[it.guildId].get().name
             ))
         }
+    }
+}
+
+@UnstableDefault
+@DiskordDsl
+fun Bot.defaultStatusService() {
+    started {
+        setStatus(
+            status = UserStatus.ONLINE,
+            activity = UserStatusActivity(
+                name = Globals.config.defaultStatus,
+                type = ActivityType.GAME
+            )
+        )
     }
 }
 

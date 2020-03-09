@@ -22,7 +22,7 @@ class Config: LocalizedCommand {
     override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
         val guildClient = message.guildId?.run { bot.clientStore.guilds[this] } ?: return textMessage(texts.getStringOrKey("noguild"))
         val guild = guildClient.get()
-        val config = GuildConfigs.get(guild.id)
+        val config = Globals.getGuildConfig(guild.id)
         var newConfig: GuildConfig? = null
 
         val answer = when(message.words.getOrNull(1)) {
@@ -32,7 +32,7 @@ class Config: LocalizedCommand {
                     description = texts.getStringOrKey("description")
 
                     field(texts.getStringOrKey("lang"), config.lang, false)
-                    field(texts.getStringOrKey("lang.available"), GlobalConfig.get().langs.joinToString(separator = ", ") { "`$it`" }, false)
+                    field(texts.getStringOrKey("lang.available"), Globals.config.langs.joinToString(separator = ", ") { "`$it`" }, false)
                     field(texts.getStringOrKey("greeter"), texts.getStringOrKey("greeter.${config.greetNewUsers}"), false)
                     field(texts.getStringOrKey("greeting"), String.format(config.greetingText, "%user%", "%guild%"), false)
                     field(texts.getStringOrKey("greeting.help"), texts.getStringOrKey("greeting.help.value"), false)
@@ -42,7 +42,7 @@ class Config: LocalizedCommand {
             "set" -> {
                 when(message.words.getOrNull(2)) {
                     "lang" -> {
-                        if (message.words[3] in GlobalConfig.get().langs) {
+                        if (message.words[3] in Globals.config.langs) {
                             newConfig = config.copy(lang = message.words[3])
                             textMessage(texts.formatString("locale.updated", message.words[3]))
                         } else textMessage(texts.formatString("locale.notfound", message.words[3]))
@@ -88,7 +88,7 @@ class Config: LocalizedCommand {
 
         }
         newConfig?.run {
-            GuildConfigs.replace(guild.id, this)
+            Globals.replaceGuildConfig(guild.id, this)
         }
         return answer
     }

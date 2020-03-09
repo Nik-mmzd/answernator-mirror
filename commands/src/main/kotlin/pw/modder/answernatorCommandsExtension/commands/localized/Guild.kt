@@ -25,13 +25,15 @@ class Guild: LocalizedGuildOnlyCommand {
             field(texts.getStringOrKey("name"), guild.name, true)
             field(texts.getStringOrKey("owner"), "<@${guild.ownerId}>", true)
             field(texts.getStringOrKey("emojis"), guild.emojis.size.toString(), true)
-            field(texts.getStringOrKey("roles"),
-                guild.roles.filterNot { it.name == "@everyone" }
-                    .takeIf { it.size < 49 }
-                    ?.joinToString("\n") { it.mention }
-                    ?.ifEmpty { texts.getStringOrKey("roles.empty") }
-                    ?: (guild.roles.size - 1).toString(),
-                true)
+            if (guild.roles.size < 50) {
+                field(
+                    texts.getStringOrKey("roles"),
+                    guild.roles.filterNot { it.name == "@everyone" }.joinToString(" ") { it.mention },
+                    false
+                )
+            } else {
+                field(texts.getStringOrKey("roles"), (guild.roles.size - 1).toString(), true)
+            }
             field(texts.getStringOrKey("region"), guild.region, true)
             field(texts.getStringOrKey("features"), guild.features.joinToString(", ").ifEmpty { texts.getStringOrKey("features.empty") }, true)
             field(texts.getStringOrKey("verificationLevel"), guild.verificationLevel.name, true)

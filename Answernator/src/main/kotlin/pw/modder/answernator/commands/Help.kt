@@ -4,12 +4,12 @@ import com.jessecorbett.diskord.api.model.Message
 import com.jessecorbett.diskord.api.model.Permissions
 import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
-import com.jessecorbett.diskord.util.ClientStore
 import com.jessecorbett.diskord.util.authorId
 import com.jessecorbett.diskord.util.words
 import kotlinx.serialization.UnstableDefault
 import pw.modder.answernator.utils.*
 import pw.modder.answernator.utils.extensions.computePermissions
+import pw.modder.answernator.utils.extensions.removeGraves
 import java.util.*
 import com.jessecorbett.diskord.dsl.message as dslmessage
 
@@ -36,7 +36,7 @@ class Help: LocalizedCommand {
                 description = texts.formatString("not_found", message.words[1].removeGraves())
             }
 
-        if (message.authorId != GlobalConfig.get().author && !cmd.check(message, guildClient)) return dslmessage {
+        if (message.authorId != Globals.config.author && !cmd.check(message, guildClient)) return dslmessage {
             title = texts.formatString("title", message.words[1])
             description = texts.getStringOrKey("no_permissions")
         }

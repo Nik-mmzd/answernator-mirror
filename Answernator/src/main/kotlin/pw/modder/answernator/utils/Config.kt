@@ -10,12 +10,13 @@ import java.io.File
 import java.util.*
 
 @Serializable
-data class Config(
+open class Config(
     @Required val token: String = "token-here",
     @Required val lang: String = "ru",
     @Required val prefix: Char = '!',
     @Required val author: String = "135017849604276224",
-    @Required val langs: List<String> = listOf("ru", "en")
+    @Required val langs: List<String> = listOf("ru", "en"),
+    @Required val defaultStatus: String = "\$help"
 ) {
     @Transient
     val locale = Locale(lang)
@@ -30,22 +31,5 @@ data class Config(
         fun loadFrom(file: File): Config {
             return Json.parse(serializer(), file.readText(Charsets.UTF_8))
         }
-    }
-}
-
-@UnstableDefault
-object GlobalConfig {
-    private val config: Config
-    init {
-        val configFile = File(".").resolve("config.json")
-        if (!configFile.exists()) {
-            configFile.writeText(Json(JsonConfiguration(prettyPrint = true)).stringify(Config.serializer(), Config.DEFAULT))
-            throw Exception("Missing config")
-        }
-        config = Config.loadFrom(configFile)
-    }
-
-    fun get(): Config {
-        return config
     }
 }
