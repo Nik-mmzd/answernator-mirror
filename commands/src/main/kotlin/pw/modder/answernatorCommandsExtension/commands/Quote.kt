@@ -19,12 +19,12 @@ class Quote: Command {
 
     override suspend fun check(message: Message, guildClient: GuildClient?): Boolean {
         val locale = message.guildId?.run { Globals.getGuildConfig(this).locale } ?: Globals.config.locale
-        return locale == Locale("ru") || super.check(message, guildClient)
+        return locale == Locale("ru") && super.check(message, guildClient)
     }
 
     override fun check(message: Message, permissions: Permissions): Boolean {
         val locale = message.guildId?.run { Globals.getGuildConfig(this).locale } ?: Globals.config.locale
-        return locale == Locale("ru") || super.check(message, permissions)
+        return locale == Locale("ru") && super.check(message, permissions)
     }
 
     override suspend fun action(bot: Bot, message: Message, locale: Locale): CombinedMessageEmbed {
