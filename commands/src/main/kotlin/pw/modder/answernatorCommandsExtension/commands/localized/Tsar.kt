@@ -4,6 +4,7 @@ import com.jessecorbett.diskord.api.model.Message
 import com.jessecorbett.diskord.api.model.Permissions
 import com.jessecorbett.diskord.api.rest.EmbedImage
 import com.jessecorbett.diskord.api.rest.client.GuildClient
+import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.dsl.field
 import com.jessecorbett.diskord.dsl.footer
@@ -33,7 +34,7 @@ class Tsar: LocalizedCommand {
         return locale == Locale("ru") || super.check(message, permissions)
     }
 
-    override suspend fun action(clientStore: ClientStore, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
+    override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
         if (message.words.getOrNull(1)?.toLowerCase() != "велит")
             return textMessage(texts.getStringOrKey("invalid"))
 

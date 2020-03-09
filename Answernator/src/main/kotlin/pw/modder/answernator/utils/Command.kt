@@ -2,6 +2,7 @@ package pw.modder.answernator.utils
 
 import com.jessecorbett.diskord.api.model.*
 import com.jessecorbett.diskord.api.rest.client.GuildClient
+import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.dsl.DiskordDsl
 import com.jessecorbett.diskord.util.ClientStore
@@ -28,7 +29,6 @@ import pw.modder.answernator.utils.extensions.computePermissions
 //    ) -- yep :code must be LAST
 private val logger: KLogger = KotlinLogging.logger {}
 @UnstableDefault
-@DiskordDsl
 interface Command {
     val name: String
     val userGroup: UserGroup get() = UserGroup.ALL
@@ -36,7 +36,8 @@ interface Command {
 //    val timeout: Int get() = 0
     val channels: EnumSet<ChannelTypes> get() = EnumSet.of(ChannelTypes.DIRECT, ChannelTypes.GUILD)
 
-    suspend fun action(clientStore: ClientStore, message: Message, locale: Locale): CombinedMessageEmbed
+    @DiskordDsl
+    suspend fun action(bot: Bot, message: Message, locale: Locale): CombinedMessageEmbed
 
     private fun check(message: Message): Boolean? {
         logger.debug { "checking command $name" }

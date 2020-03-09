@@ -39,7 +39,7 @@ fun Bot.loadCommandService() {
             logger.debug { "found command $name, running" }
             if (check(message, message.guildId?.run { clientStore.guilds[this] })) {
                 val reply = try {
-                    action(clientStore, message, locale)
+                    action(this@loadCommandService, message, locale)
                 } catch (_: NotImplementedError) {
                     message.reply(
                         texts.formatString("bot.notImplemented", "${config.prefix}$name")

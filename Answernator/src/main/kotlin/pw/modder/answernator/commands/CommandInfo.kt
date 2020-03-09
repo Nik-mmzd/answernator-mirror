@@ -1,6 +1,7 @@
 package pw.modder.answernator.commands
 
 import com.jessecorbett.diskord.api.model.Message
+import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.dsl.field
 import com.jessecorbett.diskord.util.ClientStore
@@ -31,7 +32,7 @@ class CommandInfo: Command {
     override fun getHelp(locale: Locale): String? {
         return "Command info. Usage: `command [command]`"
     }
-    override suspend fun action(clientStore: ClientStore, message: Message, locale: Locale): CombinedMessageEmbed {
+    override suspend fun action(bot: Bot, message: Message, locale: Locale): CombinedMessageEmbed {
         if (message.words.size == 1) return textMessage("No command specified")
         val cmd = CommandList.commands.singleOrNull { it.name == message.words[1] }
             ?: return textMessage("Command `${message.words[1]}` not found")

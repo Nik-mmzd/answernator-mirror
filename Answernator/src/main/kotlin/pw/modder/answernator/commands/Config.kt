@@ -1,6 +1,7 @@
 package pw.modder.answernator.commands
 
 import com.jessecorbett.diskord.api.model.Message
+import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.dsl.field
 import com.jessecorbett.diskord.util.ClientStore
@@ -18,8 +19,8 @@ class Config: LocalizedCommand {
     override val channels = EnumSet.of(Command.ChannelTypes.GUILD)
     override val userGroup = Command.UserGroup.ADMIN
 
-    override suspend fun action(clientStore: ClientStore, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
-        val guildClient = message.guildId?.run { clientStore.guilds[this] } ?: return textMessage(texts.getStringOrKey("noguild"))
+    override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
+        val guildClient = message.guildId?.run { bot.clientStore.guilds[this] } ?: return textMessage(texts.getStringOrKey("noguild"))
         val guild = guildClient.get()
         val config = GuildConfigs.get(guild.id)
         var newConfig: GuildConfig? = null
@@ -35,7 +36,7 @@ class Config: LocalizedCommand {
                     field(texts.getStringOrKey("greeter"), texts.getStringOrKey("greeter.${config.greetNewUsers}"), false)
                     field(texts.getStringOrKey("greeting"), String.format(config.greetingText, "%user%", "%guild%"), false)
                     field(texts.getStringOrKey("greeting.help"), texts.getStringOrKey("greeting.help.value"), false)
-                    field(texts.getStringOrKey("greeting.channel"), getGreetingsChannelName(clientStore, config, texts), false)
+                    field(texts.getStringOrKey("greeting.channel"), getGreetingsChannelName(bot.clientStore, config, texts), false)
                 }
             }
             "set" -> {
@@ -68,7 +69,7 @@ class Config: LocalizedCommand {
                             }
                             "channel" -> {
                                 val channel = try {
-                                    clientStore.channels[message.words[4].drop(2).dropLast(1)]
+                                    bot.clientStore.channels[message.words[4].drop(2).dropLast(1)]
                                 } catch (_: Exception) {
                                     return textMessage(texts.getStringOrKey("help"))
                                 }

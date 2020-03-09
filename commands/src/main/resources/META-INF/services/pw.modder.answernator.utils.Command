@@ -3,3 +3,4 @@ pw.modder.answernatorCommandsExtension.commands.localized.Dice
 pw.modder.answernatorCommandsExtension.commands.localized.Guild
 pw.modder.answernatorCommandsExtension.commands.localized.RandomGame
 pw.modder.answernatorCommandsExtension.commands.localized.Tsar
+pw.modder.answernatorCommandsExtension.commands.localized.Status

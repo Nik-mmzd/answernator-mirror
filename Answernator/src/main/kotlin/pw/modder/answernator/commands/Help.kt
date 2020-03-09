@@ -2,6 +2,7 @@ package pw.modder.answernator.commands
 
 import com.jessecorbett.diskord.api.model.Message
 import com.jessecorbett.diskord.api.model.Permissions
+import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.util.ClientStore
 import com.jessecorbett.diskord.util.authorId
@@ -16,8 +17,8 @@ import com.jessecorbett.diskord.dsl.message as dslmessage
 class Help: LocalizedCommand {
     override val name: String = "help"
 
-    override suspend fun action(clientStore: ClientStore, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
-        val guildClient = message.guildId?.run { clientStore.guilds[this] }
+    override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
+        val guildClient = message.guildId?.run { bot.clientStore.guilds[this] }
         if (message.words.size == 1) {
             val permissions = when (guildClient) {
                 null -> Permissions.NONE

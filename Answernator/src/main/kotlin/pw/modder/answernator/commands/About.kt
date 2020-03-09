@@ -1,6 +1,7 @@
 package pw.modder.answernator.commands
 
 import com.jessecorbett.diskord.api.model.Message
+import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.dsl.field
 import com.jessecorbett.diskord.util.ClientStore
@@ -19,7 +20,7 @@ class About: Command {
         return "Shows some technical information about the bot. Usage: `$name`. Not localized."
     }
 
-    override suspend fun action(clientStore: ClientStore, message: Message, locale: Locale): CombinedMessageEmbed {
+    override suspend fun action(bot: Bot, message: Message, locale: Locale): CombinedMessageEmbed {
         return dslmessage {
             title = "Answernator"
             description = "Third iteration of Answernator. Now in Kotlin!"

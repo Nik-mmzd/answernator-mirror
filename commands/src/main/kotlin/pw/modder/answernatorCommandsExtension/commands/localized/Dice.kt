@@ -2,6 +2,7 @@ package pw.modder.answernatorCommandsExtension.commands.localized
 
 import com.jessecorbett.diskord.api.model.Message
 import com.jessecorbett.diskord.api.rest.EmbedImage
+import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.dsl.field
 import com.jessecorbett.diskord.util.ClientStore
@@ -30,7 +31,7 @@ class Dice: LocalizedCommand {
         triesLimit = props.getProperty("dice.triesLimit").toInt()
     }
 
-    override suspend fun action(clientStore: ClientStore, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
+    override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
         val sum = message.words.getOrNull(4) == "sum"
         val dice = message.words.getOrNull(1)?.toInt() ?: 6
         val throws = message.words.getOrNull(2)?.toInt() ?: 1
