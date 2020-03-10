@@ -21,6 +21,9 @@ dependencies {
     implementation("com.jessecorbett:diskord-jvm:1.5.3")
     implementation("commons-io:commons-io:2.6")
     implementation("io.github.microutils:kotlin-logging:1.7.8")
+    implementation("io.ktor:ktor-client-core:1.2.6")
+    implementation("io.ktor:ktor-client-core-jvm:1.2.6")
+    implementation("io.ktor:ktor-client-cio:1.2.6")
 }
 
 tasks {
