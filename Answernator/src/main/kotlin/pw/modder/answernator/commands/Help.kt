@@ -22,7 +22,7 @@ class Help: LocalizedCommand {
         if (message.words.size == 1) {
             val permissions = when (guildClient) {
                 null -> Permissions.NONE
-                else -> guildClient.computePermissions(message.authorId)
+                else -> message.partialMember?.computePermissions(guildClient, message.authorId) ?: Permissions.NONE
             }
             return dslmessage {
                 title = texts.getStringOrKey("title_cmdlist")

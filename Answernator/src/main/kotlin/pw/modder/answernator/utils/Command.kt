@@ -4,8 +4,6 @@ import com.jessecorbett.diskord.api.model.*
 import com.jessecorbett.diskord.api.rest.client.GuildClient
 import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
-import com.jessecorbett.diskord.dsl.DiskordDsl
-import com.jessecorbett.diskord.util.ClientStore
 import com.jessecorbett.diskord.util.authorId
 import kotlinx.serialization.UnstableDefault
 import mu.KLogger
@@ -68,7 +66,7 @@ interface Command {
         logger.debug { "getting permissions" }
         val permissions = when (guildClient) {
             null -> Permissions.NONE
-            else -> guildClient.computePermissions(message.authorId)
+            else -> message.partialMember?.computePermissions(guildClient, message.authorId) ?: Permissions.NONE
         }
 
         return check(permissions)

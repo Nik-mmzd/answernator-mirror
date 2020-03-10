@@ -2,9 +2,7 @@ package pw.modder.answernator
 
 import com.jessecorbett.diskord.dsl.bot
 import kotlinx.serialization.UnstableDefault
-import pw.modder.answernator.cache.GuildMemberRolesCache.enableGuildMemberRolesCache
-import pw.modder.answernator.cache.GuildOwnerCache.enableGuildOwnerCache
-import pw.modder.answernator.cache.RolesCache.enableRolesCache
+import pw.modder.answernator.cache.GuildCache.enableGuildCache
 import pw.modder.answernator.utils.CommandList
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.extensions.defaultStatusService
@@ -16,9 +14,7 @@ suspend fun main() {
     CommandList.load()
 
     bot(Globals.config.token) {
-        enableGuildMemberRolesCache()
-        enableGuildOwnerCache()
-        enableRolesCache()
+        enableGuildCache()
         loadCommandService()
         greetingsService()
         defaultStatusService()

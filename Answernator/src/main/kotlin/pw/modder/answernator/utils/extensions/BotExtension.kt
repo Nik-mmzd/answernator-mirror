@@ -1,17 +1,10 @@
 package pw.modder.answernator.utils.extensions
 
-import com.jessecorbett.diskord.api.model.Message
-import com.jessecorbett.diskord.api.model.Permission
-import com.jessecorbett.diskord.api.model.Permissions
-import com.jessecorbett.diskord.api.model.UserStatus
-import com.jessecorbett.diskord.api.rest.client.GuildClient
+import com.jessecorbett.diskord.api.model.*
 import com.jessecorbett.diskord.api.websocket.model.ActivityType
 import com.jessecorbett.diskord.api.websocket.model.UserStatusActivity
 import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.DiskordDsl
-import pw.modder.answernator.cache.RolesCache.getRolesCached
-import pw.modder.answernator.cache.GuildMemberRolesCache.getMemberRolesCached
-import pw.modder.answernator.cache.GuildOwnerCache.getOwnerCached
 import com.jessecorbett.diskord.util.sendMessage
 import com.jessecorbett.diskord.util.words
 import kotlinx.serialization.UnstableDefault
@@ -94,20 +87,4 @@ fun Bot.defaultStatusService() {
             )
         )
     }
-}
-
-suspend fun GuildClient.computePermissions(memberId: String): Permissions {
-    if (getOwnerCached() == memberId) return Permissions.ALL
-
-
-    var permissions = Permissions.NONE
-    val memberRoles = getMemberRolesCached(memberId)
-    val roles = getRolesCached().filter { it.id in memberRoles }
-
-    roles.forEach { role ->
-        if (role.permissions.contains(Permission.ADMINISTRATOR)) return Permissions.ALL
-        permissions += permissions + role.permissions
-    }
-
-    return permissions
 }
