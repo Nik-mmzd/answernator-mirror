@@ -44,13 +44,9 @@ fun Bot.loadCommandService() {
                 val reply = try {
                     action(this@loadCommandService, message, locale)
                 } catch (e: NotImplementedError) {
-                    val text = if (e.message == null)
-                        texts.formatString("bot.notImplemented", "${config.prefix}$name")
-                    else
-                        texts.formatString("bot.notImplemented.message", "${config.prefix}$name", message)
-                    message.reply(
-                        text
-                    )
+                    val text = e.message?.run { texts.formatString("bot.notImplemented.message", "${config.prefix}$name", this) }
+                        ?: texts.formatString("bot.notImplemented", "${config.prefix}$name")
+                    message.reply(text)
                     return@run
                 } catch (e: Exception) {
                     logger.error(e) { "got error while running command" }
