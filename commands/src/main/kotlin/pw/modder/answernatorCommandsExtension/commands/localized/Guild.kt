@@ -34,10 +34,10 @@ class Guild: LocalizedGuildOnlyCommand {
             } else {
                 field(texts.getStringOrKey("roles"), (guild.roles.size - 1).toString(), true)
             }
-            field(texts.getStringOrKey("region"), guild.region, true)
+            field(texts.getStringOrKey("region"), guild.region.capitalize(), true)
             field(texts.getStringOrKey("features"),
                 guild.features.joinToString(", ") {
-                    texts.getStringOrKey("guild.features.${it}")
+                    texts.getStringOrKey("features.${it}")
                 }.ifEmpty { texts.getStringOrKey("features.empty") },
                 true)
             field(texts.getStringOrKey("verificationLevel"), texts.getStringOrKey("verification.level.${guild.verificationLevel.name}"), true)
@@ -51,7 +51,7 @@ class Guild: LocalizedGuildOnlyCommand {
                 field(texts.getStringOrKey("afkTimeout"), texts.formatString("afkTimeout.value", this), true)
             }
 
-            field(texts.getStringOrKey("notifications"), texts.getStringOrKey("notifications.${guild.defaultMessageNotificationLevel.name}"), true)
+            field(texts.getStringOrKey("notifications"), texts.getStringOrKey("notifications.level.${guild.defaultMessageNotificationLevel.name}"), true)
             guild.widgetEnabled?.run {
                 field(texts.getStringOrKey("widget"), texts.getStringOrKey("widget.$this"), true)
                 guild.widgetChannelId?.run {
