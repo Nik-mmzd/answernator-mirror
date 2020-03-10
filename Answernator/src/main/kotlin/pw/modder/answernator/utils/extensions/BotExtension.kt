@@ -43,9 +43,13 @@ fun Bot.loadCommandService() {
             if (check(message, message.guildId?.run { clientStore.guilds[this] })) {
                 val reply = try {
                     action(this@loadCommandService, message, locale)
-                } catch (_: NotImplementedError) {
-                    message.reply(
+                } catch (e: NotImplementedError) {
+                    val text = if (e.message == null)
                         texts.formatString("bot.notImplemented", "${config.prefix}$name")
+                    else
+                        texts.formatString("bot.notImplemented.message", "${config.prefix}$name", message)
+                    message.reply(
+                        text
                     )
                     return@run
                 } catch (e: Exception) {
