@@ -13,5 +13,5 @@ interface ModuleInfoProvider {
 class ModuleInfo: ModuleInfoProvider {
     override val name = "Base"
     @UnstableDefault
-    override val version = Globals.getDependencyVersion("pw.modder", "answernator")
+    override val version = Globals.getDependencyVersion("pw.modder", "Answernator")
 }
