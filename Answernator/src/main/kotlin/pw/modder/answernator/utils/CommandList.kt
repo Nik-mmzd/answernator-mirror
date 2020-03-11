@@ -1,13 +1,16 @@
 package pw.modder.answernator.utils
 
 import kotlinx.serialization.UnstableDefault
+import mu.KotlinLogging
 import java.io.File
 import java.net.URLClassLoader
 import java.util.*
 
+private val logger = KotlinLogging.logger {  }
 @UnstableDefault
 object CommandList {
     var commands: List<Command> = listOf()
+    var modules: List<ModuleInfoProvider> = listOf()
 
     fun load() {
         val classLoader = URLClassLoader(
@@ -17,6 +20,7 @@ object CommandList {
         )
 
         commands = ServiceLoader.load(Command::class.java, classLoader).toList()
-        println("Loaded ${commands.size} commands")
+        modules = ServiceLoader.load(ModuleInfoProvider::class.java, classLoader).toList()
+        logger.info { "Loaded ${commands.size} commands, ${modules.size} modules" }
     }
 }
