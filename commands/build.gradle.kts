@@ -8,6 +8,7 @@ plugins {
 
 val diskordVersion: String by project
 val ktorVersion: String by project
+val exposedVersion: String by project
 
 
 val gitVersion: groovy.lang.Closure<String> by extra
@@ -17,6 +18,7 @@ version = gitVersion(mapOf ("prefix" to "cmd@"))
 
 repositories {
     mavenCentral()
+    jcenter()
 }
 
 dependencies {
@@ -25,9 +27,13 @@ dependencies {
     implementation("com.jessecorbett:diskord-jvm:$diskordVersion")
     implementation("commons-io:commons-io:2.6")
     implementation("io.github.microutils:kotlin-logging:1.7.8")
+    implementation("com.google.guava:guava:28.2-jre")
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-core-jvm:$ktorVersion")
     implementation("io.ktor:ktor-client-cio:$ktorVersion")
+    implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
 }
 
 tasks {
