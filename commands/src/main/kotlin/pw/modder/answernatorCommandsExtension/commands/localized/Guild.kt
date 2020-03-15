@@ -1,5 +1,6 @@
 package pw.modder.answernatorCommandsExtension.commands.localized
 
+import com.jessecorbett.diskord.api.exception.DiscordNotFoundException
 import com.jessecorbett.diskord.api.model.Message
 import com.jessecorbett.diskord.api.rest.EmbedField
 import com.jessecorbett.diskord.api.rest.EmbedImage
@@ -7,6 +8,7 @@ import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.dsl.field
 import com.jessecorbett.diskord.util.mention
+import com.jessecorbett.diskord.util.words
 import pw.modder.answernator.cache.GuildCache.getCached
 import kotlinx.serialization.UnstableDefault
 import pw.modder.answernatorCommandsExtension.commandTypes.LocalizedGuildOnlyCommand
@@ -19,7 +21,19 @@ class Guild: LocalizedGuildOnlyCommand {
     override val name = "guild"
     override val userGroup = Command.UserGroup.ADMIN
     override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
-        val guild = bot.clientStore.guilds[message.guildId ?: return textMessage(texts.getStringOrKey("error"))].getCached()
+        if (message.words.getOrNull(1).equals("list", true)) {
+            return textMessage(bot.clientStore.discord.getGuilds()
+                .joinToString("\n", prefix = texts.getStringOrKey("list.available")) {
+                    "${it.name}: `${it.id}`"
+                }
+            )
+        }
+
+        val guild =  try {
+            bot.clientStore.guilds[message.words.getOrNull(1) ?: message.guildId ?: return texts.errorMessage()].getCached()
+        } catch (e: DiscordNotFoundException) {
+            return texts.errorMessage()
+        }
 
         return dslmessage {
             field(texts.getStringOrKey("name"), guild.name, true)
