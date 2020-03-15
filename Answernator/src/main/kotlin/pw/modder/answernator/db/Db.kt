@@ -20,7 +20,7 @@ object Db {
         Database.connect("jdbc:h2:./$dbfile", driver = "org.h2.Driver", user = "root", password = "")
 
         transaction {
-            SchemaUtils.create (GuildConfigs, LogConfigs)
+            SchemaUtils.create (GuildConfigs, LogConfigs, GuildMutes)
         }
     }
 
