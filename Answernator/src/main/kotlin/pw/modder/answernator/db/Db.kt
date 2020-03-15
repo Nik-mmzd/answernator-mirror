@@ -71,23 +71,29 @@ object Db {
     }
 
     private fun isMuted(guildId: String, memberId: String): Boolean {
-        return GuildMutes.select {
-            GuildMutes.memberId eq memberId
-            GuildMutes.guildId eq guildId
+        return transaction {
+            GuildMutes.select {
+                GuildMutes.memberId eq memberId
+                GuildMutes.guildId eq guildId
+            }
         }.count() > 0
     }
 
     private fun mute(guild: String, member: String) {
-        GuildMutes.insert {
-            it[guildId] = guild
-            it[memberId] = member
+        transaction {
+            GuildMutes.insert {
+                it[guildId] = guild
+                it[memberId] = member
+            }
         }
     }
 
     private fun unmute(guild: String, member: String) {
-        GuildMutes.deleteWhere {
-            GuildMutes.guildId eq guild
-            GuildMutes.memberId eq member
+        transaction {
+            GuildMutes.deleteWhere {
+                GuildMutes.guildId eq guild
+                GuildMutes.memberId eq member
+            }
         }
     }
 
