@@ -29,8 +29,14 @@ class Clear: LocalizedCommand {
         if (limit > 100) return texts.errorMessage()
         val mentionedUserIds = message.usersMentioned.map { it.id }
 
+        var lastMessageId = message.id
         do {
-            messages.addAll(channel.getMessages().filter { mentionedUserIds.isEmpty() || it.authorId in mentionedUserIds }.map { it.id })
+            messages.addAll(
+                channel.getMessagesBefore(limit = limit, messageId = lastMessageId)
+                    .also { lastMessageId = it.last().id }
+                    .filter { mentionedUserIds.isEmpty() || it.authorId in mentionedUserIds }
+                    .map { it.id }
+            )
         } while (messages.size < limit)
 
         channel.bulkDeleteMessages(BulkMessageDelete(
