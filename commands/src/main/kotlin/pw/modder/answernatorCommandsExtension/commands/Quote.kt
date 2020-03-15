@@ -14,6 +14,7 @@ import io.ktor.client.request.parameter
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
+import pw.modder.answernator.db.Db
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.extensions.setTimestamp
@@ -33,12 +34,12 @@ class Quote: Command {
     }
 
     override suspend fun check(message: Message, guildClient: GuildClient?): Boolean {
-        val locale = message.guildId?.run { Globals.getGuildConfig(this).locale } ?: Globals.config.locale
+        val locale = message.guildId?.run { Locale(Db.guilds.get(this).lang) } ?: Globals.config.locale
         return locale == Locale("ru") && super.check(message, guildClient)
     }
 
     override fun check(message: Message, permissions: Permissions): Boolean {
-        val locale = message.guildId?.run { Globals.getGuildConfig(this).locale } ?: Globals.config.locale
+        val locale = message.guildId?.run { Locale(Db.guilds.get(this).lang) } ?: Globals.config.locale
         return locale == Locale("ru") && super.check(message, permissions)
     }
 
