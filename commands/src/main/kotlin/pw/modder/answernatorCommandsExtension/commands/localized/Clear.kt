@@ -18,6 +18,7 @@ class Clear: LocalizedCommand {
 
     override val userGroup = Command.UserGroup.PERMISSION
     override val permission = Permission.MANAGE_MESSAGES
+    override val channels = EnumSet.of(Command.ChannelTypes.GUILD)
 
     override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
         val channel = bot.clientStore.channels[message.channelId]
