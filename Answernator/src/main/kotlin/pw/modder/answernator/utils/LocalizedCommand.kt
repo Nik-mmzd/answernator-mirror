@@ -14,13 +14,11 @@ interface LocalizedCommand: Command {
         return ResourceBundle.getBundle("locale.$name", locale, javaClass.classLoader, UTF8Control())
     }
 
-    fun ResourceBundle.getStringOrKey(key: String): String {
-        return getStringOrKey1("$name.$key")
-    }
-
-    fun ResourceBundle.formatString(key: String, vararg args: Any): String {
-        return String.format(getStringOrKey(key), args = *args)
-    }
+    fun ResourceBundle.getStringOrKey(key: String): String = getStringOrKey1("$name.$key")
+    fun ResourceBundle.formatString(key: String, vararg args: Any): String = String.format(getStringOrKey(key), args = *args)
+    fun ResourceBundle.message(key: String): CombinedMessageEmbed = textMessage(getStringOrKey(key))
+    fun ResourceBundle.message(key: String, vararg args: Any): CombinedMessageEmbed = textMessage(formatString(key, *args))
+    fun ResourceBundle.errorMessage(): CombinedMessageEmbed = message("error")
 
     override fun getHelp(locale: Locale): String? {
         return getTexts(locale).getStringOrKey("help")

@@ -19,9 +19,6 @@ open class Config(
     @Transient
     val locale = Locale(lang)
 
-    @Transient
-    val dataPath = File("data").also { if (!it.exists()) it.mkdirs() }
-
     companion object {
         val DEFAULT = Config()
 

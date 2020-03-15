@@ -1,9 +1,13 @@
 plugins {
     kotlin("jvm")
-    id("kotlinx-serialization")
+    kotlin("plugin.serialization")
     id("com.palantir.git-version")
     id("com.github.johnrengelman.shadow")
 }
+
+val diskordVersion: String by project
+val exposedVersion: String by project
+
 
 val gitVersion: groovy.lang.Closure<*> by extra
 
@@ -17,11 +21,15 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    implementation("com.jessecorbett:diskord-jvm:1.5.3")
+    implementation("com.jessecorbett:diskord-jvm:$diskordVersion")
     implementation("org.slf4j:slf4j-simple:1.7.26")
     implementation("commons-io:commons-io:2.6")
     implementation("io.github.microutils:kotlin-logging:1.7.8")
     implementation("com.google.guava:guava:28.2-jre")
+    implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
+    implementation("com.h2database:h2:1.4.200")
 }
 
 val jar by tasks.getting(Jar::class) {

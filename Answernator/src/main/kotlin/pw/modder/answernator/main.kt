@@ -5,9 +5,7 @@ import kotlinx.serialization.UnstableDefault
 import pw.modder.answernator.cache.GuildCache.enableGuildCache
 import pw.modder.answernator.utils.CommandList
 import pw.modder.answernator.utils.Globals
-import pw.modder.answernator.utils.extensions.defaultStatusService
-import pw.modder.answernator.utils.extensions.greetingsService
-import pw.modder.answernator.utils.extensions.loadCommandService
+import pw.modder.answernator.utils.extensions.*
 
 @UnstableDefault
 suspend fun main() {
@@ -18,5 +16,7 @@ suspend fun main() {
         loadCommandService()
         greetingsService()
         defaultStatusService()
+        muteChecker()
+        defaultRoleService()
     }
 }

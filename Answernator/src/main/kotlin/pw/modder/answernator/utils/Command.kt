@@ -4,6 +4,7 @@ import com.jessecorbett.diskord.api.model.*
 import com.jessecorbett.diskord.api.rest.client.GuildClient
 import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
+import com.jessecorbett.diskord.dsl.message as dslmessage
 import com.jessecorbett.diskord.util.authorId
 import kotlinx.serialization.UnstableDefault
 import mu.KLogger
@@ -78,9 +79,7 @@ interface Command {
         return check(permissions)
     }
 
-    fun textMessage(message: String): CombinedMessageEmbed {
-        return com.jessecorbett.diskord.dsl.message { text = message }
-    }
+    fun textMessage(message: String): CombinedMessageEmbed = dslmessage { text = message }
 
     fun getHelp(locale: Locale): String? {
         return null

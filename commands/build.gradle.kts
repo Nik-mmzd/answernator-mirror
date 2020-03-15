@@ -2,9 +2,13 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm")
-    id("kotlinx-serialization")
+    kotlin("plugin.serialization")
     id("com.palantir.git-version")
 }
+
+val diskordVersion: String by project
+val ktorVersion: String by project
+
 
 val gitVersion: groovy.lang.Closure<String> by extra
 
@@ -18,12 +22,12 @@ repositories {
 dependencies {
     implementation(project(":Answernator"))
     implementation(kotlin("stdlib-jdk8"))
-    implementation("com.jessecorbett:diskord-jvm:1.5.3")
+    implementation("com.jessecorbett:diskord-jvm:$diskordVersion")
     implementation("commons-io:commons-io:2.6")
     implementation("io.github.microutils:kotlin-logging:1.7.8")
-    implementation("io.ktor:ktor-client-core:1.2.6")
-    implementation("io.ktor:ktor-client-core-jvm:1.2.6")
-    implementation("io.ktor:ktor-client-cio:1.2.6")
+    implementation("io.ktor:ktor-client-core:$ktorVersion")
+    implementation("io.ktor:ktor-client-core-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-client-cio:$ktorVersion")
 }
 
 tasks {
