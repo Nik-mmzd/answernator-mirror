@@ -73,8 +73,7 @@ object Db {
     private fun isMuted(guildId: String, memberId: String): Boolean {
         return transaction {
             GuildMutes.select {
-                GuildMutes.memberId eq memberId
-                GuildMutes.guildId eq guildId
+                GuildMutes.memberId eq memberId and(GuildMutes.guildId eq guildId)
             }.count()
         } > 0
     }
