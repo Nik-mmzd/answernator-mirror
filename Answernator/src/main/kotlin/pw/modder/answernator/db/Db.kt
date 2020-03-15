@@ -75,8 +75,8 @@ object Db {
             GuildMutes.select {
                 GuildMutes.memberId eq memberId
                 GuildMutes.guildId eq guildId
-            }
-        }.count() > 0
+            }.count()
+        } > 0
     }
 
     private fun mute(guild: String, member: String) {
