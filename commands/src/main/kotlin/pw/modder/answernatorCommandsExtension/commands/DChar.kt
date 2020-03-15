@@ -30,6 +30,7 @@ class DChar: Command {
     override suspend fun action(bot: Bot, message: Message, locale: Locale): CombinedMessageEmbed {
         return textMessage(message.words.drop(1).joinToString(" ")
             .replace("х", "х̆").replace("x", "х̆")
-            .replace("X", "X̆").replace("Х", "X̆"))
+            .replace("X", "X̆").replace("Х", "X̆")
+            .ifEmpty { "х̆уй!" })
     }
 }
