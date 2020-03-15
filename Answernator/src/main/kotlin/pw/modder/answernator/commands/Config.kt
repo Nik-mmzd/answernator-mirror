@@ -39,8 +39,8 @@ class Config: LocalizedCommand {
                     field(texts.getStringOrKey("greeting"), String.format(config.greetingText, "%user%", "%guild%"), false)
                     field(texts.getStringOrKey("greeting.help"), texts.getStringOrKey("greeting.help.value"), false)
                     field(texts.getStringOrKey("greeting.channel"), getGreetingsChannelName(bot.clientStore, config, texts), false)
-                    field(texts.getStringOrKey("muterole"), "<@&${config.muteRole}>", true)
-                    field(texts.getStringOrKey("defrole"), "<@&${config.defaultRole}>", true)
+                    field(texts.getStringOrKey("muterole"), config.muteRole.toRoleMention().ifEmpty { texts.getStringOrKey("role.notset") }, true)
+                    field(texts.getStringOrKey("defrole"), config.defaultRole.toRoleMention().ifEmpty { texts.getStringOrKey("role.notset") }, true)
                 }
             }
             "set" -> {
@@ -148,5 +148,15 @@ class Config: LocalizedCommand {
         if (string.startsWith('#')) return string.drop(1)
         if (string.startsWith('<')) return string.drop(2).dropLast(1)
         throw IllegalArgumentException()
+    }
+
+    private fun String.toChannelMention(): String {
+        if (isEmpty()) return this
+        return "<#$this>"
+    }
+
+    private fun String.toRoleMention(): String {
+        if (isEmpty()) return this
+        return "<@&$this>"
     }
 }

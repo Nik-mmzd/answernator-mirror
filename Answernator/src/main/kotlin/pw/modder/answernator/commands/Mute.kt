@@ -20,6 +20,7 @@ import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.LocalizedCommand
 import java.util.*
+import kotlin.random.Random
 
 private val logger = KotlinLogging.logger {  }
 @UnstableDefault
@@ -67,8 +68,6 @@ class Mute: LocalizedCommand {
                 }
                 false -> {
                     logger.debug { "Member is not muted" }
-                    guild.muteMember(id)
-                    logger.debug { "Member muted in DB" }
                     val reason = message.words.drop(2).joinToString(" ").ifEmpty {
                         val reasonCount = texts.getStringOrKey("reason.count").toIntOrNull() ?: 1
                         texts.getStringOrKey("reason.${Globals.random.nextInt(0, reasonCount)}")
@@ -84,6 +83,8 @@ class Mute: LocalizedCommand {
                     }
                     guildClient.addMemberRole(userId = id, roleId = muteRole)
                     logger.debug { "Added mute role" }
+                    guild.muteMember(id)
+                    logger.debug { "Member muted in DB" }
                     textMessage(texts.formatString("muted", mention, reason))
                 }
             }

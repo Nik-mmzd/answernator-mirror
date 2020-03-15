@@ -14,18 +14,6 @@ import pw.modder.answernator.utils.LocalizedCommand
 import com.jessecorbett.diskord.dsl.message as dslmessage
 import java.util.*
 
-/*     var memberJoinLogChannel by LogConfigs.memberJoinLogChannel
-    var memberLeaveLogChannel by LogConfigs.memberLeaveLogChannel
-    var memberBanLogChannel by LogConfigs.memberBanLogChannel
-    var memberUnbanLogChannel by LogConfigs.memberUnbanLogChannel
-    var memberMuteLogChannel by LogConfigs.memberMuteLogChannel
-    var memberUnmuteLogChannel by LogConfigs.memberUnmuteLogChannel
-
-    var messageDeleteLogChannel by LogConfigs.messageDeleteLogChannel
-    var messageBulkDeleteLogChannel by LogConfigs.messageBulkDeleteLogChannel
-    var messageChangedLogChannel by LogConfigs.messageChangedLogChannel*/
-
-
 @UnstableDefault
 class Log: LocalizedCommand {
     override val name = "log"
