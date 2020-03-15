@@ -3,6 +3,7 @@ package pw.modder.answernator.commands
 import com.jessecorbett.diskord.api.model.Message
 import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
+import com.jessecorbett.diskord.dsl.field
 import com.jessecorbett.diskord.util.words
 import kotlinx.serialization.UnstableDefault
 import org.jetbrains.exposed.sql.Column
@@ -10,6 +11,7 @@ import pw.modder.answernator.db.Db
 import pw.modder.answernator.db.LogConfigs
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedCommand
+import com.jessecorbett.diskord.dsl.message as dslmessage
 import java.util.*
 
 /*     var memberJoinLogChannel by LogConfigs.memberJoinLogChannel
@@ -36,7 +38,17 @@ class Log: LocalizedCommand {
             ?: return texts.errorMessage()
 
         if (message.words.getOrNull(1)?.toLowerCase() == "get") {
-            TODO()
+            val log = Db.logs.get(guild.guildId)
+            return dslmessage {
+                title = texts.getStringOrKey("get.title")
+
+                field(texts.getStringOrKey("get.memberjoin"), log.memberJoinLogChannel.toChannelMention().ifEmpty { texts.getStringOrKey("get.disabled") }, true)
+                field(texts.getStringOrKey("get.memberleave"), log.memberLeaveLogChannel.toChannelMention().ifEmpty { texts.getStringOrKey("get.disabled") }, true)
+                field(texts.getStringOrKey("get.memberban"), log.memberBanLogChannel.toChannelMention().ifEmpty { texts.getStringOrKey("get.disabled") }, true)
+                field(texts.getStringOrKey("get.memeberunban"), log.memberUnbanLogChannel.toChannelMention().ifEmpty { texts.getStringOrKey("get.disabled") }, true)
+                field(texts.getStringOrKey("get.membermute"), log.memberMuteLogChannel.toChannelMention().ifEmpty { texts.getStringOrKey("get.disabled") }, true)
+                field(texts.getStringOrKey("get.memberunmute"), log.memberUnmuteLogChannel.toChannelMention().ifEmpty { texts.getStringOrKey("get.disabled") }, true)
+            }
         }
         if (message.words.size < 3) return texts.errorMessage()
 
@@ -72,5 +84,10 @@ class Log: LocalizedCommand {
         }
         if (channel == null) return texts.message("${column.name}.disabled")
         return texts.message(column.name, "<#${channel.channelId}>")
+    }
+
+    private fun String.toChannelMention(): String {
+        if (isEmpty()) return this
+        return "<#$this>"
     }
 }
