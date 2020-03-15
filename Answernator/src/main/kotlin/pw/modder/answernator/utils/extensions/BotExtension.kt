@@ -72,7 +72,7 @@ fun Bot.greetingsService() {
         if (config.greetNewUsers && config.greetingsChannel.isNotEmpty()) {
             clientStore.channels[config.greetingsChannel].sendMessage(String.format(
                 config.greetingText,
-                it.nickname ?: it.user?.username ?: "??! O_o",
+                it.user?.mention ?: "??!?? O_o",
                 clientStore.guilds[it.guildId].get().name
             ))
         }

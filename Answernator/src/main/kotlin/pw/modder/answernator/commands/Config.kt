@@ -59,7 +59,6 @@ class Config: LocalizedCommand {
                                 Db.updateGuildConfig(guild.id) {
                                     it[greetingText] = message.words.drop(4)
                                         .joinToString(separator = " ")
-                                        .replace('%', '_')
                                         .replace("%user%", "%1\$s")
                                         .replace("%guild%", "%2\$s")
                                 }

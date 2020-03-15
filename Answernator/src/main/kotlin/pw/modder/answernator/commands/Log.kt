@@ -67,7 +67,7 @@ class Log: LocalizedCommand {
     private fun process(bot: Bot, gid: String, channelId: String, column: Column<String>, texts: ResourceBundle): CombinedMessageEmbed {
         val channel = channelId.takeUnless { it.equals("disable", true) }?.run { bot.clientStore.channels[extractChannelId(this)] }
 
-        Db.updateGuildConfig(gid) {
+        Db.updateLogConfig(gid) {
             it[column] = channel?.channelId ?: ""
         }
         if (channel == null) return texts.message("${column.name}.disabled")
