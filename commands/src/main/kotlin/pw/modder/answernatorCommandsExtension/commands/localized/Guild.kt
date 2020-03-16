@@ -13,6 +13,8 @@ import pw.modder.answernator.cache.GuildCache.getCached
 import kotlinx.serialization.UnstableDefault
 import pw.modder.answernatorCommandsExtension.commandTypes.LocalizedGuildOnlyCommand
 import pw.modder.answernator.utils.Command
+import pw.modder.answernator.utils.extensions.toChannelMention
+import pw.modder.answernator.utils.extensions.toUserMention
 import java.util.*
 import com.jessecorbett.diskord.dsl.message as dslmessage
 
@@ -37,7 +39,7 @@ class Guild: LocalizedGuildOnlyCommand {
 
         return dslmessage {
             field(texts.getStringOrKey("name"), guild.name, true)
-            field(texts.getStringOrKey("owner"), "<@${guild.ownerId}>", true)
+            field(texts.getStringOrKey("owner"), guild.ownerId.toUserMention(), true)
             field(texts.getStringOrKey("emojis"), guild.emojis.size.toString(), true)
             if (guild.roles.size < 50) {
                 field(
@@ -51,7 +53,7 @@ class Guild: LocalizedGuildOnlyCommand {
             field(texts.getStringOrKey("region"), guild.region.capitalize(), true)
             field(texts.getStringOrKey("features"),
                 guild.features.joinToString(", ") {
-                    texts.getStringOrKey("features.${it}")
+                    texts.getStringOrKey("features.$it")
                 }.ifEmpty { texts.getStringOrKey("features.empty") },
                 true)
             field(texts.getStringOrKey("verificationLevel"), texts.getStringOrKey("verification.level.${guild.verificationLevel.name}"), true)
@@ -61,7 +63,7 @@ class Guild: LocalizedGuildOnlyCommand {
                 thumbnail = EmbedImage("https://cdn.discordapp.com/icons/${guild.id}/$this")
             }
             guild.afkChannelId?.run {
-                field(texts.getStringOrKey("afkChannel"), "<#$this>", true)
+                field(texts.getStringOrKey("afkChannel"), this.toChannelMention(), true)
                 field(texts.getStringOrKey("afkTimeout"), texts.formatString("afkTimeout.value", this), true)
             }
 
@@ -69,12 +71,12 @@ class Guild: LocalizedGuildOnlyCommand {
             guild.widgetEnabled?.run {
                 field(texts.getStringOrKey("widget"), texts.getStringOrKey("widget.$this"), true)
                 guild.widgetChannelId?.run {
-                    field(texts.getStringOrKey("widget.channel"), "<#$this>", true)
+                    field(texts.getStringOrKey("widget.channel"), this.toChannelMention(), true)
                 }
             }
 
             guild.systemMessageChannelId?.run {
-                field(texts.getStringOrKey("system.channel"), "<#$this>", true)
+                field(texts.getStringOrKey("system.channel"), this.toChannelMention(), true)
             }
         }
     }

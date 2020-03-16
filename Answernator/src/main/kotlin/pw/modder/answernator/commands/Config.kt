@@ -6,12 +6,13 @@ import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.dsl.field
 import com.jessecorbett.diskord.util.ClientStore
 import com.jessecorbett.diskord.util.mention
-import com.jessecorbett.diskord.util.toRoleMention
 import com.jessecorbett.diskord.util.words
 import kotlinx.serialization.UnstableDefault
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.db.GuildConfig
 import pw.modder.answernator.utils.*
+import pw.modder.answernator.utils.extensions.toChannelMention
+import pw.modder.answernator.utils.extensions.toRoleMention
 import com.jessecorbett.diskord.dsl.message as dslmessage
 import java.util.*
 
@@ -62,33 +63,33 @@ class Config: LocalizedCommand {
                                         .replace("%user%", "%1\$s")
                                         .replace("%guild%", "%2\$s")
                                 }
-                                textMessage(texts.getStringOrKey("greeting.applied"))
+                                texts.message("greeting.applied")
                             }
                             "enable" -> {
                                 Db.updateGuildConfig(guild.id) {
                                     it[greetNewUsers] = true
                                 }
-                                textMessage(texts.getStringOrKey("greeting.enabled"))
+                                texts.message("greeting.enabled")
                             }
                             "disable" -> {
                                 Db.updateGuildConfig(guild.id) {
                                     it[greetNewUsers] = false
                                 }
-                                textMessage(texts.getStringOrKey("greeting.disabled"))
+                                texts.message("greeting.disabled")
                             }
                             "channel" -> {
                                 val channel = try {
                                     bot.clientStore.channels[extractChannelId(message.words[4])]
                                 } catch (_: Exception) {
-                                    return textMessage(texts.getStringOrKey("help"))
+                                    return texts.message("help")
                                 }
 
                                 Db.updateGuildConfig(guild.id) {
                                     it[greetingsChannel] = channel.channelId
                                 }
-                                textMessage(texts.formatString("greeting.channelset", channel.get().mention))
+                                texts.message("greeting.channelset", channel.get().mention)
                             }
-                            else -> textMessage(texts.getStringOrKey("help"))
+                            else -> texts.message("help")
                         }
                     }
                     "defrole" -> {
@@ -105,7 +106,7 @@ class Config: LocalizedCommand {
                         Db.updateGuildConfig(guild.id) {
                             it[defaultRole] = role
                         }
-                        return texts.message("defrole.set", "<@&$role>")
+                        return texts.message("defrole.set", role.toRoleMention())
                     }
                     "muterole" -> {
                         if (message.words.getOrNull(2).equals("remove", true)) {
@@ -121,13 +122,13 @@ class Config: LocalizedCommand {
                         Db.updateGuildConfig(guild.id) {
                             it[muteRole] = role
                         }
-                        return texts.message("muterole.set", "<@&$role>")
+                        return texts.message("muterole.set", role.toRoleMention())
                     }
-                    else -> textMessage(texts.getStringOrKey("help"))
+                    else -> texts.message("help")
                 }
             }
             "blacklist" -> TODO()
-            else -> textMessage(texts.getStringOrKey("help"))
+            else -> texts.message("help")
 
         }
     }
@@ -141,22 +142,12 @@ class Config: LocalizedCommand {
             return texts.getStringOrKey("greeting.channel.error")
         }
 
-        return "<#${channel.channelId}>"
+        return channel.channelId.toChannelMention()
     }
 
     private fun extractChannelId(string: String): String {
         if (string.startsWith('#')) return string.drop(1)
         if (string.startsWith('<')) return string.drop(2).dropLast(1)
         throw IllegalArgumentException()
-    }
-
-    private fun String.toChannelMention(): String {
-        if (isEmpty()) return this
-        return "<#$this>"
-    }
-
-    private fun String.toRoleMention(): String {
-        if (isEmpty()) return this
-        return "<@&$this>"
     }
 }

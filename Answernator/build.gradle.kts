@@ -7,6 +7,7 @@ plugins {
 
 val diskordVersion: String by project
 val exposedVersion: String by project
+val ktorVersion: String by project
 
 
 val gitVersion: groovy.lang.Closure<*> by extra
@@ -29,6 +30,9 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
+    implementation("io.ktor:ktor-client-core:$ktorVersion")
+    implementation("io.ktor:ktor-client-core-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-client-cio:$ktorVersion")
     implementation("com.h2database:h2:1.4.200")
 }
 

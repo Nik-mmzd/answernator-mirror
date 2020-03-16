@@ -11,6 +11,7 @@ import pw.modder.answernator.db.Db
 import pw.modder.answernator.db.LogConfigs
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedCommand
+import pw.modder.answernator.utils.extensions.toChannelMention
 import com.jessecorbett.diskord.dsl.message as dslmessage
 import java.util.*
 
@@ -72,10 +73,5 @@ class Log: LocalizedCommand {
         }
         if (channel == null) return texts.message("${column.name}.disabled")
         return texts.message(column.name, "<#${channel.channelId}>")
-    }
-
-    private fun String.toChannelMention(): String {
-        if (isEmpty()) return this
-        return "<#$this>"
     }
 }

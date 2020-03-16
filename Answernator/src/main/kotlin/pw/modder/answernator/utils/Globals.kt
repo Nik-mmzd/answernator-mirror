@@ -1,5 +1,6 @@
 package pw.modder.answernator.utils
 
+import io.ktor.client.HttpClient
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
@@ -25,4 +26,6 @@ object Globals {
     fun getDependencyVersion(group: String, name: String) = deps.single { it.group == group && it.name == name }.version
 
     val random = Random(System.currentTimeMillis())
+
+    val httpClient = HttpClient()
 }

@@ -18,7 +18,7 @@ class RandomGame: LocalizedCommand {
 
     override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
         val num = message.words.getOrNull(1)?.toIntOrNull() ?: 1
-        if (num > 64 || num < 1) return textMessage(texts.getStringOrKey("error"))
+        if (num > 64 || num < 1) return texts.errorMessage()
 
         val gameNames = mutableListOf<String>()
         repeat(num) {

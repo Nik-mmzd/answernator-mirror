@@ -35,7 +35,7 @@ class Tsar: LocalizedCommand {
 
     override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
         if (message.words.getOrNull(1)?.toLowerCase() != "велит")
-            return textMessage(texts.getStringOrKey("invalid"))
+            return texts.message("invalid")
 
         val decreeCount = texts.getStringOrKey("decree.count").toInt()
         val signCount = texts.getStringOrKey("sign.count").toInt()

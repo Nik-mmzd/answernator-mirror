@@ -37,10 +37,10 @@ class Dice: LocalizedCommand {
         val throws = message.words.getOrNull(2)?.toInt() ?: 1
         val tries = message.words.getOrNull(3)?.toInt() ?: 1
 
-        if (tries > triesLimit || tries < 1) return textMessage(texts.formatString("triesLimit", triesLimit))
-        if (!sum && throws > throwsLimit) return textMessage(texts.formatString("throwsLimit", throwsLimit))
-        if (throws > throwsSumLimit || throws < 1) return textMessage(texts.formatString("throwsSumLimit", throwsSumLimit))
-        if (dice > diceLimit || dice < 2) return textMessage(texts.formatString("diceLimit", diceLimit))
+        if (tries > triesLimit || tries < 1) return texts.message("triesLimit", triesLimit)
+        if (!sum && throws > throwsLimit) return texts.message("throwsLimit", throwsLimit)
+        if (throws > throwsSumLimit || throws < 1) return texts.message("throwsSumLimit", throwsSumLimit)
+        if (dice > diceLimit || dice < 2) return texts.message("diceLimit", diceLimit)
 
         return dslmessage {
             title = texts.getStringOrKey("title")

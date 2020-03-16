@@ -22,7 +22,6 @@ import pw.modder.answernatorCommandsExtension.utils.Quote as QuoteData
 import com.jessecorbett.diskord.dsl.message as dslmessage
 import java.util.*
 
-private val client = HttpClient()
 @UnstableDefault
 private val json = Json(JsonConfiguration(strictMode = false))
 
@@ -46,8 +45,8 @@ class Quote: Command {
     override suspend fun action(bot: Bot, message: Message, locale: Locale): CombinedMessageEmbed {
         val id = message.words.getOrNull(1)
 
-        val request = if (id == null) client.get<String>("https://modder.pw/api/random.php")
-            else client.get<String>("https://modder.pw/api/get.php") { parameter("id", id) }
+        val request = if (id == null) Globals.httpClient.get<String>("https://modder.pw/api/random.php")
+            else Globals.httpClient.get<String>("https://modder.pw/api/get.php") { parameter("id", id) }
 
         val data = json.parse(QuoteData.serializer(), request)
 
