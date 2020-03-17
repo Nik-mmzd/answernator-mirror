@@ -1,13 +1,14 @@
 package pw.modder.answernator.utils.extensions
 
+import com.jessecorbett.diskord.api.model.Guild
 import com.jessecorbett.diskord.api.model.GuildMember
 import com.jessecorbett.diskord.api.model.Permission
 import com.jessecorbett.diskord.api.model.Permissions
 import com.jessecorbett.diskord.api.rest.client.GuildClient
 import pw.modder.answernator.cache.GuildCache.getCached
 
-suspend fun GuildMember.computePermissions(client: GuildClient, memberId: String): Permissions {
-    val guild = client.getCached()
+suspend fun GuildMember.computePermissions(client: GuildClient, memberId: String): Permissions = computePermissions(client.get(), memberId)
+fun GuildMember.computePermissions(guild: Guild, memberId: String): Permissions {
     if (guild.ownerId == memberId) return Permissions.ALL
 
     val roles = guild.roles.filter { it.id in roleIds }
@@ -20,3 +21,14 @@ suspend fun GuildMember.computePermissions(client: GuildClient, memberId: String
 
     return permissions
 }
+
+fun GuildMember.isAdmin(guild: Guild, memberId: String): Boolean = computePermissions(guild, memberId).containsAny(
+        Permission.ADMINISTRATOR,
+        Permission.MANAGE_MESSAGES,
+        Permission.BAN_MEMBERS,
+        Permission.KICK_MEMBERS,
+        Permission.MANAGE_GUILD,
+        Permission.MANAGE_CHANNELS,
+        Permission.MANAGE_ROLES,
+        Permission.MANAGE_NICKNAMES
+    )

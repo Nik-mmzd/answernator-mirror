@@ -19,6 +19,7 @@ import pw.modder.answernator.db.Db
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.LocalizedCommand
+import pw.modder.answernator.utils.extensions.isAdmin
 import java.util.*
 import kotlin.random.Random
 
@@ -48,6 +49,8 @@ class Mute: LocalizedCommand {
         if (muteRole.isEmpty()) return textMessage(texts.getStringOrKey("not.configured"))
         if (message.words.size < 2) return textMessage(texts.getStringOrKey("error"))
         message.usersMentioned.singleOrNull()?.run {
+            val member = guildClient.getMember(id)
+            if (member.isAdmin(guild, id)) return texts.message("error.whitelisted", mention)
             logger.debug { "Got mentioned user" }
             val logconfig = Db.logs.get(guild.id)
             return when(guild.memberIsMuted(id)) {
