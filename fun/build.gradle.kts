@@ -44,7 +44,7 @@ tasks {
 
     val createModuleVersionFile by creating {
         doLast {
-            file("$buildDir/module.txt").printWriter().use { pw ->
+            file("$buildDir/module.fun.txt").printWriter().use { pw ->
                 pw.append(project.version.toString())
                 pw.appendln()
             }
@@ -53,6 +53,6 @@ tasks {
 
     jar {
         dependsOn(createModuleVersionFile)
-        from("$buildDir/module.txt")
+        from("$buildDir/module.fun.txt")
     }
 }

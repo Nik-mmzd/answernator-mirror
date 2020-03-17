@@ -6,7 +6,11 @@ interface ModuleInfoProvider {
     val name: String
     val version: String
         get() {
-            return javaClass.classLoader.getResourceAsStream("module.txt").use { it.reader().readText() }
+            return try {
+                javaClass.classLoader.getResourceAsStream("module.$name.txt").use { it.reader().readText() }
+            } catch (_: Exception) {
+                "unknown"
+            }
         }
 }
 
