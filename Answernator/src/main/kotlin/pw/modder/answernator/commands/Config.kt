@@ -133,7 +133,7 @@ class Config: LocalizedCommand {
         }
     }
 
-    private fun getGreetingsChannelName(clientStore: ClientStore, config: GuildConfig.Immutable, texts: ResourceBundle): String {
+    private fun getGreetingsChannelName(clientStore: ClientStore, config: GuildConfig, texts: ResourceBundle): String {
         if (config.greetingsChannel.isEmpty()) return texts.getStringOrKey("greeting.channel.notset")
 
         val channel = try {

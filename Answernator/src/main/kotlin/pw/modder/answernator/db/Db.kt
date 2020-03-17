@@ -28,14 +28,14 @@ object Db {
         .maximumSize(guildConfigCacheSize)
         .expireAfterAccess(1, TimeUnit.DAYS)
         .build(
-            object : CacheLoader<String, GuildConfig.Immutable>() {
-                override fun load(key: String): GuildConfig.Immutable {
+            object : CacheLoader<String, GuildConfig>() {
+                override fun load(key: String): GuildConfig {
                     return transaction {
                         GuildConfig.find { GuildConfigs.guildId eq key }.firstOrNull()
                             ?: GuildConfig.new {
                                 guildId = key
                             }
-                    }.immutable()
+                    }
                 }
             }
         )
@@ -44,14 +44,14 @@ object Db {
         .maximumSize(guildLogsConfigCacheSize)
         .expireAfterAccess(1, TimeUnit.DAYS)
         .build(
-            object : CacheLoader<String, LogConfig.Immutable>() {
-                override fun load(key: String): LogConfig.Immutable {
+            object : CacheLoader<String, LogConfig>() {
+                override fun load(key: String): LogConfig {
                     return transaction {
                         LogConfig.find { LogConfigs.guildId eq key }.firstOrNull()
                             ?: LogConfig.new {
                                 guildId = key
                             }
-                    }.immutable()
+                    }
                 }
             }
         )

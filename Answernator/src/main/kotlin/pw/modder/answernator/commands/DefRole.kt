@@ -38,7 +38,7 @@ class DefRole: LocalizedCommand {
         val add = when(message.words.getOrNull(1)) {
             "add" -> true
             "remove" -> false
-            else -> return texts.errorMessage()
+            else -> return textMessage(texts.getStringOrKey("error"))
         }
 
         message.usersMentioned.forEach {
@@ -47,6 +47,6 @@ class DefRole: LocalizedCommand {
                 false -> guild.removeMemberRole(it.id, config.defaultRole)
             }
         }
-        return texts.message("done.$add", message.usersMentioned.joinToString(" ") { it.mention })
+        return textMessage(texts.formatString("done.$add", message.usersMentioned.joinToString(" ") { it.mention }))
     }
 }
