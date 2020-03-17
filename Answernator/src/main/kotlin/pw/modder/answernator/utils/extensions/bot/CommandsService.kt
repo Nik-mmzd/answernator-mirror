@@ -27,8 +27,8 @@ fun Bot.commandService() {
         if (message.content.first() != config.prefix) return@messageCreated
 
         val guildConfig = message.guildId?.run { Db.guilds.get(this) }
-        val locale = guildConfig?.run { Locale(lang) } ?: config.locale
-        val blacklist = guildConfig?.run { commandsBlacklist.split('|') } ?: listOf()
+        val locale = guildConfig?.locale ?: config.locale
+        val blacklist = guildConfig?.commandsBlacklist ?: listOf()
         val texts = ResourceBundle.getBundle("locale.botGlobal", locale, UTF8Control())
 
         val channelType =if (message.guildId == null) Command.ChannelTypes.DIRECT else Command.ChannelTypes.GUILD

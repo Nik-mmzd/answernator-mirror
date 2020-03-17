@@ -26,7 +26,7 @@ fun Bot.muteService() {
         }
         val roleId = Db.guilds.get(it.guildId).muteRole.takeIf { it.isNotEmpty() } ?: return@userJoinedGuild
         val guildClient = clientStore.guilds[it.guildId]
-        if (guildClient.memberIsMuted(memberId)) guildClient.addMemberRole(userId = memberId, roleId =  roleId)
+        if (guildClient.memberIsMuted(memberId)) guildClient.addMemberRole(userId = memberId, roleId = roleId)
         logger.debug { "Member muted automatically: Guild ${it.guildId}, User ${it.user?.username} ID ${it.user?.id}" }
     }
 
@@ -35,7 +35,7 @@ fun Bot.muteService() {
         val roleId = config.muteRole.takeIf { it.isNotEmpty() } ?: return@guildMemberUpdated
         val logConfig = Db.logs.get(it.guildId)
         val guild = clientStore.guilds[it.guildId]
-        val texts = ResourceBundle.getBundle("locale.mute", UTF8Control())
+        val texts = ResourceBundle.getBundle("locale.mute", config.locale, UTF8Control())
 
         if (it.roles.any { it == roleId } && !guild.memberIsMuted(it.user.id)) {
             try {

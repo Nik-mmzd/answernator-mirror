@@ -19,4 +19,19 @@ class LogConfig(id: EntityID<Int>) : IntEntity(id) {
     var messageDeleteLogChannel by LogConfigs.messageDeleteLogChannel
     var messageBulkDeleteLogChannel by LogConfigs.messageBulkDeleteLogChannel
     var messageChangedLogChannel by LogConfigs.messageChangedLogChannel
+
+    data class Immutable(
+        val guildId: String,
+        val memberJoinLogChannel: String,
+        val memberLeaveLogChannel: String,
+        val memberBanLogChannel: String,
+        val memberUnbanLogChannel: String,
+        val memberMuteLogChannel: String,
+        val memberUnmuteLogChannel: String,
+        val messageDeleteLogChannel: String,
+        val messageBulkDeleteLogChannel: String,
+        val messageChangedLogChannel: String
+    )
+
+    fun immutable(): Immutable = Immutable(guildId, memberJoinLogChannel, memberLeaveLogChannel, memberBanLogChannel, memberUnbanLogChannel, memberMuteLogChannel, memberUnmuteLogChannel, messageDeleteLogChannel, messageBulkDeleteLogChannel, messageChangedLogChannel)
 }
