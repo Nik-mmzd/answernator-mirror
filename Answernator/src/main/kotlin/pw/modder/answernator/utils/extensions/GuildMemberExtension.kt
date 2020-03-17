@@ -7,7 +7,7 @@ import com.jessecorbett.diskord.api.model.Permissions
 import com.jessecorbett.diskord.api.rest.client.GuildClient
 import pw.modder.answernator.cache.GuildCache.getCached
 
-suspend fun GuildMember.computePermissions(client: GuildClient, memberId: String): Permissions = computePermissions(client.get(), memberId)
+suspend fun GuildMember.computePermissions(client: GuildClient, memberId: String): Permissions = computePermissions(client.getCached(), memberId)
 fun GuildMember.computePermissions(guild: Guild, memberId: String): Permissions {
     if (guild.ownerId == memberId) return Permissions.ALL
 
