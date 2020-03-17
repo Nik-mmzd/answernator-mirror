@@ -28,7 +28,7 @@ fun Bot.commandService() {
 
         val guildConfig = message.guildId?.run { Db.guilds.get(this) }
         val locale = guildConfig?.run { Locale(lang) } ?: config.locale
-        val blacklist = guildConfig?.run { commandsBlacklist.split('|') } ?: listOf()
+//        val blacklist = guildConfig?.run { commandsBlacklist.split('|') } ?: listOf()
         val texts = ResourceBundle.getBundle("locale.botGlobal", locale, UTF8Control())
 
         val channelType =if (message.guildId == null) Command.ChannelTypes.DIRECT else Command.ChannelTypes.GUILD
@@ -37,11 +37,11 @@ fun Bot.commandService() {
             message.words.first().equals("${config.prefix}${command.name}", true) && channelType in command.channels
         }?.run {
             logger.debug { "found command $name, running" }
-            if (name in blacklist) {
-                logger.debug { "command $name is blacklisted on this guild" }
-                message.reply(texts.formatString("bot.blacklisted", name))
-                return@messageCreated
-            }
+//            if (name in blacklist) {
+//                logger.debug { "command $name is blacklisted on this guild" }
+//                message.reply(texts.formatString("bot.blacklisted", name))
+//                return@messageCreated
+//            }
             if (check(message, message.guildId?.run { clientStore.guilds[this] })) {
                 val reply = try {
                     action(this@commandService, message, locale)
