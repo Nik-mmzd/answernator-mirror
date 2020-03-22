@@ -46,7 +46,9 @@ class Clear: LocalizedCommand {
                     .filter { mentionedUserIds.isEmpty() || it.authorId in mentionedUserIds }
                     .take(limit - messages.size)
                     .filter { it.sentAtDate.isAfter(minusTwoWeeks) }
-                    .map { it.id }
+                    .map { it.id }.ifEmpty {
+                        return texts.message("empty")
+                    }
             )
         } while (messages.size < limit && lastMessage.sentAtDate.isAfter(minusTwoWeeks))
 
