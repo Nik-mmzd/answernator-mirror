@@ -52,6 +52,8 @@ class Clear: LocalizedCommand {
             )
         } while (messages.size < limit && lastMessage.sentAtDate.isAfter(minusTwoWeeks))
 
+        if (messages.size < 2) return texts.message("empty")
+
         channel.bulkDeleteMessages(BulkMessageDelete(
             messages.take(limit).toList()
         ))

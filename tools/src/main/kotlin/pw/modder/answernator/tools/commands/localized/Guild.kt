@@ -41,7 +41,7 @@ class Guild: LocalizedGuildOnlyCommand {
             field(texts.getStringOrKey("name"), guild.name, true)
             field(texts.getStringOrKey("owner"), guild.ownerId.toUserMention(), true)
             field(texts.getStringOrKey("emojis"), guild.emojis.size.toString(), true)
-            if (guild.roles.size < 50) {
+            if (guild.roles.size < 50 && guild.id == message.guildId) {
                 field(
                     texts.getStringOrKey("roles"),
                     guild.roles.filterNot { it.id == guild.id }.joinToString(" ") { it.mention },
