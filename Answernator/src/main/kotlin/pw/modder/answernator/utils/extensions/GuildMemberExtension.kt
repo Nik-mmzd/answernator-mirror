@@ -10,12 +10,12 @@ fun GuildMember.computePermissions(guild: Guild, memberId: String): Permissions 
 
     val roles = guild.roles.filter { it.id in roleIds }
 
-    var permissions = Permissions.NONE
+    var permissions = guild.roles.single { it.id == guild.id }.permissions
     roles.forEach { role ->
-        if (role.permissions.contains(Permission.ADMINISTRATOR)) return Permissions.ALL
-        permissions += permissions + role.permissions
+        permissions += role.permissions
     }
 
+    if (permissions.contains(Permission.ADMINISTRATOR)) return Permissions.ALL
     return permissions
 }
 
