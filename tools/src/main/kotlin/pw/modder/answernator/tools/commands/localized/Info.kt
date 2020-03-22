@@ -16,8 +16,6 @@ import pw.modder.answernator.db.Db
 import pw.modder.answernator.db.Db.memberIsMuted
 import pw.modder.answernator.utils.Utils
 import pw.modder.answernator.utils.extensions.*
-import java.time.OffsetDateTime
-import java.time.format.DateTimeFormatter
 import java.util.*
 
 @UnstableDefault
@@ -33,8 +31,6 @@ class Info: LocalizedGuildOnlyCommand {
 
         message.usersMentioned.singleOrNull()?.run {
             val member = bot.clientStore.guilds[guildId].getMember(id)
-            val joined = OffsetDateTime.parse(member.joinedAt, DateTimeFormatter.ISO_OFFSET_DATE_TIME).toInstant().toEpochMilli()
-
             return dslmessage {
                 title = member.nickname ?: name.ifEmpty { username }
 
@@ -50,9 +46,9 @@ class Info: LocalizedGuildOnlyCommand {
                 field(texts.getStringOrKey("user.admin"), texts.getStringOrKey("bool.${member.isAdmin(guild, id)}"), true)
                 field(texts.getStringOrKey("user.muted"), texts.getStringOrKey("bool.${guild.memberIsMuted(id)}"), true)
 
-                field(texts.getStringOrKey("user.roles"), member.roleIds.joinToString(" ") { it.toRoleMention() }, false)
-                field(texts.getStringOrKey("user.rights"), member.computePermissions(guild, id).asList().joinToString(", ") { texts.getStringOrKey("permission.${it.name}") }, false)
-                field(texts.getStringOrKey("user.joinedAt"), texts.formatString("user.joinedAt.value", Utils.prettyPrintTime(texts.locale, joined)), false)
+                field(texts.getStringOrKey("user.roles"), member.roleIds.joinToString(" ") { it.toRoleMention() }.ifEmpty { texts.getStringOrKey("empty") }, false)
+                field(texts.getStringOrKey("user.rights"), member.computePermissions(guild, id).asList().joinToString(", ") { texts.getStringOrKey("permission.${it.name}") }.ifEmpty { texts.getStringOrKey("empty") }, false)
+                field(texts.getStringOrKey("user.joinedAt"), texts.formatString("user.joinedAt.value", Utils.prettyPrintTime(texts.locale, member.joinedAt)), false)
 
                 setCurrentTimestamp()
             }
@@ -76,7 +72,7 @@ class Info: LocalizedGuildOnlyCommand {
                 field(texts.getStringOrKey("role.hoist"), texts.getStringOrKey("bool.$isUserListPinned"), true)
                 field(texts.getStringOrKey("role.position"), position.toString(), true)
 
-                field(texts.getStringOrKey("role.rights"), permissions.asList().joinToString(", ") { texts.getStringOrKey("permission.${it.name}") }, false)
+                field(texts.getStringOrKey("role.rights"), permissions.asList().joinToString(", ") { texts.getStringOrKey("permission.${it.name}") }.ifEmpty { texts.getStringOrKey("empty") }, false)
 
             }
         }

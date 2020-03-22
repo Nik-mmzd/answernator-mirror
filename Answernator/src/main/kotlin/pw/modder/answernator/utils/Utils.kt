@@ -1,6 +1,6 @@
 package pw.modder.answernator.utils
 
-import org.joda.time.Duration
+import org.joda.time.DateTime
 import org.joda.time.Period
 import org.joda.time.PeriodType
 import org.joda.time.format.PeriodFormatterBuilder
@@ -34,27 +34,29 @@ object Utils {
         )
     }
 
-    fun prettyPrintTime(locale: Locale, millis: Long): String {
+    private val String.s get() = " $this"
+
+    fun prettyPrintTime(locale: Locale, time: Any): String {
         val texts = ResourceBundle.getBundle("locale.botGlobal", locale, UTF8Control())
         val formatter = PeriodFormatterBuilder()
             .appendYears()
-            .appendSuffix(texts.getStringOrKey("bot.date.year"), texts.getStringOrKey("bot.date.years"))
+            .appendSuffix(texts.getStringOrKey("bot.date.year").s, texts.getStringOrKey("bot.date.years").s)
             .appendSeparatorIfFieldsBefore(" ")
             .appendMonths()
-            .appendSuffix(texts.getStringOrKey("bot.date.month"), texts.getStringOrKey("bot.date.months"))
+            .appendSuffix(texts.getStringOrKey("bot.date.month").s, texts.getStringOrKey("bot.date.months").s)
             .appendSeparatorIfFieldsBefore(" ")
             .appendDays()
-            .appendSuffix(texts.getStringOrKey("bot.date.day"), texts.getStringOrKey("bot.date.days"))
+            .appendSuffix(texts.getStringOrKey("bot.date.day").s, texts.getStringOrKey("bot.date.days").s)
             .appendSeparatorIfFieldsBefore(" ")
             .appendHours()
-            .appendSuffix(texts.getStringOrKey("bot.date.hour"), texts.getStringOrKey("bot.date.hours"))
+            .appendSuffix(texts.getStringOrKey("bot.date.hour").s, texts.getStringOrKey("bot.date.hours").s)
             .appendSeparatorIfFieldsBefore(" ")
             .appendMinutes()
-            .appendSuffix(texts.getStringOrKey("bot.date.minute"), texts.getStringOrKey("bot.date.minutes"))
+            .appendSuffix(texts.getStringOrKey("bot.date.minute").s, texts.getStringOrKey("bot.date.minutes").s)
             .appendSeparatorIfFieldsBefore(" ")
             .appendSeconds()
-            .appendSuffix(texts.getStringOrKey("bot.date.second"), texts.getStringOrKey("bot.date.seconds"))
+            .appendSuffix(texts.getStringOrKey("bot.date.second").s, texts.getStringOrKey("bot.date.seconds").s)
             .toFormatter()
-        return formatter.print(Duration(millis).toPeriod(PeriodType.yearMonthDayTime()))
+        return formatter.print(Period(DateTime(time), DateTime.now(), PeriodType.yearMonthDayTime()))
     }
 }
