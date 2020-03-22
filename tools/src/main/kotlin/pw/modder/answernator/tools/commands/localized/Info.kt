@@ -32,7 +32,7 @@ class Info: LocalizedGuildOnlyCommand {
         message.usersMentioned.singleOrNull()?.run {
             val member = bot.clientStore.guilds[guildId].getMember(id)
             return dslmessage {
-                title = member.nickname ?: name.ifEmpty { username }
+                title = member.nickname ?: username
 
                 avatarHash?.run {
                     thumbnail = EmbedImage("https://cdn.discordapp.com/avatars/$id/$this")
