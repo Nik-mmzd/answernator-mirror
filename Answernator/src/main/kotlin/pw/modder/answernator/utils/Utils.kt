@@ -2,6 +2,7 @@ package pw.modder.answernator.utils
 
 import org.joda.time.Duration
 import org.joda.time.Period
+import org.joda.time.PeriodType
 import org.joda.time.format.PeriodFormatterBuilder
 import pw.modder.answernator.utils.extensions.getStringOrKey
 import java.io.InputStream
@@ -38,17 +39,22 @@ object Utils {
         val formatter = PeriodFormatterBuilder()
             .appendYears()
             .appendSuffix(texts.getStringOrKey("bot.date.year"), texts.getStringOrKey("bot.date.years"))
+            .appendSeparatorIfFieldsBefore(" ")
             .appendMonths()
             .appendSuffix(texts.getStringOrKey("bot.date.month"), texts.getStringOrKey("bot.date.months"))
+            .appendSeparatorIfFieldsBefore(" ")
             .appendDays()
             .appendSuffix(texts.getStringOrKey("bot.date.day"), texts.getStringOrKey("bot.date.days"))
+            .appendSeparatorIfFieldsBefore(" ")
             .appendHours()
             .appendSuffix(texts.getStringOrKey("bot.date.hour"), texts.getStringOrKey("bot.date.hours"))
+            .appendSeparatorIfFieldsBefore(" ")
             .appendMinutes()
             .appendSuffix(texts.getStringOrKey("bot.date.minute"), texts.getStringOrKey("bot.date.minutes"))
+            .appendSeparatorIfFieldsBefore(" ")
             .appendSeconds()
             .appendSuffix(texts.getStringOrKey("bot.date.second"), texts.getStringOrKey("bot.date.seconds"))
             .toFormatter()
-        return formatter.print(Duration(millis).toPeriod())
+        return formatter.print(Duration(millis).toPeriod(PeriodType.yearMonthDayTime()))
     }
 }

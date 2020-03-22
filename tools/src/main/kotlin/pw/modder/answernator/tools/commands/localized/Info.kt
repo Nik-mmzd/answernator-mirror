@@ -42,7 +42,7 @@ class Info: LocalizedGuildOnlyCommand {
                     thumbnail = EmbedImage("https://cdn.discordapp.com/avatars/$id/$this")
                 }
 
-                color = member.getColor(guild)
+                member.getColor(guild).takeUnless { it == 0 }?.run { color = this }
 
                 field(texts.getStringOrKey("user.username"), username, true)
                 field(texts.getStringOrKey("user.id"), id, true)
@@ -66,7 +66,7 @@ class Info: LocalizedGuildOnlyCommand {
             return dslmessage {
                 title = name
 
-                color = this@run.color
+                if (this@run.color != 0) color = this@run.color
 
                 field(texts.getStringOrKey("role.id"), id, true)
                 field(texts.getStringOrKey("role.default"), texts.getStringOrKey("bool.${config.defaultRole == id}"), true)
