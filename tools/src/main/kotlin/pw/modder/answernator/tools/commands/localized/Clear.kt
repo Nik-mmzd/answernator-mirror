@@ -10,6 +10,10 @@ import com.jessecorbett.diskord.util.words
 import kotlinx.serialization.UnstableDefault
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedCommand
+import java.time.Instant
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
+import java.time.temporal.TemporalUnit
 import java.util.*
 
 @UnstableDefault
@@ -20,6 +24,9 @@ class Clear: LocalizedCommand {
     override val permission = Permission.MANAGE_MESSAGES
     override val channels = EnumSet.of(Command.ChannelTypes.GUILD)
 
+    val Message.sentAtInstant: Instant
+        get() = Instant.from(DateTimeFormatter.ISO_INSTANT.parse(sentAt))
+
     override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
         val channel = bot.clientStore.channels[message.channelId]
         val messages = mutableListOf<String>()
@@ -29,21 +36,24 @@ class Clear: LocalizedCommand {
 
         if (limit > 100) return texts.errorMessage()
         val mentionedUserIds = message.usersMentioned.map { it.id }
+        val minusTwoWeeks = message.sentAtInstant.minus(2, ChronoUnit.WEEKS)
 
-        var lastMessageId = message.id
+        var lastMessage = message
         do {
             messages.addAll(
-                channel.getMessagesBefore(limit = limit, messageId = lastMessageId)
-                    .also { lastMessageId = it.last().id }
+                channel.getMessagesBefore(limit = limit, messageId = lastMessage.id)
+                    .also { lastMessage = it.last() }
                     .filter { mentionedUserIds.isEmpty() || it.authorId in mentionedUserIds }
+                    .take(limit - messages.size)
+                    .filter { it.sentAtInstant.isAfter(minusTwoWeeks) }
                     .map { it.id }
             )
-        } while (messages.size < limit)
+        } while (messages.size < limit && lastMessage.sentAtInstant.isAfter(minusTwoWeeks))
 
         channel.bulkDeleteMessages(BulkMessageDelete(
             messages.take(limit).toList()
         ))
 
-        return texts.message("done")
+        return texts.message("done", messages.size)
     }
 }
