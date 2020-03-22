@@ -31,7 +31,7 @@ fun GuildMember.isAdmin(guild: Guild, memberId: String): Boolean = computePermis
     )
 
 fun GuildMember.getColor(roles: List<Role>): Int? {
-    return roles.maxBy { it.position }?.color
+    return roles.filter { it.id in roleIds }.maxBy { it.position }?.color
 }
 
 fun GuildMember.getColor(guild: Guild): Int? = getColor(guild.roles)

@@ -25,7 +25,7 @@ class Clear: LocalizedCommand {
     override val channels = EnumSet.of(Command.ChannelTypes.GUILD)
 
     val Message.sentAtInstant: Instant
-        get() = Instant.from(DateTimeFormatter.ISO_INSTANT.parse(sentAt))
+        get() = Instant.from(DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(sentAt))
 
     override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
         val channel = bot.clientStore.channels[message.channelId]
