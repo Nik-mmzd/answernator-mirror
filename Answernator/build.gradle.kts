@@ -39,6 +39,7 @@ dependencies {
     implementation("io.ktor:ktor-client-core-jvm:$ktorVersion")
     implementation("io.ktor:ktor-client-cio:$ktorVersion")
     implementation("com.h2database:h2:$h2Version")
+    implementation("joda-time:joda-time:2.10.5")
 }
 
 val jar by tasks.getting(Jar::class) {
