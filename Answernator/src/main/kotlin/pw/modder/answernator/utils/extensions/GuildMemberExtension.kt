@@ -1,9 +1,6 @@
 package pw.modder.answernator.utils.extensions
 
-import com.jessecorbett.diskord.api.model.Guild
-import com.jessecorbett.diskord.api.model.GuildMember
-import com.jessecorbett.diskord.api.model.Permission
-import com.jessecorbett.diskord.api.model.Permissions
+import com.jessecorbett.diskord.api.model.*
 import com.jessecorbett.diskord.api.rest.client.GuildClient
 import pw.modder.answernator.cache.GuildCache.getCached
 
@@ -32,3 +29,9 @@ fun GuildMember.isAdmin(guild: Guild, memberId: String): Boolean = computePermis
         Permission.MANAGE_ROLES,
         Permission.MANAGE_NICKNAMES
     )
+
+fun GuildMember.getColor(roles: List<Role>): Int? {
+    return roles.maxBy { it.position }?.color
+}
+
+fun GuildMember.getColor(guild: Guild): Int? = getColor(guild.roles)

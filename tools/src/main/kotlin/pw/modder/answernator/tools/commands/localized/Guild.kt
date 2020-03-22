@@ -44,7 +44,7 @@ class Guild: LocalizedGuildOnlyCommand {
             if (guild.roles.size < 50) {
                 field(
                     texts.getStringOrKey("roles"),
-                    guild.roles.filterNot { it.name == "@everyone" }.joinToString(" ") { it.mention },
+                    guild.roles.filterNot { it.id == guild.id }.joinToString(" ") { it.mention },
                     false
                 )
             } else {

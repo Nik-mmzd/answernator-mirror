@@ -21,7 +21,6 @@ import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.LocalizedCommand
 import pw.modder.answernator.utils.extensions.isAdmin
 import java.util.*
-import kotlin.random.Random
 
 private val logger = KotlinLogging.logger {  }
 @UnstableDefault
@@ -65,8 +64,14 @@ class Mute: LocalizedCommand {
                     } catch (e: Exception) {
                         logger.warn(e) { "${guild.name} (${guild.id}): Log error" }
                     }
-                    guildClient.removeMemberRole(userId = id, roleId = muteRole)
-                    logger.debug { "Removed mute role" }
+                    try {
+                        guildClient.removeMemberRole(userId = id, roleId = muteRole)
+                        logger.debug { "Removed mute role" }
+                    } catch (e: Exception) {
+                        logger.error(e) { "Error removing mute role for user $username at ${guild.name}, role id $muteRole. Member is UNMUTED in DB" }
+                        throw e
+                    }
+
                     textMessage(texts.formatString("unmuted", mention))
                 }
                 false -> {
@@ -84,10 +89,16 @@ class Mute: LocalizedCommand {
                     } catch (e: Exception) {
                         logger.warn(e) { "${guild.name} (${guild.id}): Log error" }
                     }
-                    guildClient.addMemberRole(userId = id, roleId = muteRole)
-                    logger.debug { "Added mute role" }
                     guild.muteMember(id)
                     logger.debug { "Member muted in DB" }
+                    try {
+                        guildClient.addMemberRole(userId = id, roleId = muteRole)
+                        logger.debug { "Added mute role" }
+                    } catch (e: Exception) {
+                        logger.error(e) { "Error adding mute role for user $username at ${guild.name}, role id $muteRole. Member is UNMUTED in DB" }
+                        guild.unmuteMember(id)
+                        throw e
+                    }
                     textMessage(texts.formatString("muted", mention, reason))
                 }
             }

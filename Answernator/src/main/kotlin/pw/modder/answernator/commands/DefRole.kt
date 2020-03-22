@@ -12,6 +12,8 @@ import kotlinx.serialization.UnstableDefault
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedCommand
+import pw.modder.answernator.utils.extensions.isAdmin
+import pw.modder.answernator.cache.GuildCache.getCached
 import java.util.*
 
 @UnstableDefault
@@ -41,12 +43,15 @@ class DefRole: LocalizedCommand {
             else -> return textMessage(texts.getStringOrKey("error"))
         }
 
-        message.usersMentioned.forEach {
+        val guildObject = guild.getCached()
+        val mentionedUsers = message.usersMentioned.filterNot { guild.getMember(it.id).isAdmin(guildObject, it.id) }
+
+        mentionedUsers.forEach {
             when(add) {
                 true -> guild.addMemberRole(it.id, config.defaultRole)
                 false -> guild.removeMemberRole(it.id, config.defaultRole)
             }
         }
-        return textMessage(texts.formatString("done.$add", message.usersMentioned.joinToString(" ") { it.mention }))
+        return textMessage(texts.formatString("done.$add", mentionedUsers.joinToString(" ") { it.mention }))
     }
 }

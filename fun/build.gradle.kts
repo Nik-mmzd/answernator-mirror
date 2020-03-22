@@ -7,6 +7,9 @@ plugins {
 val diskordVersion: String by project
 val ktorVersion: String by project
 val exposedVersion: String by project
+val commonsIoVersion: String by project
+val kotlinLoggingVersion: String by project
+val guavaVersion: String by project
 
 
 val gitVersion: groovy.lang.Closure<String> by extra
@@ -23,9 +26,9 @@ dependencies {
     implementation(project(":Answernator"))
     implementation(kotlin("stdlib-jdk8"))
     implementation("com.jessecorbett:diskord-jvm:$diskordVersion")
-    implementation("commons-io:commons-io:2.6")
-    implementation("io.github.microutils:kotlin-logging:1.7.8")
-    implementation("com.google.guava:guava:28.2-jre")
+    implementation("commons-io:commons-io:$commonsIoVersion")
+    implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
+    implementation("com.google.guava:guava:$guavaVersion")
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-core-jvm:$ktorVersion")
     implementation("io.ktor:ktor-client-cio:$ktorVersion")

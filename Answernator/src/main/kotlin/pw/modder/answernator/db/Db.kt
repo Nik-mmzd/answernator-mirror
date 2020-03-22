@@ -17,7 +17,7 @@ object Db {
     private const val dbfile = "answernator"
 
     init {
-        Database.connect("jdbc:h2:./$dbfile", driver = "org.h2.Driver", user = "root", password = "")
+        Database.connect("jdbc:h2:./$dbfile;DB_CLOSE_DELAY=-1", driver = "org.h2.Driver", user = "root", password = "")
 
         transaction {
             SchemaUtils.create (GuildConfigs, LogConfigs, GuildMutes)
