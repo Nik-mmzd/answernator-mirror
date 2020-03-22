@@ -14,7 +14,10 @@ import pw.modder.answernator.utils.Command
 import pw.modder.answernator.cache.GuildCache.getCached
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.db.Db.memberIsMuted
+import pw.modder.answernator.utils.RelativeTime
 import pw.modder.answernator.utils.extensions.*
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 @UnstableDefault
@@ -30,6 +33,7 @@ class Info: LocalizedGuildOnlyCommand {
 
         message.usersMentioned.singleOrNull()?.run {
             val member = bot.clientStore.guilds[guildId].getMember(id)
+            val joined = RelativeTime.between(OffsetDateTime.now(), OffsetDateTime.parse(member.joinedAt, DateTimeFormatter.ISO_OFFSET_DATE_TIME))
 
             return dslmessage {
                 title = member.nickname ?: name.ifEmpty { username }
@@ -48,7 +52,7 @@ class Info: LocalizedGuildOnlyCommand {
 
                 field(texts.getStringOrKey("user.roles"), member.roleIds.joinToString(" ") { it.toRoleMention() }, false)
                 field(texts.getStringOrKey("user.rights"), member.computePermissions(guild, id).asList().joinToString(", ") { texts.getStringOrKey("permission.${it.name}") }, false)
-                field(texts.getStringOrKey("user.joinedAt"), member.joinedAt, false)
+                field(texts.getStringOrKey("user.joinedAt"), texts.formatString("user.joinedAt.value", joinedAtFormatter(texts, joined)), false)
 
                 setCurrentTimestamp()
             }
@@ -78,5 +82,33 @@ class Info: LocalizedGuildOnlyCommand {
         }
 
         return texts.errorMessage()
+    }
+
+    private fun joinedAtFormatter(texts: ResourceBundle, relativeTime: RelativeTime): String {
+        val answer = mutableListOf<String>()
+        var first = true
+
+        if (relativeTime.years > 0) {
+            answer + texts.formatString("user.joinedAt.years", relativeTime.years)
+            first = false
+        }
+        if (relativeTime.months > 0 || !first) {
+            answer + texts.formatString("user.joinedAt.months", relativeTime.months)
+            first = false
+        }
+        if (relativeTime.days > 0 || !first) {
+            answer + texts.formatString("user.joinedAt.days", relativeTime.days)
+            first = false
+        }
+        if (relativeTime.hours > 0 || !first) {
+            answer + texts.formatString("user.joinedAt.hours", relativeTime.hours)
+            first = false
+        }
+        if (relativeTime.minutes > 0 || !first) {
+            answer + texts.formatString("user.joinedAt.minutes", relativeTime.minutes)
+        }
+        answer + texts.formatString("user.joinedAt.seconds", relativeTime.seconds)
+
+        return answer.joinToString(" ")
     }
 }
