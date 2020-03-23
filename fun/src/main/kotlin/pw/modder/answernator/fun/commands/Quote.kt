@@ -28,7 +28,7 @@ private val json = Json(JsonConfiguration(strictMode = false))
 class Quote: Command {
     override val name = "quote"
     override fun getHelp(locale: Locale): String? {
-        return "Возвращает цитату с https://modder.pw. Использование: `цитату [номер цитаты]`"
+        return "Возвращает цитату с https://modder.pw. Использование: `quote [номер цитаты]`"
     }
 
     override suspend fun check(message: Message, guildClient: GuildClient?): Boolean {
