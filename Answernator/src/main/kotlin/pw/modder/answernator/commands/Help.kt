@@ -26,7 +26,7 @@ class Help: LocalizedCommand {
             }
             return dslmessage {
                 title = texts.getStringOrKey("title_cmdlist")
-                description = CommandList.commands.filter { it.check(message, permissions) }.joinToString(separator = "\n") { "`${it.name}`" }
+                description = CommandList.commands.filter { it.check(message, permissions) }.joinToString(separator = " ") { "`${it.name}`" }
             }
         }
 
@@ -43,7 +43,7 @@ class Help: LocalizedCommand {
 
         return dslmessage {
             title = texts.formatString("title", message.words[1])
-            description = cmd.getHelp(texts.locale) ?: texts.getString("not_available")
+            description = cmd.getHelp(texts.locale) ?: texts.getStringOrKey("not_available")
         }
     }
 }
