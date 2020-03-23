@@ -1,5 +1,6 @@
 package pw.modder.answernator.utils.extensions.bot
 
+import com.jessecorbett.diskord.api.model.AuditLogActionType
 import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.DiskordDsl
 import com.jessecorbett.diskord.util.mention
@@ -8,6 +9,7 @@ import kotlinx.serialization.UnstableDefault
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.utils.UTF8Control
 import pw.modder.answernator.utils.extensions.getStringOrKey
+import pw.modder.answernator.utils.extensions.toUserMention
 import java.util.*
 
 @UnstableDefault
@@ -15,23 +17,33 @@ import java.util.*
 fun Bot.logService() {
     userBanned { ban ->
         val logConfig = Db.logs.get(ban.guildId)
+        val auditLog = clientStore.guilds[ban.guildId].getAuditLog().entries
+            .firstOrNull { it.targetId == ban.user.id && it.actionType == AuditLogActionType.MEMBER_BAN_ADD.code }
 
         if (logConfig.memberBanLogChannel.isNotEmpty()) {
             val guildConfig = Db.guilds.get(ban.guildId)
             val texts = ResourceBundle.getBundle("locale.botGlobal", Locale(guildConfig.lang), UTF8Control())
             clientStore.channels[logConfig.memberBanLogChannel].sendMessage(
-                texts.getStringOrKey("bot.log.ban").format(ban.user.mention)
+                if (auditLog == null)
+                    texts.getStringOrKey("bot.log.ban").format(ban.user.mention)
+                else
+                    texts.getStringOrKey("bot.log.ban.full").format(ban.user.mention, auditLog.userId.toUserMention(), auditLog.reason)
             )
         }
     }
-    userUnbanned { unban ->
-        val logConfig = Db.logs.get(unban.guildId)
+    userUnbanned { unBan ->
+        val logConfig = Db.logs.get(unBan.guildId)
+        val auditLog = clientStore.guilds[unBan.guildId].getAuditLog().entries
+            .firstOrNull { it.targetId == unBan.user.id && it.actionType == AuditLogActionType.MEMBER_BAN_REMOVE.code }
 
         if (logConfig.memberUnbanLogChannel.isNotEmpty()) {
-            val guildConfig = Db.guilds.get(unban.guildId)
+            val guildConfig = Db.guilds.get(unBan.guildId)
             val texts = ResourceBundle.getBundle("locale.botGlobal", Locale(guildConfig.lang), UTF8Control())
             clientStore.channels[logConfig.memberUnbanLogChannel].sendMessage(
-                texts.getStringOrKey("bot.log.unban").format(unban.user.mention)
+                if (auditLog == null)
+                    texts.getStringOrKey("bot.log.unban").format(unBan.user.mention)
+                else
+                    texts.getStringOrKey("bot.log.unban.full").format(unBan.user.mention, auditLog.userId.toUserMention())
             )
         }
     }
