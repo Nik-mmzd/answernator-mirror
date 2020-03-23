@@ -13,3 +13,5 @@ private fun String.toMention(mentionType: MentionType): String {
 fun String.toUserMention(): String = toMention(MentionType.USER)
 fun String.toChannelMention(): String = toMention(MentionType.CHANNEL)
 fun String.toRoleMention(): String = toMention(MentionType.ROLE)
+
+inline fun String?.ifNullOrEmpty(block: () -> String): String = this?.takeIf { it.isNotEmpty() } ?: block()
