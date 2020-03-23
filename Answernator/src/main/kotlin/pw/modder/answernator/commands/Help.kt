@@ -26,7 +26,8 @@ class Help: LocalizedCommand {
             }
             return dslmessage {
                 title = texts.getStringOrKey("title_cmdlist")
-                description = CommandList.commands.filter { it.check(message, permissions) }.joinToString(separator = " ") { "`${it.name}`" }
+                description = CommandList.commands.filter { it.check(message, permissions) }
+                    .joinToString(separator = " ") { "`${Globals.config.prefix}${it.name}`" }
             }
         }
 
