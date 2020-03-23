@@ -13,4 +13,9 @@ data class Quote(
     val likesCount: Int
 ) {
     @Transient val creatorMention = creator.takeUnless { it == 1L }?.run { "<@$this>" } ?: "*неизвестен*"
+
+    @Serializable
+    data class Error(
+        val success: Boolean
+    )
 }

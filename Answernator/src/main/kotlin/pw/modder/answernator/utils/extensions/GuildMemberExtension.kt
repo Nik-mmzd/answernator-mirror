@@ -8,10 +8,8 @@ suspend fun GuildMember.computePermissions(client: GuildClient, memberId: String
 fun GuildMember.computePermissions(guild: Guild, memberId: String): Permissions {
     if (guild.ownerId == memberId) return Permissions.ALL
 
-    val roles = guild.roles.filter { it.id in roleIds }
-
     var permissions = guild.roles.single { it.id == guild.id }.permissions
-    roles.forEach { role ->
+    guild.roles.filter { it.id in roleIds }.forEach { role ->
         permissions += role.permissions
     }
 

@@ -10,6 +10,7 @@ import com.jessecorbett.diskord.dsl.footer
 import com.jessecorbett.diskord.util.words
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
+import kotlinx.serialization.MissingFieldException
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
@@ -47,7 +48,12 @@ class Quote: Command {
         val request = if (id == null) Globals.httpClient.get<String>("https://modder.pw/api/random.php")
             else Globals.httpClient.get<String>("https://modder.pw/api/get.php") { parameter("id", id) }
 
-        val data = json.parse(QuoteData.serializer(), request)
+        val data = try {
+            json.parse(QuoteData.serializer(), request)
+        } catch (e: MissingFieldException) {
+            if (!json.parse(QuoteData.Error.serializer(), request).success) return textMessage("Неверный номер цитаты")
+            throw e
+        }
 
         return dslmessage {
             title = "Цитата #${data.id}"

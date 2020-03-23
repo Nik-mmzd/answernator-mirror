@@ -40,6 +40,8 @@ class About: Command {
             field("Heap free", FileUtils.byteCountToDisplaySize(Runtime.getRuntime().freeMemory()), true)
             field("OS", System.getProperty("os.name", "Unknown") + ' ' + System.getProperty("os.arch", "Unknown"), true)
             field("Uptime", Utils.getReadableUptime(), true)
+
+
         }
     }
 }
