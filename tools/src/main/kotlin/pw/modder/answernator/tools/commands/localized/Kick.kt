@@ -6,8 +6,10 @@ import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.util.words
 import kotlinx.serialization.UnstableDefault
+import pw.modder.answernator.cache.GuildCache.getCached
 import pw.modder.answernator.tools.commandTypes.LocalizedGuildOnlyCommand
 import pw.modder.answernator.utils.Command
+import pw.modder.answernator.utils.extensions.isAdmin
 import pw.modder.answernator.utils.extensions.isUserMention
 import pw.modder.answernator.utils.extensions.toUserMention
 import java.util.*
@@ -20,9 +22,11 @@ class Kick: LocalizedGuildOnlyCommand {
 
     override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
         if (message.words.getOrNull(1)?.isUserMention() != true || message.usersMentioned.size != 1) return texts.errorMessage()
-        val guildId = message.guildId ?: return texts.errorMessage()
-        val memberId = message.usersMentioned.single().id
-        bot.clientStore.guilds[guildId].removeMember(memberId)
+        val client = bot.clientStore.guilds[message.guildId ?: return texts.errorMessage()]
+        val memberId = message.usersMentioned.single().takeIf { !client.getMember(it.id).isAdmin(client.getCached(), it.id) }?.id
+            ?: return texts.message("whitelisted")
+
+        client.removeMember(memberId)
         return texts.message("done", memberId.toUserMention())
     }
 }
