@@ -14,4 +14,10 @@ fun String.toUserMention(): String = toMention(MentionType.USER)
 fun String.toChannelMention(): String = toMention(MentionType.CHANNEL)
 fun String.toRoleMention(): String = toMention(MentionType.ROLE)
 
-inline fun String?.ifNullOrEmpty(block: () -> String): String = this?.takeIf { it.isNotEmpty() } ?: block()
+private fun String.isMention(mentionType: MentionType): Boolean {
+    return Regex("<${mentionType.prefix}\\d{18}>").matches(this)
+}
+
+fun String.isUserMention(): Boolean = isMention(MentionType.USER)
+fun String.isChannelMention(): Boolean = isMention(MentionType.CHANNEL)
+fun String.isRoleMention(): Boolean = isMention(MentionType.ROLE)

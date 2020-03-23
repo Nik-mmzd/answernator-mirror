@@ -20,6 +20,7 @@ import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.LocalizedCommand
 import pw.modder.answernator.utils.extensions.isAdmin
+import pw.modder.answernator.utils.extensions.isUserMention
 import java.util.*
 
 private val logger = KotlinLogging.logger {  }
@@ -47,6 +48,8 @@ class Mute: LocalizedCommand {
         logger.debug { "Checking configs" }
         if (muteRole.isEmpty()) return textMessage(texts.getStringOrKey("not.configured"))
         if (message.words.size < 2) return textMessage(texts.getStringOrKey("error"))
+        if (!message.words[1].isUserMention()) return textMessage(texts.getStringOrKey("error"))
+
         message.usersMentioned.singleOrNull()?.run {
             val member = guildClient.getMember(id)
             if (member.isAdmin(guild, id)) return texts.message("error.whitelisted", mention)
@@ -55,8 +58,10 @@ class Mute: LocalizedCommand {
             return when(guild.memberIsMuted(id)) {
                 true -> {
                     logger.debug { "Member is muted" }
+
                     guild.unmuteMember(id)
                     logger.debug { "Unmuted user in DB" }
+
                     if (logconfig.memberUnmuteLogChannel.isNotEmpty()) try {
                         bot.clientStore.channels[logconfig.memberUnmuteLogChannel]
                             .sendMessage(texts.formatString("log.unmuted", mention, message.author.mention))
@@ -64,6 +69,7 @@ class Mute: LocalizedCommand {
                     } catch (e: Exception) {
                         logger.warn(e) { "${guild.name} (${guild.id}): Log error" }
                     }
+
                     try {
                         guildClient.removeMemberRole(userId = id, roleId = muteRole)
                         logger.debug { "Removed mute role" }
@@ -74,14 +80,17 @@ class Mute: LocalizedCommand {
 
                     textMessage(texts.formatString("unmuted", mention))
                 }
+
                 false -> {
                     logger.debug { "Member is not muted" }
+
                     val reason = message.words.drop(2).joinToString(" ").ifEmpty {
                         val reasonCount = texts.getStringOrKey("reason.count").toIntOrNull() ?: 1
                         texts.getStringOrKey("reason.${Globals.random.nextInt(0, reasonCount)}")
 
                     }
                     logger.debug { "Got mute reason" }
+
                     if (logconfig.memberUnmuteLogChannel.isNotEmpty()) try {
                         bot.clientStore.channels[logconfig.memberUnmuteLogChannel]
                             .sendMessage(texts.formatString("log.muted", mention, message.author.mention, reason))
@@ -89,8 +98,10 @@ class Mute: LocalizedCommand {
                     } catch (e: Exception) {
                         logger.warn(e) { "${guild.name} (${guild.id}): Log error" }
                     }
+
                     guild.muteMember(id)
                     logger.debug { "Member muted in DB" }
+
                     try {
                         guildClient.addMemberRole(userId = id, roleId = muteRole)
                         logger.debug { "Added mute role" }

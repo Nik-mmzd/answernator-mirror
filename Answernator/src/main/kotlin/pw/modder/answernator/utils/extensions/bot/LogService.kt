@@ -9,7 +9,6 @@ import kotlinx.serialization.UnstableDefault
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.utils.UTF8Control
 import pw.modder.answernator.utils.extensions.getStringOrKey
-import pw.modder.answernator.utils.extensions.ifNullOrEmpty
 import pw.modder.answernator.utils.extensions.toUserMention
 import java.util.*
 
@@ -31,7 +30,7 @@ fun Bot.logService() {
                     texts.getStringOrKey("bot.log.ban.full").format(
                         ban.user.mention,
                         auditLog.userId.toUserMention(),
-                        auditLog.reason.ifNullOrEmpty { texts.getStringOrKey("bot.log.reason.unknown") }
+                        auditLog.reason.takeIf { !it.isNullOrEmpty() } ?: texts.getStringOrKey("bot.log.reason.unknown")
                     )
             )
         }
