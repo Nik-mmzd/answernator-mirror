@@ -38,9 +38,9 @@ class Dice: LocalizedCommand {
 
     override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
         val sum = message.words.getOrNull(4) == "sum"
-        val dice = message.words.getOrNull(1)?.toInt(6) ?: return texts.message("diceLimit", diceLimit)
-        val throws = message.words.getOrNull(2)?.toInt(1) ?: return texts.message("throwsSumLimit", throwsSumLimit)
-        val tries = message.words.getOrNull(3)?.toInt(1) ?: return texts.message("triesLimit", triesLimit)
+        val dice = message.words.getOrNull(1).toInt(6) ?: return texts.message("diceLimit", diceLimit)
+        val throws = message.words.getOrNull(2).toInt(1) ?: return texts.message("throwsSumLimit", throwsSumLimit)
+        val tries = message.words.getOrNull(3).toInt(1) ?: return texts.message("triesLimit", triesLimit)
 
         if (tries > triesLimit || tries < 1) return texts.message("triesLimit", triesLimit)
         if (!sum && throws > throwsLimit) return texts.message("throwsLimit", throwsLimit)
