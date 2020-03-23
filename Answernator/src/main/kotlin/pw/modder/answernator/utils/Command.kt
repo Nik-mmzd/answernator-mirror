@@ -12,20 +12,6 @@ import mu.KotlinLogging
 import java.util.*
 import pw.modder.answernator.utils.extensions.computePermissions
 
-//   return Command:new("help string", beta) -- beta boolean is optional
-//    :langs("lang1", "lang2") -- optional
-//    :groupUser() :groupAdmin() :groupOwner() :groupPerm("permission") -- optional
-//    :guildWhitelist("guildID_1", "guildID_2") :guildBlacklist("guildID_1", "guildID_2") -- optional
-//    :memberWhitelist("memberID_1", "memberID_2") ::memberBlacklist("memberID_1", "memberID_2") -- optional
-//    :split( number ) -- optional
-//    :timeout( number ) -- ptional
-//    :beta ( boolean ) -- optional
-//    :typeAll() :typeServer() :typePM() -- optional
-//    :code(
-//      function( message, arg )
-//        -- body...
-//      end
-//    ) -- yep :code must be LAST
 private val logger: KLogger = KotlinLogging.logger {}
 @UnstableDefault
 interface Command {

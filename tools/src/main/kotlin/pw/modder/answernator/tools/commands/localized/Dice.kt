@@ -31,11 +31,16 @@ class Dice: LocalizedCommand {
         triesLimit = props.getProperty("dice.triesLimit").toInt()
     }
 
+    private fun String?.toInt(default: Int): Int? {
+        if (this == null) return default
+        return toIntOrNull()
+    }
+
     override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
         val sum = message.words.getOrNull(4) == "sum"
-        val dice = message.words.getOrNull(1)?.toInt() ?: 6
-        val throws = message.words.getOrNull(2)?.toInt() ?: 1
-        val tries = message.words.getOrNull(3)?.toInt() ?: 1
+        val dice = message.words.getOrNull(1)?.toInt(6) ?: return texts.message("diceLimit", diceLimit)
+        val throws = message.words.getOrNull(2)?.toInt(1) ?: return texts.message("throwsSumLimit", throwsSumLimit)
+        val tries = message.words.getOrNull(3)?.toInt(1) ?: return texts.message("triesLimit", triesLimit)
 
         if (tries > triesLimit || tries < 1) return texts.message("triesLimit", triesLimit)
         if (!sum && throws > throwsLimit) return texts.message("throwsLimit", throwsLimit)
@@ -48,13 +53,13 @@ class Dice: LocalizedCommand {
             thumbnail = EmbedImage("https://files.mcmodder.ru/answernator/dice.jpg")
             repeat(tries) {
                 if (sum) {
-                    field(texts.formatString("try", it), random.nextInt(1*throws, dice*throws).toString(), false)
+                    field(texts.formatString("try", it), random.nextInt(1*throws, (dice*throws)+1).toString(), false)
                     return@repeat
                 }
 
                 val list: MutableList<Int> = mutableListOf()
                 repeat(throws) {
-                    list.add(random.nextInt(1, dice))
+                    list.add(random.nextInt(1, dice+1))
                 }
                 field(texts.formatString("try", it), list.joinToString(" "), false)
             }
