@@ -53,7 +53,7 @@ class Dice: LocalizedCommand {
             thumbnail = EmbedImage("https://files.mcmodder.ru/answernator/dice.jpg")
             repeat(tries) {
                 if (sum) {
-                    field(texts.formatString("try", it), random.nextInt(1*throws, (dice*throws)+1).toString(), false)
+                    field(texts.formatString("try", it+1), random.nextInt(1*throws, (dice*throws)+1).toString(), false)
                     return@repeat
                 }
 
