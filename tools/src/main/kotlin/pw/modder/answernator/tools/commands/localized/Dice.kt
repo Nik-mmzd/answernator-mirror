@@ -61,7 +61,7 @@ class Dice: LocalizedCommand {
                 repeat(throws) {
                     list.add(random.nextInt(1, dice+1))
                 }
-                field(texts.formatString("try", it), list.joinToString(" "), false)
+                field(texts.formatString("try", it+1), list.joinToString(" "), false)
             }
         }
     }
