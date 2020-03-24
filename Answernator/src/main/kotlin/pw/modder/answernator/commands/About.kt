@@ -20,6 +20,12 @@ class About: Command {
         return "Shows some technical information about the bot. Usage: `$name`. Not localized."
     }
 
+    override fun getDescription(locale: Locale): String? {
+        return "technical bot information"
+    }
+
+    override val cmdType = Command.CommandGroup.OWNER
+
     override suspend fun action(bot: Bot, message: Message, locale: Locale): CombinedMessageEmbed {
         return dslmessage {
             title = "Answernator"

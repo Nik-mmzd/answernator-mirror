@@ -4,6 +4,7 @@ import com.jessecorbett.diskord.api.model.Message
 import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import kotlinx.serialization.UnstableDefault
+import pw.modder.answernator.utils.extensions.getStringSafe
 import pw.modder.answernator.utils.extensions.getStringOrKey as getStringOrKey1
 import java.util.*
 
@@ -21,7 +22,11 @@ interface LocalizedCommand: Command {
     fun ResourceBundle.errorMessage(): CombinedMessageEmbed = message("error")
 
     override fun getHelp(locale: Locale): String? {
-        return getTexts(locale).getStringOrKey("help")
+        return getTexts(locale).getStringSafe("$name.help")
+    }
+
+    override fun getDescription(locale: Locale): String? {
+        return getTexts(locale).getStringSafe("$name.help.description")
     }
 
     override suspend fun action(bot: Bot, message: Message, locale: Locale): CombinedMessageEmbed {

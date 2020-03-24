@@ -22,6 +22,7 @@ import com.jessecorbett.diskord.dsl.message as dslmessage
 class Guild: LocalizedGuildOnlyCommand {
     override val name = "guild"
     override val userGroup = Command.UserGroup.ADMIN
+    override val cmdType = Command.CommandGroup.ADMIN
     override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
         if (message.words.getOrNull(1).equals("list", true)) {
             return textMessage(bot.clientStore.discord.getGuilds()

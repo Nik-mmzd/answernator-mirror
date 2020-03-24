@@ -8,6 +8,7 @@ import com.jessecorbett.diskord.dsl.field
 import com.jessecorbett.diskord.util.ClientStore
 import com.jessecorbett.diskord.util.words
 import kotlinx.serialization.UnstableDefault
+import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedCommand
 import java.util.*
 import kotlin.random.Random
@@ -21,6 +22,7 @@ class Dice: LocalizedCommand {
     private val throwsLimit: Int
     private val throwsSumLimit: Int
     private val triesLimit: Int
+    override val cmdType = Command.CommandGroup.FUN
 
     init {
         val props = Properties()

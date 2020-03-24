@@ -16,6 +16,8 @@ import java.util.*
 class DChar: Command {
     override val name = "буквахуй"
     override fun getHelp(locale: Locale) = "х̆уй!"
+    override fun getDescription(locale: Locale) = "посвящена одноимённому мему"
+    override val cmdType = Command.CommandGroup.FUN
 
     override fun check(message: Message, permissions: Permissions): Boolean {
         val locale = message.guildId?.run { Locale(Db.guilds.get(this).lang) } ?: Globals.config.locale

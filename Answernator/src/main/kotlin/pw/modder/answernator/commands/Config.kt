@@ -22,6 +22,7 @@ class Config: LocalizedCommand {
 
     override val channels = EnumSet.of(Command.ChannelTypes.GUILD)
     override val userGroup = Command.UserGroup.ADMIN
+    override val cmdType = Command.CommandGroup.ADMIN
 
     override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
         val guildClient = message.guildId?.run { bot.clientStore.guilds[this] } ?: return texts.message("noguild")

@@ -11,6 +11,7 @@ import com.jessecorbett.diskord.dsl.footer
 import com.jessecorbett.diskord.util.words
 import kotlinx.serialization.UnstableDefault
 import pw.modder.answernator.db.Db
+import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.LocalizedCommand
 import pw.modder.answernator.utils.extensions.setCurrentTimestamp
@@ -22,6 +23,7 @@ private val random = Random(System.currentTimeMillis())
 @UnstableDefault
 class Tsar: LocalizedCommand {
     override val name = "царь"
+    override val cmdType = Command.CommandGroup.FUN
 
     override suspend fun check(message: Message, guildClient: GuildClient?): Boolean {
         val locale = message.guildId?.run { Locale(Db.guilds.get(this).lang) } ?: Globals.config.locale

@@ -12,8 +12,13 @@ import java.util.*
 class Leave: Command {
     override val name = "leave"
     override val userGroup = Command.UserGroup.OWNER
+    override val cmdType = Command.CommandGroup.OWNER
     override fun getHelp(locale: Locale): String? {
         return "Usage: `leave` to get guild ids or `leave guild-id` to leave guild"
+    }
+
+    override fun getDescription(locale: Locale): String? {
+        return "leave any server"
     }
 
     override suspend fun action(bot: Bot, message: Message, locale: Locale): CombinedMessageEmbed {

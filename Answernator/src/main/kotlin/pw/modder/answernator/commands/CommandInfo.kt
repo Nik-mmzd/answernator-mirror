@@ -27,10 +27,16 @@ class CommandInfo: Command {
         return command.channels.toString()
     }
 
+    override val cmdType = Command.CommandGroup.DEBUG
+
     override val name = "command"
     override val userGroup = Command.UserGroup.OWNER
     override fun getHelp(locale: Locale): String? {
         return "Command info. Usage: `command [command]`"
+    }
+
+    override fun getDescription(locale: Locale): String? {
+        return "command debug info"
     }
     override suspend fun action(bot: Bot, message: Message, locale: Locale): CombinedMessageEmbed {
         if (message.words.size == 1) return textMessage("No command specified")

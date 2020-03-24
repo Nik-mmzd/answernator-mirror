@@ -19,6 +19,7 @@ import java.util.*
 class Log: LocalizedCommand {
     override val name = "log"
     override val userGroup = Command.UserGroup.ADMIN
+    override val cmdType = Command.CommandGroup.ADMIN
     override val channels: EnumSet<Command.ChannelTypes> = EnumSet.of(Command.ChannelTypes.GUILD)
 
     override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {

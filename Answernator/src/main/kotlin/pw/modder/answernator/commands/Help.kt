@@ -4,6 +4,7 @@ import com.jessecorbett.diskord.api.model.Message
 import com.jessecorbett.diskord.api.model.Permissions
 import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
+import com.jessecorbett.diskord.dsl.field
 import com.jessecorbett.diskord.util.authorId
 import com.jessecorbett.diskord.util.words
 import kotlinx.serialization.UnstableDefault
@@ -16,6 +17,7 @@ import com.jessecorbett.diskord.dsl.message as dslmessage
 @UnstableDefault
 class Help: LocalizedCommand {
     override val name: String = "help"
+    override val cmdType = Command.CommandGroup.USER
 
     override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
         val guildClient = message.guildId?.run { bot.clientStore.guilds[this] }
@@ -24,11 +26,24 @@ class Help: LocalizedCommand {
                 null -> Permissions.NONE
                 else -> message.partialMember?.computePermissions(guildClient, message.authorId) ?: Permissions.NONE
             }
+            val cmds = CommandList.commands.filter { it.check(message, permissions) }.groupBy { it.cmdType }
+
             return dslmessage {
                 title = texts.getStringOrKey("title_cmdlist")
-                description = texts.getStringOrKey("cmdlist.usage") + "\n" +
-                        CommandList.commands.filter { it.check(message, permissions) }
-                            .joinToString(separator = " ") { "`${Globals.config.prefix}${it.name}`" }
+                description = texts.getStringOrKey("cmdlist.usage")
+
+                cmds.forEach { (cmdType: Command.CommandGroup, cmds: List<Command>) ->
+                    if (cmds.isEmpty()) return@forEach
+
+                    field(
+                        texts.getStringOrKey("cmdlist.${cmdType.name}"),
+                        cmds.joinToString(separator = "\n") {
+                            it.getDescription(texts.locale)?.run { "`${Globals.config.prefix}${it.name}`: $this" }
+                                ?: "`${Globals.config.prefix}${it.name}`"
+                        },
+                        inline = false
+                    )
+                }
             }
         }
 

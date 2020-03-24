@@ -13,9 +13,14 @@ import java.util.*
 class Reload: Command {
     override val name: String = "reload"
     override val userGroup = Command.UserGroup.OWNER
+    override val cmdType = Command.CommandGroup.OWNER
 
     override fun getHelp(locale: Locale): String? {
         return "Reloads bot. Not a restart! Not localized."
+    }
+
+    override fun getDescription(locale: Locale): String? {
+        return "reload bot"
     }
 
     override suspend fun action(bot: Bot, message: Message, locale: Locale): CombinedMessageEmbed {

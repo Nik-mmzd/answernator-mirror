@@ -23,6 +23,7 @@ class Info: LocalizedGuildOnlyCommand {
     override val name = "info"
     override val userGroup = Command.UserGroup.PERMISSION
     override val permission = Permission.MANAGE_GUILD
+    override val cmdType = Command.CommandGroup.ADMIN
 
     override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
         if (message.usersMentioned.size + message.rolesIdsMentioned.size != 1) return texts.errorMessage()

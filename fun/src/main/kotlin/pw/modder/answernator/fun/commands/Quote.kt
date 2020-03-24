@@ -28,8 +28,13 @@ private val json = Json(JsonConfiguration(strictMode = false))
 @UnstableDefault
 class Quote: Command {
     override val name = "quote"
+    override val cmdType = Command.CommandGroup.FUN
     override fun getHelp(locale: Locale): String? {
         return "Возвращает цитату с https://modder.pw. Использование: `quote [номер цитаты]`"
+    }
+
+    override fun getDescription(locale: Locale): String? {
+        return "цитата из цитатника modder.pw"
     }
 
     override suspend fun check(message: Message, guildClient: GuildClient?): Boolean {

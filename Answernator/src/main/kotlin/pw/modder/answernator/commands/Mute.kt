@@ -29,6 +29,7 @@ class Mute: LocalizedCommand {
     override val name = "mute"
     override val userGroup = Command.UserGroup.PERMISSION
     override val permission = Permission.MANAGE_MESSAGES
+    override val cmdType = Command.CommandGroup.MODER
     override val channels = EnumSet.of(Command.ChannelTypes.GUILD)
 
     override fun check(message: Message, permissions: Permissions): Boolean {

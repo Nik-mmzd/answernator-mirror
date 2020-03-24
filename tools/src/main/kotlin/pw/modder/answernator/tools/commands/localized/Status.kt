@@ -19,6 +19,7 @@ class Status: LocalizedCommand {
     override val name = "status"
 
     override val userGroup = Command.UserGroup.OWNER
+    override val cmdType = Command.CommandGroup.OWNER
 
     override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
         return when(message.words.getOrNull(1)?.toLowerCase()) {

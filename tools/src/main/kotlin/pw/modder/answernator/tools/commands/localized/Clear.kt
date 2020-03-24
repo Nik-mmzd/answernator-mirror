@@ -23,6 +23,7 @@ class Clear: LocalizedCommand {
     override val userGroup = Command.UserGroup.PERMISSION
     override val permission = Permission.MANAGE_MESSAGES
     override val channels = EnumSet.of(Command.ChannelTypes.GUILD)
+    override val cmdType = Command.CommandGroup.MODER
 
     val Message.sentAtDate
         get() = OffsetDateTime.parse(sentAt, DateTimeFormatter.ISO_OFFSET_DATE_TIME)

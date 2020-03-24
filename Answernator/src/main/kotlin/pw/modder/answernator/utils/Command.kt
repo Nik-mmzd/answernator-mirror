@@ -20,6 +20,7 @@ interface Command {
     val permission: Permission? get() = null
 //    val timeout: Int get() = 0
     val channels: EnumSet<ChannelTypes> get() = EnumSet.of(ChannelTypes.DIRECT, ChannelTypes.GUILD)
+    val cmdType: CommandGroup get() = CommandGroup.OTHER
 
     suspend fun action(bot: Bot, message: Message, locale: Locale): CombinedMessageEmbed
 
@@ -70,6 +71,9 @@ interface Command {
     fun getHelp(locale: Locale): String? {
         return null
     }
+    fun getDescription(locale: Locale): String? {
+        return null
+    }
 
     enum class UserGroup {
         OWNER, ADMIN, ALL, PERMISSION
@@ -77,5 +81,9 @@ interface Command {
 
     enum class ChannelTypes {
         GUILD, DIRECT
+    }
+
+    enum class CommandGroup {
+        DEBUG, OWNER, ADMIN, MODER, USER, FUN, OTHER
     }
 }

@@ -8,6 +8,7 @@ import com.jessecorbett.diskord.util.mention
 import com.jessecorbett.diskord.util.words
 import kotlinx.serialization.UnstableDefault
 import pw.modder.answernator.tools.utils.RandomGames
+import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedCommand
 import java.util.*
 
@@ -15,6 +16,7 @@ internal val gamesdb = RandomGames()
 @UnstableDefault
 class RandomGame: LocalizedCommand {
     override val name = "randomgame"
+    override val cmdType = Command.CommandGroup.FUN
 
     override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
         val num = message.words.getOrNull(1)?.toIntOrNull() ?: 1
