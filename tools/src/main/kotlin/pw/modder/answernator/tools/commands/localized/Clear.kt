@@ -31,11 +31,9 @@ class Clear: LocalizedCommand {
     override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
         val channel = bot.clientStore.channels[message.channelId]
         val messages = mutableListOf<String>()
-        val limit = message.words.getOrNull(1)?.run {
-            toIntOrNull() ?: return texts.errorMessage()
-        } ?: 100
+        val limit = message.words.getOrNull(1)?.toIntOrNull() ?: return texts.errorMessage()
 
-        if (limit > 100) return texts.errorMessage()
+        if (limit > 100 || limit < 2) return texts.errorMessage()
         val mentionedUserIds = message.usersMentioned.map { it.id }
         val minusTwoWeeks = message.sentAtDate.minus(2, ChronoUnit.WEEKS)
 

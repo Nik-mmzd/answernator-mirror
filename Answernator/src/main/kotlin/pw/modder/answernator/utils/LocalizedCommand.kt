@@ -19,10 +19,13 @@ interface LocalizedCommand: Command {
     fun ResourceBundle.formatString(key: String, vararg args: Any): String = getStringOrKey(key).format(*args)
     fun ResourceBundle.message(key: String): CombinedMessageEmbed = textMessage(getStringOrKey(key))
     fun ResourceBundle.message(key: String, vararg args: Any): CombinedMessageEmbed = textMessage(formatString(key, *args))
-    fun ResourceBundle.errorMessage(): CombinedMessageEmbed = message("error")
+    fun ResourceBundle.errorMessage(key: String = "help"): CombinedMessageEmbed {
+        val help = getHelp(locale) ?: return textMessage(getStringOrKey(key))
+        return textMessage("${getStringOrKey(key)}\n$help")
+    }
 
     override fun getHelp(locale: Locale): String? {
-        return getTexts(locale).getStringSafe("$name.help")
+        return getTexts(locale).getStringSafe("$name.help.usage")
     }
 
     override fun getDescription(locale: Locale): String? {

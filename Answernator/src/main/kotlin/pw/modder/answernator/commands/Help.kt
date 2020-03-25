@@ -58,9 +58,11 @@ class Help: LocalizedCommand {
             description = texts.getStringOrKey("no_permissions")
         }
 
+        val help = getHelp(texts.locale)
+        val desc = getDescription(texts.locale)
         return dslmessage {
             title = texts.formatString("title", message.words[1])
-            description = cmd.getHelp(texts.locale) ?: texts.getStringOrKey("not_available")
+            description = if (help.isNullOrEmpty() || desc.isNullOrEmpty()) texts.getStringOrKey("not_available") else "$desc\n$help"
         }
     }
 }
