@@ -42,14 +42,14 @@ class Mute: LocalizedCommand {
 
     override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
         logger.debug { "Getting guild..." }
-        val guildClient = bot.clientStore.guilds[message.guildId ?: return textMessage(texts.getStringOrKey("error"))]
+        val guildClient = bot.clientStore.guilds[message.guildId ?: return texts.errorMessage()]
         val guild = guildClient.getCached()
         val muteRole = Db.guilds.get(guild.id).muteRole
 
         logger.debug { "Checking configs" }
         if (muteRole.isEmpty()) return textMessage(texts.getStringOrKey("not.configured"))
-        if (message.words.size < 2) return textMessage(texts.getStringOrKey("error"))
-        if (!message.words[1].isUserMention()) return textMessage(texts.getStringOrKey("error"))
+        if (message.words.size < 2) return texts.errorMessage()
+        if (!message.words[1].isUserMention()) return texts.errorMessage()
 
         message.usersMentioned.singleOrNull()?.run {
             val member = guildClient.getMember(id)
