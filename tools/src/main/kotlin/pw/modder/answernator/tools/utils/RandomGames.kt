@@ -46,22 +46,17 @@ function getGameName( nameLists, wordsCount )
 end
 */
 class RandomGames {
-    private val words: List<List<String>>
+    private val words: Map<Int, List<String>>
     private val random = Random(System.currentTimeMillis())
 
     init {
         val reader = javaClass.classLoader.getResourceAsStream("gameslist.txt").reader()
-        val lines = reader.use {
-            it.readLines()
-        }
-        val firstSep = lines.indexOf("----")
-        val secondSep = lines.lastIndexOf("----")
 
-        words = listOf(
-            lines.subList(0, firstSep - 1),
-            lines.subList(firstSep + 1, secondSep - 1),
-            lines.subList(secondSep + 1, lines.lastIndex)
-        )
+        var part = 0
+        words = reader.use { it.readLines() }.groupBy {
+            if (it == "----") { part++}
+            part
+        }
     }
 
     fun getRandomGame(): String {
@@ -70,7 +65,7 @@ class RandomGames {
         val wordsCount = random.nextInt(2, 4)
         var i = if (wordsCount == 3) 0 else random.nextInt(0, 2) // first
         do {
-            val word = words[i].random(random).split('^', limit = 2)
+            val word = (words[i] ?: listOf("[word $i]")).random(random).split('^', limit = 2)
             if (word[0] in badWords) continue
 
             word.getOrNull(1)?.run {
