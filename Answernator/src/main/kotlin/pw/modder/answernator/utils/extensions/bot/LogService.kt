@@ -8,6 +8,7 @@ import com.jessecorbett.diskord.util.sendMessage
 import kotlinx.serialization.UnstableDefault
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.utils.UTF8Control
+import pw.modder.answernator.utils.extensions.getAuditLog
 import pw.modder.answernator.utils.extensions.getStringOrKey
 import pw.modder.answernator.utils.extensions.toUserMention
 import java.util.*
@@ -17,7 +18,7 @@ import java.util.*
 fun Bot.logService() {
     userBanned { ban ->
         val logConfig = Db.logs.get(ban.guildId)
-        val auditLog = clientStore.guilds[ban.guildId].getAuditLog().entries
+        val auditLog = clientStore.guilds[ban.guildId].getAuditLog(true).entries
             .firstOrNull { it.targetId == ban.user.id && it.actionType == AuditLogActionType.MEMBER_BAN_ADD.code }
 
         if (logConfig.memberBanLogChannel.isNotEmpty()) {
@@ -37,7 +38,7 @@ fun Bot.logService() {
     }
     userUnbanned { unBan ->
         val logConfig = Db.logs.get(unBan.guildId)
-        val auditLog = clientStore.guilds[unBan.guildId].getAuditLog().entries
+        val auditLog = clientStore.guilds[unBan.guildId].getAuditLog(true).entries
             .firstOrNull { it.targetId == unBan.user.id && it.actionType == AuditLogActionType.MEMBER_BAN_REMOVE.code }
 
         if (logConfig.memberUnbanLogChannel.isNotEmpty()) {
