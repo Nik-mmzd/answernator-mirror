@@ -20,6 +20,7 @@ class Kick: LocalizedGuildOnlyCommand {
     override val userGroup = Command.UserGroup.PERMISSION
     override val permission = Permission.KICK_MEMBERS
     override val cmdType = Command.CommandGroup.MODER
+    override val requiredPermission: Permission? = Permission.KICK_MEMBERS
 
     override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
         if (message.words.getOrNull(1)?.isUserMention() != true || message.usersMentioned.size != 1) return texts.errorMessage()

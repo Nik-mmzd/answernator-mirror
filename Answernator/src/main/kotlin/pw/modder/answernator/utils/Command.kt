@@ -21,6 +21,7 @@ interface Command {
 //    val timeout: Int get() = 0
     val channels: EnumSet<ChannelTypes> get() = EnumSet.of(ChannelTypes.DIRECT, ChannelTypes.GUILD)
     val cmdType: CommandGroup get() = CommandGroup.OTHER
+    val requiredPermission: Permission? get() = null
 
     suspend fun action(bot: Bot, message: Message, locale: Locale): CombinedMessageEmbed
 

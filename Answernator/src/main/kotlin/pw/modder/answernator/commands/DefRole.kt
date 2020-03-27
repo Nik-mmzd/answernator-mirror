@@ -23,6 +23,7 @@ class DefRole: LocalizedCommand {
     override val userGroup = Command.UserGroup.PERMISSION
     override val permission = Permission.MANAGE_MESSAGES
     override val cmdType = Command.CommandGroup.MODER
+    override val requiredPermission: Permission? = Permission.MANAGE_ROLES
 
     override suspend fun check(message: Message, guildClient: GuildClient?): Boolean {
         val cfg = Db.guilds.get(message.guildId ?: return false) ?: return false
