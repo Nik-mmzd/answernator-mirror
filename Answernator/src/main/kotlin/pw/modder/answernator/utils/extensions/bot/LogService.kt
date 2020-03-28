@@ -19,6 +19,7 @@ import java.util.*
 fun Bot.logService() {
     userBanned { ban ->
         val logConfig = Db.logs.get(ban.guildId)
+        val client = clientStore.channels[logConfig.memberBanLogChannel]
         val auditLog = clientStore.guilds[ban.guildId].getAuditLog(true).entries
             .firstOrNull { it.targetId == ban.user.id && it.actionType == AuditLogActionType.MEMBER_BAN_ADD.code }
             ?: run {
@@ -30,15 +31,20 @@ fun Bot.logService() {
         if (logConfig.memberBanLogChannel.isNotEmpty()) {
             val guildConfig = Db.guilds.get(ban.guildId)
             val texts = ResourceBundle.getBundle("locale.botGlobal", Locale(guildConfig.lang), UTF8Control())
+            if (auditLog == null) {
+                client.sendMessage(texts.getStringOrKey("bot.log.ban").format(ban.user.mention))
+                return@userBanned
+            }
+
+            val reasonParts = auditLog.reason?.split('|', limit = 2)?.takeIf { it.isNotEmpty() }
+                ?: listOf(texts.getStringOrKey("bot.log.reason.unknown"))
+
             clientStore.channels[logConfig.memberBanLogChannel].sendMessage(
-                if (auditLog == null)
-                    texts.getStringOrKey("bot.log.ban").format(ban.user.mention)
-                else
-                    texts.getStringOrKey("bot.log.ban.full").format(
-                        ban.user.mention,
-                        auditLog.userId.toUserMention(),
-                        auditLog.reason.takeIf { !it.isNullOrEmpty() } ?: texts.getStringOrKey("bot.log.reason.unknown")
-                    )
+                texts.getStringOrKey("bot.log.ban.full").format(
+                    ban.user.mention,
+                    if (reasonParts.size == 1) auditLog.userId.toUserMention() else reasonParts.first().toUserMention(),
+                    reasonParts.last()
+                )
             )
         }
     }
