@@ -5,6 +5,7 @@ import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.DiskordDsl
 import com.jessecorbett.diskord.util.mention
 import com.jessecorbett.diskord.util.sendMessage
+import kotlinx.coroutines.delay
 import kotlinx.serialization.UnstableDefault
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.utils.UTF8Control
@@ -20,6 +21,11 @@ fun Bot.logService() {
         val logConfig = Db.logs.get(ban.guildId)
         val auditLog = clientStore.guilds[ban.guildId].getAuditLog(true).entries
             .firstOrNull { it.targetId == ban.user.id && it.actionType == AuditLogActionType.MEMBER_BAN_ADD.code }
+            ?: run {
+                delay(5000L)
+                clientStore.guilds[ban.guildId].getAuditLog(true).entries
+                    .firstOrNull { it.targetId == ban.user.id && it.actionType == AuditLogActionType.MEMBER_BAN_ADD.code }
+            }
 
         if (logConfig.memberBanLogChannel.isNotEmpty()) {
             val guildConfig = Db.guilds.get(ban.guildId)
@@ -40,6 +46,11 @@ fun Bot.logService() {
         val logConfig = Db.logs.get(unBan.guildId)
         val auditLog = clientStore.guilds[unBan.guildId].getAuditLog(true).entries
             .firstOrNull { it.targetId == unBan.user.id && it.actionType == AuditLogActionType.MEMBER_BAN_REMOVE.code }
+            ?: run {
+                delay(5000L)
+                clientStore.guilds[unBan.guildId].getAuditLog(true).entries
+                    .firstOrNull { it.targetId == unBan.user.id && it.actionType == AuditLogActionType.MEMBER_BAN_REMOVE.code }
+            }
 
         if (logConfig.memberUnbanLogChannel.isNotEmpty()) {
             val guildConfig = Db.guilds.get(unBan.guildId)
