@@ -25,9 +25,10 @@ class Sudo: Command {
     }
 
     override suspend fun action(bot: Bot, message: Message, locale: Locale): CombinedMessageEmbed {
-        if (message.words.size < 2) textMessage("No command specified.\n" + getHelp(locale))
+        if (message.words.size < 2) return textMessage("No command specified.\n" + getHelp(locale))
+        if (message.words[1].equals(name, true)) return textMessage("No recursion allowed")
         CommandList.commands.singleOrNull {
-            it.name == message.words[1] && Command.ChannelTypes.GUILD in it.channels
+            it.name.equals(message.words[1], true) && Command.ChannelTypes.GUILD in it.channels
         }?.run {
             return action(bot, message.copy(content = message.words.drop(1).joinToString(" ")), locale)
         } ?: return textMessage("Command `${message.words[1].removeGraves()}` not found")

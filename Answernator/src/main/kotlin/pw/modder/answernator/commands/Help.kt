@@ -7,6 +7,7 @@ import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.dsl.field
 import com.jessecorbett.diskord.util.authorId
 import com.jessecorbett.diskord.util.words
+import pw.modder.answernator.utils.extensions.joinToStrings
 import kotlinx.serialization.UnstableDefault
 import pw.modder.answernator.utils.*
 import pw.modder.answernator.utils.extensions.computePermissions
@@ -34,15 +35,14 @@ class Help: LocalizedCommand {
 
                 cmds.forEach { (cmdType: Command.CommandGroup, cmds: List<Command>) ->
                     if (cmds.isEmpty()) return@forEach
-
-                    field(
-                        texts.getStringOrKey("cmdlist.${cmdType.name}"),
-                        cmds.joinToString(separator = "\n") {
-                            it.getDescription(texts.locale)?.run { "`${Globals.config.prefix}${it.name}`: $this" }
-                                ?: "`${Globals.config.prefix}${it.name}`"
-                        },
-                        inline = false
-                    )
+                    cmds.map { it.getDescription(texts.locale)?.run { "`${Globals.config.prefix}${it.name}`: $this" }
+                        ?: "`${Globals.config.prefix}${it.name}`" }.joinToStrings(1024, "\n").forEach {
+                        field(
+                            texts.getStringOrKey("cmdlist.${cmdType.name}"),
+                            it,
+                            inline = false
+                        )
+                    }
                 }
             }
         }
