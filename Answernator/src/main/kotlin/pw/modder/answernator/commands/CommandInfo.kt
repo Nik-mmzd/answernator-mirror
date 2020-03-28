@@ -59,7 +59,7 @@ class CommandInfo: Command {
             field("Command name", cmd.name, true)
             field("Command publicity", getCommandTypeString(cmd), true)
             field("Command channel types", getCommandChannelTypeString(cmd), true)
-            requiredPermission?.run {
+            cmd.requiredPermission?.run {
                 field("Required bot permission", name, true)
                 if (botPerms != null) field("Bot can run", botPerms.contains(this).toBoolString(), true)
             }
