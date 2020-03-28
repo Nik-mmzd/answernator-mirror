@@ -1,5 +1,6 @@
 package pw.modder.answernator.utils.extensions.bot
 
+import com.jessecorbett.diskord.api.exception.DiscordBadPermissionsException
 import com.jessecorbett.diskord.api.model.Message
 import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.DiskordDsl
@@ -13,6 +14,7 @@ import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.UTF8Control
 import pw.modder.answernator.utils.extensions.formatString
 import pw.modder.answernator.utils.extensions.getStringOrKey
+import pw.modder.answernator.utils.extensions.getStringSafe
 import java.util.*
 
 private val logger = KotlinLogging.logger {}
@@ -45,6 +47,19 @@ fun Bot.commandService() {
             if (check(message, message.guildId?.run { clientStore.guilds[this] })) {
                 val reply = try {
                     action(this@commandService, message, locale)
+                } catch (e: DiscordBadPermissionsException) {
+                    val perm = requiredPermission
+
+                    if (perm == null) {
+                        message.reply(texts.getStringOrKey("bot.badPermissions"))
+                        return@run
+                    }
+
+                    message.reply(texts.formatString(
+                        "bot.badPermissions.perm",
+                        texts.getStringSafe("bot.badPermissions.${perm.name}") ?: perm.name
+                    ))
+                    return@run
                 } catch (e: NotImplementedError) {
                     val text = e.message?.run { texts.formatString("bot.notImplemented.message", "${config.prefix}$name", this) }
                         ?: texts.formatString("bot.notImplemented", "${config.prefix}$name")

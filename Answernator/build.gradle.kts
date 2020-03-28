@@ -51,9 +51,11 @@ val jar by tasks.getting(Jar::class) {
 tasks {
     compileKotlin {
         kotlinOptions.jvmTarget = "1.8"
+        kotlinOptions.freeCompilerArgs += "-Xuse-experimental=kotlin.Experimental"
     }
     compileTestKotlin {
         kotlinOptions.jvmTarget = "1.8"
+        kotlinOptions.freeCompilerArgs += "-Xuse-experimental=kotlin.Experimental"
     }
 
     val createDependenciesFile by creating {

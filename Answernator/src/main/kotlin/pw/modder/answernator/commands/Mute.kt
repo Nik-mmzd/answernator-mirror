@@ -31,6 +31,7 @@ class Mute: LocalizedCommand {
     override val permission = Permission.MANAGE_MESSAGES
     override val cmdType = Command.CommandGroup.MODER
     override val channels = EnumSet.of(Command.ChannelTypes.GUILD)
+    override val requiredPermission: Permission? = Permission.MANAGE_ROLES
 
     override fun check(message: Message, permissions: Permissions): Boolean {
         return super.check(message, permissions) && Db.guilds.get(message.guildId ?: return false).muteRole.isNotEmpty()
