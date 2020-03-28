@@ -19,6 +19,7 @@ import pw.modder.answernator.db.Db
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.LocalizedCommand
+import pw.modder.answernator.utils.extensions.bot.isMe
 import pw.modder.answernator.utils.extensions.isAdmin
 import pw.modder.answernator.utils.extensions.isUserMention
 import java.util.*
@@ -54,7 +55,7 @@ class Mute: LocalizedCommand {
 
         message.usersMentioned.singleOrNull()?.run {
             val member = guildClient.getMember(id)
-            if (member.isAdmin(guild, id)) return texts.message("error.whitelisted", mention)
+            if (member.isAdmin(guild, id) || bot.isMe(id)) return texts.message("error.whitelisted", mention)
             logger.debug { "Got mentioned user" }
             val logconfig = Db.logs.get(guild.id)
             return when(guild.memberIsMuted(id)) {

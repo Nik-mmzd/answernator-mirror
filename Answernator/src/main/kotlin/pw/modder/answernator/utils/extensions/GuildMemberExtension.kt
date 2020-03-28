@@ -26,7 +26,7 @@ fun GuildMember.isAdmin(guild: Guild, memberId: String): Boolean = computePermis
         Permission.MANAGE_CHANNELS,
         Permission.MANAGE_ROLES,
         Permission.MANAGE_NICKNAMES
-    )
+)
 
 fun GuildMember.getColor(roles: List<Role>): Int? {
     return roles.filter { it.color != 0 && it.id in roleIds }.maxBy { it.position }?.color

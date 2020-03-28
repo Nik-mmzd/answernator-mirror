@@ -4,12 +4,14 @@ import com.jessecorbett.diskord.api.model.Message
 import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.dsl.field
-import com.jessecorbett.diskord.util.ClientStore
+import com.jessecorbett.diskord.util.authorId
 import com.jessecorbett.diskord.util.words
 import kotlinx.serialization.UnstableDefault
 import pw.modder.answernator.utils.CommandList
 import java.util.*
 import pw.modder.answernator.utils.Command
+import pw.modder.answernator.utils.extensions.bot.getMe
+import pw.modder.answernator.utils.extensions.computePermissions
 import com.jessecorbett.diskord.dsl.message as dslmessage
 
 @UnstableDefault
@@ -21,6 +23,11 @@ class CommandInfo: Command {
             Command.UserGroup.ALL -> "Public"
             Command.UserGroup.PERMISSION -> "Permission: " + command.permission
         }
+    }
+
+    private fun Boolean.toBoolString(): String = when (this) {
+        true -> "yes"
+        false -> "no"
     }
 
     private fun getCommandChannelTypeString(command: Command): String {
@@ -42,12 +49,23 @@ class CommandInfo: Command {
         if (message.words.size == 1) return textMessage("No command specified")
         val cmd = CommandList.commands.singleOrNull { it.name == message.words[1] }
             ?: return textMessage("Command `${message.words[1]}` not found")
+
+        val client = message.guildId?.run { bot.clientStore.guilds[this] }
+        val botPerms = client?.getMember(bot.getMe().id)?.computePermissions(client, bot.getMe().id)
+        val memberPerms = client?.run { message.partialMember?.computePermissions(this, message.authorId) }
         return dslmessage {
             title = "Command information"
 
             field("Command name", cmd.name, true)
             field("Command publicity", getCommandTypeString(cmd), true)
             field("Command channel types", getCommandChannelTypeString(cmd), true)
+            requiredPermission?.run {
+                field("Required bot permission", name, true)
+                if (botPerms != null) field("Bot can run", botPerms.contains(this).toBoolString(), true)
+            }
+            memberPerms?.run {
+                field("Member can use", cmd.check(message, this).toBoolString(), true)
+            }
         }
     }
 }

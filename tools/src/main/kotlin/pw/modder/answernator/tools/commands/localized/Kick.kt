@@ -9,6 +9,7 @@ import kotlinx.serialization.UnstableDefault
 import pw.modder.answernator.cache.GuildCache.getCached
 import pw.modder.answernator.tools.commandTypes.LocalizedGuildOnlyCommand
 import pw.modder.answernator.utils.Command
+import pw.modder.answernator.utils.extensions.bot.isMe
 import pw.modder.answernator.utils.extensions.isAdmin
 import pw.modder.answernator.utils.extensions.isUserMention
 import pw.modder.answernator.utils.extensions.toUserMention
@@ -25,7 +26,7 @@ class Kick: LocalizedGuildOnlyCommand {
     override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
         if (message.words.getOrNull(1)?.isUserMention() != true || message.usersMentioned.size != 1) return texts.errorMessage()
         val client = bot.clientStore.guilds[message.guildId ?: return texts.errorMessage()]
-        val memberId = message.usersMentioned.single().takeIf { !client.getMember(it.id).isAdmin(client.getCached(), it.id) }?.id
+        val memberId = message.usersMentioned.single().takeIf { !client.getMember(it.id).isAdmin(client.getCached(), it.id) && !bot.isMe(it) }?.id
             ?: return texts.message("whitelisted")
 
         client.removeMember(memberId)
