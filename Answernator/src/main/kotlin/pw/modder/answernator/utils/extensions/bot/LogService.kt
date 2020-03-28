@@ -39,7 +39,7 @@ fun Bot.logService() {
             val reasonParts = auditLog.reason?.split('|', limit = 2)?.takeIf { it.isNotEmpty() }
                 ?: listOf(texts.getStringOrKey("bot.log.reason.unknown"))
 
-            clientStore.channels[logConfig.memberBanLogChannel].sendMessage(
+            client.sendMessage(
                 texts.getStringOrKey("bot.log.ban.full").format(
                     ban.user.mention,
                     if (reasonParts.size == 1) auditLog.userId.toUserMention() else reasonParts.first().toUserMention(),
