@@ -7,3 +7,4 @@ pw.modder.answernator.commands.Log
 pw.modder.answernator.commands.Mute
 pw.modder.answernator.commands.DefRole
 pw.modder.answernator.commands.Leave
+pw.modder.answernator.commands.Sudo
