@@ -5,10 +5,12 @@ import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.dsl.field
 import com.jessecorbett.diskord.util.ClientStore
+import com.jessecorbett.diskord.util.mention
 import com.jessecorbett.diskord.dsl.message as dslmessage
 import kotlinx.serialization.UnstableDefault
 import org.apache.commons.io.FileUtils
 import pw.modder.answernator.utils.*
+import pw.modder.answernator.utils.extensions.bot.getMe
 import java.util.*
 
 @UnstableDefault
@@ -27,8 +29,9 @@ class About: Command {
     override val cmdType = Command.CommandGroup.OWNER
 
     override suspend fun action(bot: Bot, message: Message, locale: Locale): CombinedMessageEmbed {
+        val me = bot.getMe()
         return dslmessage {
-            title = "Answernator"
+            title = me.username
             description = "Third iteration of Answernator. Now in Kotlin!"
             System.getProperty("java.vendor")?.also { field("Java Vendor", it, true) }
             field("Java Version", System.getProperty("java.version", "Unknown"), true)
@@ -46,8 +49,6 @@ class About: Command {
             field("Heap free", FileUtils.byteCountToDisplaySize(Runtime.getRuntime().freeMemory()), true)
             field("OS", System.getProperty("os.name", "Unknown") + ' ' + System.getProperty("os.arch", "Unknown"), true)
             field("Uptime", Utils.getReadableUptime(), true)
-
-
         }
     }
 }
