@@ -65,7 +65,7 @@ class Guild: LocalizedGuildOnlyCommand {
             }
             guild.afkChannelId?.run {
                 field(texts.getStringOrKey("afkChannel"), this.toChannelMention(), true)
-                field(texts.getStringOrKey("afkTimeout"), texts.formatString("afkTimeout.value", this), true)
+                field(texts.getStringOrKey("afkTimeout"), texts.formatString("afkTimeout.value", guild.afkTimeoutSeconds), true)
             }
 
             field(texts.getStringOrKey("notifications"), texts.getStringOrKey("notifications.level.${guild.defaultMessageNotificationLevel.name}"), true)
