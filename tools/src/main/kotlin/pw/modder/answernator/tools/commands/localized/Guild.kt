@@ -13,6 +13,7 @@ import pw.modder.answernator.cache.GuildCache.getCached
 import kotlinx.serialization.UnstableDefault
 import pw.modder.answernator.tools.commandTypes.LocalizedGuildOnlyCommand
 import pw.modder.answernator.utils.Command
+import pw.modder.answernator.utils.Utils
 import pw.modder.answernator.utils.extensions.toChannelMention
 import pw.modder.answernator.utils.extensions.toUserMention
 import java.util.*
@@ -51,6 +52,7 @@ class Guild: LocalizedGuildOnlyCommand {
             } else {
                 field(texts.getStringOrKey("roles"), (guild.roles.size - 1).toString(), true)
             }
+            field(texts.getStringOrKey("created_at"), texts.formatString("created_at.value", Utils.prettyPrintTime(texts.locale, Utils.snowflakeCreatedAt(guild.id))), false)
             field(texts.getStringOrKey("region"), guild.region.capitalize(), true)
             field(texts.getStringOrKey("features"),
                 guild.features.joinToString(", ") {
