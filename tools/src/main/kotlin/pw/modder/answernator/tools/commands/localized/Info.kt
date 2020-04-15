@@ -50,6 +50,7 @@ class Info: LocalizedGuildOnlyCommand {
                 field(texts.getStringOrKey("user.roles"), member.roleIds.joinToString(" ") { it.toRoleMention() }.ifEmpty { texts.getStringOrKey("empty") }, false)
                 field(texts.getStringOrKey("user.rights"), member.computePermissions(guild, id).asList().joinToString(", ") { texts.getStringOrKey("permission.${it.name}") }.ifEmpty { texts.getStringOrKey("empty") }, false)
                 field(texts.getStringOrKey("user.joinedAt"), texts.formatString("user.joinedAt.value", Utils.prettyPrintTime(texts.locale, member.joinedAt)), false)
+                field(texts.getStringOrKey("user.createdAt"), texts.formatString("user.createdAt.value", Utils.prettyPrintTime(texts.locale, createdAt)), false)
 
                 setCurrentTimestamp()
             }

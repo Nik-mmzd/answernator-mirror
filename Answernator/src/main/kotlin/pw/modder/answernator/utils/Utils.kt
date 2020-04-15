@@ -59,4 +59,8 @@ object Utils {
             .toFormatter()
         return formatter.print(Period(DateTime(time), DateTime.now(), PeriodType.yearMonthDayTime()))
     }
+
+    fun snowflakeCreatedAt(snowflake: String): Long {
+        return (snowflake.toLong() shr 22) + 1420070400000
+    }
 }
