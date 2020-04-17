@@ -13,6 +13,7 @@ val commonsIoVersion: String by project
 val kotlinLoggingVersion: String by project
 val guavaVersion: String by project
 val h2Version: String by project
+val jodaTimeVersion: String by project
 
 
 val gitVersion: groovy.lang.Closure<*> by extra
@@ -39,7 +40,7 @@ dependencies {
     implementation("io.ktor:ktor-client-core-jvm:$ktorVersion")
     implementation("io.ktor:ktor-client-cio:$ktorVersion")
     implementation("com.h2database:h2:$h2Version")
-    implementation("joda-time:joda-time:2.10.5")
+    implementation("joda-time:joda-time:$jodaTimeVersion")
 }
 
 val jar by tasks.getting(Jar::class) {

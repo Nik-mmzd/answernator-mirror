@@ -10,6 +10,7 @@ val exposedVersion: String by project
 val commonsIoVersion: String by project
 val kotlinLoggingVersion: String by project
 val guavaVersion: String by project
+val jodaTimeVersion: String by project
 
 
 val gitVersion: groovy.lang.Closure<String> by extra
@@ -35,6 +36,7 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
+    implementation("joda-time:joda-time:$jodaTimeVersion")
 }
 
 tasks {
