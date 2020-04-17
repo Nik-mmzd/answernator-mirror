@@ -2,7 +2,6 @@ package pw.modder.answernator.tools.commands.localized
 
 import com.jessecorbett.diskord.api.exception.DiscordNotFoundException
 import com.jessecorbett.diskord.api.model.Message
-import com.jessecorbett.diskord.api.rest.EmbedField
 import com.jessecorbett.diskord.api.rest.EmbedImage
 import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
@@ -40,7 +39,8 @@ class Guild: LocalizedGuildOnlyCommand {
         }
 
         return dslmessage {
-            field(texts.getStringOrKey("name"), guild.name, true)
+            title = texts.formatString("title", guild.name)
+
             field(texts.getStringOrKey("owner"), guild.ownerId.toUserMention(), true)
             field(texts.getStringOrKey("emojis"), guild.emojis.size.toString(), true)
             if (guild.roles.size < 50 && guild.id == message.guildId) {
@@ -52,7 +52,7 @@ class Guild: LocalizedGuildOnlyCommand {
             } else {
                 field(texts.getStringOrKey("roles"), (guild.roles.size - 1).toString(), true)
             }
-            field(texts.getStringOrKey("created_at"), texts.formatString("created_at.value", Utils.prettyPrintTime(texts.locale, Utils.snowflakeCreatedAt(guild.id))), false)
+            field(texts.getStringOrKey("created_at"), texts.formatString("created_at.value", Utils.prettyPrintPeriod(texts.locale, Utils.snowflakeCreatedAt(guild.id))), false)
             field(texts.getStringOrKey("region"), guild.region.capitalize(), true)
             field(texts.getStringOrKey("features"),
                 guild.features.joinToString(", ") {

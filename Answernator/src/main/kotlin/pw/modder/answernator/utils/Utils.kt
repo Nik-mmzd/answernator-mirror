@@ -36,7 +36,7 @@ object Utils {
 
     private val String.s get() = " $this"
 
-    fun prettyPrintTime(locale: Locale, time: Any): String {
+    fun prettyPrintPeriod(locale: Locale, time: Any, till: DateTime = DateTime.now()): String {
         val texts = ResourceBundle.getBundle("locale.botGlobal", locale, UTF8Control())
         val formatter = PeriodFormatterBuilder()
             .appendYears()
@@ -57,8 +57,11 @@ object Utils {
             .appendSeconds()
             .appendSuffix(texts.getStringOrKey("bot.date.second").s, texts.getStringOrKey("bot.date.seconds").s)
             .toFormatter()
-        return formatter.print(Period(DateTime(time), DateTime.now(), PeriodType.yearMonthDayTime()))
+        return formatter.print(Period(DateTime(time), till, PeriodType.yearMonthDayTime()))
     }
+
+    fun prettyPrintPeriodSnowflake(locale: Locale, snowflake: String, till: DateTime = DateTime.now())
+            = prettyPrintPeriod(locale, snowflakeCreatedAt(snowflake), till)
 
     fun snowflakeCreatedAt(snowflake: String): Long {
         return (snowflake.toLong() shr 22) + 1420070400000

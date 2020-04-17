@@ -34,14 +34,15 @@ class Clear: LocalizedCommand {
         val messages = mutableListOf<String>()
         val limit = message.words.getOrNull(1)?.toIntOrNull() ?: return texts.errorMessage()
 
-        if (limit > 100 || limit < 2) return texts.errorMessage()
+        if (limit > 100 || limit < 1) return texts.errorMessage()
         val mentionedUserIds = message.usersMentioned.map { it.id }
         val minusTwoWeeks = message.sentAtDate.minus(2, ChronoUnit.WEEKS)
+        val msgLimit = if (mentionedUserIds.isEmpty()) limit else 100
 
         var lastMessage = message
         do {
             messages.addAll(
-                channel.getMessagesBefore(limit = limit, messageId = lastMessage.id)
+                channel.getMessagesBefore(limit = msgLimit, messageId = lastMessage.id)
                     .also { lastMessage = it.last() }
                     .filter { mentionedUserIds.isEmpty() || it.authorId in mentionedUserIds }
                     .take(limit - messages.size)
@@ -52,11 +53,15 @@ class Clear: LocalizedCommand {
             )
         } while (messages.size < limit && lastMessage.sentAtDate.isAfter(minusTwoWeeks))
 
-        if (messages.size < 2) return texts.message("empty")
+        if (messages.size < 1) return texts.message("empty")
 
-        channel.bulkDeleteMessages(BulkMessageDelete(
-            messages.take(limit).toList()
-        ))
+        if (messages.size == 1) {
+            channel.deleteMessage(messages.single())
+        } else {
+            channel.bulkDeleteMessages(BulkMessageDelete(
+                messages.toList()
+            ))
+        }
 
         return texts.message("done", messages.size)
     }

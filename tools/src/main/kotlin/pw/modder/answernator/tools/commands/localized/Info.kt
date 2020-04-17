@@ -14,6 +14,7 @@ import pw.modder.answernator.utils.Command
 import pw.modder.answernator.cache.GuildCache.getCached
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.db.Db.memberIsMuted
+import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.Utils
 import pw.modder.answernator.utils.extensions.*
 import java.util.*
@@ -33,7 +34,7 @@ class Info: LocalizedGuildOnlyCommand {
         message.usersMentioned.singleOrNull()?.run {
             val member = bot.clientStore.guilds[guildId].getMember(id)
             return dslmessage {
-                title = member.nickname ?: username
+                title = texts.formatString("user.title", member.nickname ?: username)
 
                 avatarHash?.run {
                     thumbnail = EmbedImage("https://cdn.discordapp.com/avatars/$id/$this")
@@ -46,23 +47,24 @@ class Info: LocalizedGuildOnlyCommand {
                 field(texts.getStringOrKey("user.owner"), texts.getStringOrKey("bool.${id == guild.ownerId}"), true)
                 field(texts.getStringOrKey("user.admin"), texts.getStringOrKey("bool.${member.isAdmin(guild, id)}"), true)
                 field(texts.getStringOrKey("user.muted"), texts.getStringOrKey("bool.${guild.memberIsMuted(id)}"), true)
+                field(texts.getStringOrKey("user.superuser"), texts.getStringOrKey("bool.${id == Globals.config.author}"), true)
 
                 field(texts.getStringOrKey("user.roles"), member.roleIds.joinToString(" ") { it.toRoleMention() }.ifEmpty { texts.getStringOrKey("empty") }, false)
                 field(texts.getStringOrKey("user.rights"), member.computePermissions(guild, id).asList().joinToString(", ") { texts.getStringOrKey("permission.${it.name}") }.ifEmpty { texts.getStringOrKey("empty") }, false)
-                field(texts.getStringOrKey("user.joinedAt"), texts.formatString("user.joinedAt.value", Utils.prettyPrintTime(texts.locale, member.joinedAt)), false)
-                field(texts.getStringOrKey("user.createdAt"), texts.formatString("user.createdAt.value", Utils.prettyPrintTime(texts.locale, createdAt)), false)
+                field(texts.getStringOrKey("user.joinedAt"), texts.formatString("user.joinedAt.value", Utils.prettyPrintPeriod(texts.locale, member.joinedAt)), false)
+                field(texts.getStringOrKey("user.createdAt"), texts.formatString("user.createdAt.value", Utils.prettyPrintPeriodSnowflake(texts.locale, id)), false)
 
                 setCurrentTimestamp()
             }
         }
 
         message.rolesIdsMentioned.singleOrNull()?.let { roleId ->
-            guild.roles.single { role -> role.id == roleId }
+            guild.roles.singleOrNull { role -> role.id == roleId }
         }?.run {
             val config = Db.guilds.get(guildId)
 
             return dslmessage {
-                title = name
+                title = texts.formatString("role.title", name)
 
                 if (this@run.color != 0) color = this@run.color
 
@@ -73,6 +75,7 @@ class Info: LocalizedGuildOnlyCommand {
                 field(texts.getStringOrKey("role.mentionable"), texts.getStringOrKey("bool.$isMentionable"), true)
                 field(texts.getStringOrKey("role.hoist"), texts.getStringOrKey("bool.$isUserListPinned"), true)
                 field(texts.getStringOrKey("role.position"), position.toString(), true)
+                field(texts.getStringOrKey("role.createdAt"), texts.formatString("role.createdAt.value", Utils.prettyPrintPeriodSnowflake(texts.locale, id)), false)
 
                 field(texts.getStringOrKey("role.rights"), permissions.asList().joinToString(", ") { texts.getStringOrKey("permission.${it.name}") }.ifEmpty { texts.getStringOrKey("empty") }, false)
 
