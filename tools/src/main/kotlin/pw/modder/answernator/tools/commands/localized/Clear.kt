@@ -36,24 +36,22 @@ class Clear: LocalizedCommand {
 
         if (limit > 100 || limit < 1) return texts.errorMessage()
         val mentionedUserIds = message.usersMentioned.map { it.id }
-        val minusTwoWeeks = message.sentAtDate.minus(2, ChronoUnit.WEEKS)
+
+        val timeLimit = message.sentAtDate.minus(2, ChronoUnit.DAYS)
         val msgLimit = if (mentionedUserIds.isEmpty()) limit else 100
 
         var lastMessage = message
         do {
-            messages.addAll(
-                channel.getMessagesBefore(limit = msgLimit, messageId = lastMessage.id)
-                    .also { lastMessage = it.last() }
-                    .filter { mentionedUserIds.isEmpty() || it.authorId in mentionedUserIds }
-                    .take(limit - messages.size)
-                    .filter { it.sentAtDate.isAfter(minusTwoWeeks) }
-                    .map { it.id }.ifEmpty {
-                        return texts.message("empty")
-                    }
-            )
-        } while (messages.size < limit && lastMessage.sentAtDate.isAfter(minusTwoWeeks))
+            channel.getMessagesBefore(limit = msgLimit, messageId = lastMessage.id)
+                .also { lastMessage = it.last() }
+                .filter { mentionedUserIds.isEmpty() || it.authorId in mentionedUserIds }
+                .take(limit - messages.size)
+                .filter { it.sentAtDate.isAfter(timeLimit) }
+                .map { it.id }.takeIf { it.isNotEmpty() }?.run { messages.addAll(this) }
 
-        if (messages.size < 1) return texts.message("empty")
+        } while (messages.size < limit && lastMessage.sentAtDate.isAfter(timeLimit))
+
+        if (messages.isEmpty()) return texts.message("empty")
 
         if (messages.size == 1) {
             channel.deleteMessage(messages.single())
