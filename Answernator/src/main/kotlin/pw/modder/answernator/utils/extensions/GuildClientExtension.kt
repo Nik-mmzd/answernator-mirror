@@ -4,6 +4,7 @@ import com.jessecorbett.diskord.api.rest.client.GuildClient
 import com.jessecorbett.diskord.util.DiskordInternals
 import pw.modder.answernator.utils.auditLog.AuditLog
 
-@Suppress("UNUSED_PARAMETER")
+
 @OptIn(DiskordInternals::class)
-suspend fun GuildClient.getAuditLog(useCustom: Boolean = true) = getRequest("/guilds/$guildId/audit-logs", AuditLog.serializer())
+@Suppress("UNUSED_PARAMETER")
+suspend fun GuildClient.getAuditLog(useCustom: Boolean = true) = this.getRequest("/guilds/$guildId/audit-logs", AuditLog.serializer())

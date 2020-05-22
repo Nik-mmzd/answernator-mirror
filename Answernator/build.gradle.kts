@@ -52,11 +52,11 @@ val jar by tasks.getting(Jar::class) {
 tasks {
     compileKotlin {
         kotlinOptions.jvmTarget = "1.8"
-        kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
+        kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn" // for custom GuildClient.getAuditLog
     }
     compileTestKotlin {
         kotlinOptions.jvmTarget = "1.8"
-        kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
+        kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn" // for custom GuildClient.getAuditLog
     }
 
     val createDependenciesFile by creating {

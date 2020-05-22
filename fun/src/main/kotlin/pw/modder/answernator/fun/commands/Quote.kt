@@ -11,7 +11,6 @@ import com.jessecorbett.diskord.util.words
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import kotlinx.serialization.MissingFieldException
-import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 import pw.modder.answernator.db.Db
@@ -22,8 +21,7 @@ import java.util.*
 import com.jessecorbett.diskord.dsl.message as dslmessage
 import pw.modder.answernator.`fun`.utils.Quote as QuoteData
 
-@OptIn(UnstableDefault::class)
-private val json = Json(JsonConfiguration(ignoreUnknownKeys = true))
+private val json = Json(JsonConfiguration.Stable.copy(ignoreUnknownKeys = true))
 
 class Quote: Command {
     override val name = "quote"

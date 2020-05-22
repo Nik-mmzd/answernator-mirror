@@ -3,8 +3,8 @@ package pw.modder.answernator.utils
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonConfiguration
 import java.io.File
 import java.util.*
 
@@ -24,9 +24,8 @@ open class Config(
     companion object {
         val DEFAULT = Config()
 
-        @OptIn(UnstableDefault::class)
         fun loadFrom(file: File): Config {
-            return Json.parse(serializer(), file.readText(Charsets.UTF_8))
+            return Json(JsonConfiguration.Stable).parse(serializer(), file.readText(Charsets.UTF_8))
         }
     }
 }
