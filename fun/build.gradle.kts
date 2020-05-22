@@ -25,7 +25,7 @@ repositories {
 dependencies {
     implementation(project(":Answernator"))
     implementation(kotlin("stdlib-jdk8"))
-    implementation("com.jessecorbett:diskord-jvm:$diskordVersion")
+    implementation("com.jessecorbett:diskord:$diskordVersion")
     implementation("commons-io:commons-io:$commonsIoVersion")
     implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
     implementation("com.google.guava:guava:$guavaVersion")

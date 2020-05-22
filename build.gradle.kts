@@ -1,6 +1,6 @@
 plugins {
-    kotlin("jvm") version "1.3.61"
-    kotlin("plugin.serialization") version "1.3.61" apply false
+    kotlin("jvm") version "1.3.72"
+    kotlin("plugin.serialization") version "1.3.72" apply false
     id("com.palantir.git-version") version "0.12.2" apply false
     id("com.github.johnrengelman.shadow") version "5.2.0" apply false
 }

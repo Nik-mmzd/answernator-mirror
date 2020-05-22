@@ -28,7 +28,7 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    implementation("com.jessecorbett:diskord-jvm:$diskordVersion")
+    implementation("com.jessecorbett:diskord:$diskordVersion")
     implementation("org.slf4j:slf4j-simple:$slf4jVersion")
     implementation("commons-io:commons-io:$commonsIoVersion")
     implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
