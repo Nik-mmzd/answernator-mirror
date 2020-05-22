@@ -9,7 +9,6 @@ import com.jessecorbett.diskord.dsl.field
 import com.jessecorbett.diskord.util.mention
 import com.jessecorbett.diskord.util.words
 import pw.modder.answernator.cache.GuildCache.getCached
-import kotlinx.serialization.UnstableDefault
 import pw.modder.answernator.tools.commandTypes.LocalizedGuildOnlyCommand
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.Utils
@@ -18,7 +17,6 @@ import pw.modder.answernator.utils.extensions.toUserMention
 import java.util.*
 import com.jessecorbett.diskord.dsl.message as dslmessage
 
-@UnstableDefault
 class Guild: LocalizedGuildOnlyCommand {
     override val name = "guild"
     override val userGroup = Command.UserGroup.ADMIN

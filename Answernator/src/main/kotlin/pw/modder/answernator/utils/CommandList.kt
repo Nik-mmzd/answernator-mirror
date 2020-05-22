@@ -1,13 +1,11 @@
 package pw.modder.answernator.utils
 
-import kotlinx.serialization.UnstableDefault
 import mu.KotlinLogging
 import java.io.File
 import java.net.URLClassLoader
 import java.util.*
 
 private val logger = KotlinLogging.logger {  }
-@UnstableDefault
 object CommandList {
     var commands: List<Command> = listOf()
     var modules: List<ModuleInfoProvider> = listOf()

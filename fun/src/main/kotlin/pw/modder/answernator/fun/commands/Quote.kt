@@ -18,14 +18,13 @@ import pw.modder.answernator.db.Db
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.extensions.setTimestamp
-import pw.modder.answernator.`fun`.utils.Quote as QuoteData
-import com.jessecorbett.diskord.dsl.message as dslmessage
 import java.util.*
+import com.jessecorbett.diskord.dsl.message as dslmessage
+import pw.modder.answernator.`fun`.utils.Quote as QuoteData
 
-@UnstableDefault
-private val json = Json(JsonConfiguration(strictMode = false))
+@OptIn(UnstableDefault::class)
+private val json = Json(JsonConfiguration(ignoreUnknownKeys = true))
 
-@UnstableDefault
 class Quote: Command {
     override val name = "quote"
     override val cmdType = Command.CommandGroup.FUN

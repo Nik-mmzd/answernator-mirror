@@ -8,13 +8,11 @@ import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.util.words
 import kotlinx.coroutines.*
-import kotlinx.serialization.UnstableDefault
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedCommand
 import java.util.*
 
 private var randomGamesTimer: Job? = null
-@UnstableDefault
 class Status: LocalizedCommand {
     override val name = "status"
 

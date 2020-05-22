@@ -6,15 +6,13 @@ import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.dsl.field
 import com.jessecorbett.diskord.util.authorId
 import com.jessecorbett.diskord.util.words
-import kotlinx.serialization.UnstableDefault
-import pw.modder.answernator.utils.CommandList
-import java.util.*
 import pw.modder.answernator.utils.Command
+import pw.modder.answernator.utils.CommandList
 import pw.modder.answernator.utils.extensions.bot.getMe
 import pw.modder.answernator.utils.extensions.computePermissions
+import java.util.*
 import com.jessecorbett.diskord.dsl.message as dslmessage
 
-@UnstableDefault
 class CommandInfo: Command {
     private fun getCommandTypeString(command: Command): String {
         return when(command.userGroup) {

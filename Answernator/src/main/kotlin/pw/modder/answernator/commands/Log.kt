@@ -5,17 +5,15 @@ import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.dsl.field
 import com.jessecorbett.diskord.util.words
-import kotlinx.serialization.UnstableDefault
 import org.jetbrains.exposed.sql.Column
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.db.LogConfigs
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedCommand
 import pw.modder.answernator.utils.extensions.toChannelMention
-import com.jessecorbett.diskord.dsl.message as dslmessage
 import java.util.*
+import com.jessecorbett.diskord.dsl.message as dslmessage
 
-@UnstableDefault
 class Log: LocalizedCommand {
     override val name = "log"
     override val userGroup = Command.UserGroup.ADMIN

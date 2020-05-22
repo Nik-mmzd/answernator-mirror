@@ -4,10 +4,8 @@ import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.DiskordDsl
 import com.jessecorbett.diskord.util.mention
 import com.jessecorbett.diskord.util.sendMessage
-import kotlinx.serialization.UnstableDefault
 import pw.modder.answernator.db.Db
 
-@UnstableDefault
 @DiskordDsl
 fun Bot.greetingService() {
     userJoinedGuild {

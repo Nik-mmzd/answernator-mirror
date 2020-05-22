@@ -4,13 +4,11 @@ import com.jessecorbett.diskord.api.model.Message
 import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.util.words
-import kotlinx.serialization.UnstableDefault
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.CommandList
 import pw.modder.answernator.utils.extensions.removeGraves
 import java.util.*
 
-@UnstableDefault
 class Sudo: Command {
     override val name = "sudo"
     override val cmdType = Command.CommandGroup.DEBUG

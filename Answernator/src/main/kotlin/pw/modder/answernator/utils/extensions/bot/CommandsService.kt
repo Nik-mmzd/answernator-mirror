@@ -5,7 +5,6 @@ import com.jessecorbett.diskord.api.model.Message
 import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.DiskordDsl
 import com.jessecorbett.diskord.util.words
-import kotlinx.serialization.UnstableDefault
 import mu.KotlinLogging
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.utils.Command
@@ -18,7 +17,6 @@ import pw.modder.answernator.utils.extensions.getStringSafe
 import java.util.*
 
 private val logger = KotlinLogging.logger {}
-@UnstableDefault
 @DiskordDsl
 fun Bot.commandService() {
     val config = Globals.config

@@ -7,19 +7,17 @@ import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.dsl.field
 import com.jessecorbett.diskord.util.toRoleMention
-import com.jessecorbett.diskord.dsl.message as dslmessage
-import kotlinx.serialization.UnstableDefault
-import pw.modder.answernator.tools.commandTypes.LocalizedGuildOnlyCommand
-import pw.modder.answernator.utils.Command
 import pw.modder.answernator.cache.GuildCache.getCached
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.db.Db.memberIsMuted
+import pw.modder.answernator.tools.commandTypes.LocalizedGuildOnlyCommand
+import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.Utils
 import pw.modder.answernator.utils.extensions.*
 import java.util.*
+import com.jessecorbett.diskord.dsl.message as dslmessage
 
-@UnstableDefault
 class Info: LocalizedGuildOnlyCommand {
     override val name = "info"
     override val userGroup = Command.UserGroup.PERMISSION

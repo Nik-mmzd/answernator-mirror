@@ -5,9 +5,7 @@ import com.jessecorbett.diskord.api.rest.EmbedImage
 import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.dsl.field
-import com.jessecorbett.diskord.util.ClientStore
 import com.jessecorbett.diskord.util.words
-import kotlinx.serialization.UnstableDefault
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedCommand
 import java.util.*
@@ -15,7 +13,6 @@ import kotlin.random.Random
 import com.jessecorbett.diskord.dsl.message as dslmessage
 
 private val random = Random(System.currentTimeMillis())
-@UnstableDefault
 class Dice: LocalizedCommand {
     override val name: String = "dice"
     private val diceLimit: Int

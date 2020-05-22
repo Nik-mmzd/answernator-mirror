@@ -9,18 +9,16 @@ import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.dsl.field
 import com.jessecorbett.diskord.dsl.footer
 import com.jessecorbett.diskord.util.words
-import kotlinx.serialization.UnstableDefault
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.LocalizedCommand
 import pw.modder.answernator.utils.extensions.setCurrentTimestamp
-import com.jessecorbett.diskord.dsl.message as dslmessage
 import java.util.*
 import kotlin.random.Random
+import com.jessecorbett.diskord.dsl.message as dslmessage
 
 private val random = Random(System.currentTimeMillis())
-@UnstableDefault
 class Tsar: LocalizedCommand {
     override val name = "царь"
     override val cmdType = Command.CommandGroup.FUN

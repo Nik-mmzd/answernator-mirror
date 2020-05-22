@@ -7,7 +7,8 @@ import kotlinx.serialization.json.JsonConfiguration
 import java.io.File
 import kotlin.random.Random
 
-@UnstableDefault
+
+@OptIn(UnstableDefault::class)
 object Globals {
     private const val configFileName = "config.json"
 

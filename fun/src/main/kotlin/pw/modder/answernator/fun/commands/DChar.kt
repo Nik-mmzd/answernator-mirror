@@ -6,13 +6,11 @@ import com.jessecorbett.diskord.api.rest.client.GuildClient
 import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.util.words
-import kotlinx.serialization.UnstableDefault
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.Globals
 import java.util.*
 
-@UnstableDefault
 class DChar: Command {
     override val name = "буквахуй"
     override fun getHelp(locale: Locale) = "х̆уй!"

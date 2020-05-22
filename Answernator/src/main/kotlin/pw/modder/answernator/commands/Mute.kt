@@ -9,13 +9,12 @@ import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.util.mention
 import com.jessecorbett.diskord.util.sendMessage
 import com.jessecorbett.diskord.util.words
-import kotlinx.serialization.UnstableDefault
 import mu.KotlinLogging
-import pw.modder.answernator.db.Db.muteMember
-import pw.modder.answernator.db.Db.unmuteMember
-import pw.modder.answernator.db.Db.memberIsMuted
 import pw.modder.answernator.cache.GuildCache.getCached
 import pw.modder.answernator.db.Db
+import pw.modder.answernator.db.Db.memberIsMuted
+import pw.modder.answernator.db.Db.muteMember
+import pw.modder.answernator.db.Db.unmuteMember
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.LocalizedCommand
@@ -25,7 +24,6 @@ import pw.modder.answernator.utils.extensions.isUserMention
 import java.util.*
 
 private val logger = KotlinLogging.logger {  }
-@UnstableDefault
 class Mute: LocalizedCommand {
     override val name = "mute"
     override val userGroup = Command.UserGroup.PERMISSION

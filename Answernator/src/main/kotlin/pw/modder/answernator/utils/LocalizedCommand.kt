@@ -3,13 +3,11 @@ package pw.modder.answernator.utils
 import com.jessecorbett.diskord.api.model.Message
 import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
-import kotlinx.serialization.UnstableDefault
 import pw.modder.answernator.utils.extensions.getStringSafe
-import pw.modder.answernator.utils.extensions.getStringOrKey as getStringOrKey1
 import java.util.*
+import pw.modder.answernator.utils.extensions.getStringOrKey as getStringOrKey1
 
 //private val logger: KLogger = KotlinLogging.logger {}
-@UnstableDefault
 interface LocalizedCommand: Command {
     fun getTexts(locale: Locale): ResourceBundle {
         return ResourceBundle.getBundle("locale.$name", locale, javaClass.classLoader, UTF8Control())

@@ -2,10 +2,8 @@ package pw.modder.answernator.utils.extensions.bot
 
 import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.DiskordDsl
-import kotlinx.serialization.UnstableDefault
 import pw.modder.answernator.db.Db
 
-@UnstableDefault
 @DiskordDsl
 fun Bot.defaultRoleService() {
     userJoinedGuild {

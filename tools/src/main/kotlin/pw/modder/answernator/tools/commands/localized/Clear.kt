@@ -7,16 +7,13 @@ import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.util.authorId
 import com.jessecorbett.diskord.util.words
-import kotlinx.serialization.UnstableDefault
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedCommand
-import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.*
 
-@UnstableDefault
 class Clear: LocalizedCommand {
     override val name = "clear"
 

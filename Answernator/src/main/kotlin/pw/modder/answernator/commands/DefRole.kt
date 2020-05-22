@@ -8,15 +8,13 @@ import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.util.mention
 import com.jessecorbett.diskord.util.words
-import kotlinx.serialization.UnstableDefault
+import pw.modder.answernator.cache.GuildCache.getCached
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedCommand
 import pw.modder.answernator.utils.extensions.isAdmin
-import pw.modder.answernator.cache.GuildCache.getCached
 import java.util.*
 
-@UnstableDefault
 class DefRole: LocalizedCommand {
     override val name = "defrole"
     override val channels = EnumSet.of(Command.ChannelTypes.GUILD)

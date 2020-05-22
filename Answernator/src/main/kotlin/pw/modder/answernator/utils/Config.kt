@@ -24,7 +24,7 @@ open class Config(
     companion object {
         val DEFAULT = Config()
 
-        @UnstableDefault
+        @OptIn(UnstableDefault::class)
         fun loadFrom(file: File): Config {
             return Json.parse(serializer(), file.readText(Charsets.UTF_8))
         }

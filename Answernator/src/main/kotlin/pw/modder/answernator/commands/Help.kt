@@ -7,15 +7,16 @@ import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.dsl.field
 import com.jessecorbett.diskord.util.authorId
 import com.jessecorbett.diskord.util.words
-import pw.modder.answernator.utils.extensions.joinToStrings
-import kotlinx.serialization.UnstableDefault
-import pw.modder.answernator.utils.*
+import pw.modder.answernator.utils.Command
+import pw.modder.answernator.utils.CommandList
+import pw.modder.answernator.utils.Globals
+import pw.modder.answernator.utils.LocalizedCommand
 import pw.modder.answernator.utils.extensions.computePermissions
+import pw.modder.answernator.utils.extensions.joinToStrings
 import pw.modder.answernator.utils.extensions.removeGraves
 import java.util.*
 import com.jessecorbett.diskord.dsl.message as dslmessage
 
-@UnstableDefault
 class Help: LocalizedCommand {
     override val name: String = "help"
     override val cmdType = Command.CommandGroup.USER

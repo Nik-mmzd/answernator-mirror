@@ -4,11 +4,9 @@ import com.jessecorbett.diskord.api.model.Message
 import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.util.words
-import kotlinx.serialization.UnstableDefault
 import pw.modder.answernator.utils.Command
 import java.util.*
 
-@UnstableDefault
 class Leave: Command {
     override val name = "leave"
     override val userGroup = Command.UserGroup.OWNER

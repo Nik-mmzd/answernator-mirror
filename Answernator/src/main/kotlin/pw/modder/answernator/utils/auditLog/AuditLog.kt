@@ -2,7 +2,8 @@ package pw.modder.answernator.utils.auditLog
 
 import com.jessecorbett.diskord.api.model.User
 import com.jessecorbett.diskord.api.model.Webhook
-import kotlinx.serialization.*
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 
 @Serializable

@@ -4,13 +4,11 @@ import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
 import com.jessecorbett.diskord.api.model.Guild
 import com.jessecorbett.diskord.api.rest.client.GuildClient
-import kotlinx.serialization.UnstableDefault
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.statements.UpdateStatement
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.concurrent.TimeUnit
 
-@UnstableDefault
 object Db {
     private const val guildConfigCacheSize = 32L
     private const val guildLogsConfigCacheSize = 32L

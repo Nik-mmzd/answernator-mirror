@@ -1,19 +1,19 @@
 package pw.modder.answernator.utils
 
-import com.jessecorbett.diskord.api.model.*
+import com.jessecorbett.diskord.api.model.Message
+import com.jessecorbett.diskord.api.model.Permission
+import com.jessecorbett.diskord.api.model.Permissions
 import com.jessecorbett.diskord.api.rest.client.GuildClient
 import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
-import com.jessecorbett.diskord.dsl.message as dslmessage
 import com.jessecorbett.diskord.util.authorId
-import kotlinx.serialization.UnstableDefault
 import mu.KLogger
 import mu.KotlinLogging
-import java.util.*
 import pw.modder.answernator.utils.extensions.computePermissions
+import java.util.*
+import com.jessecorbett.diskord.dsl.message as dslmessage
 
 private val logger: KLogger = KotlinLogging.logger {}
-@UnstableDefault
 interface Command {
     val name: String
     val userGroup: UserGroup get() = UserGroup.ALL

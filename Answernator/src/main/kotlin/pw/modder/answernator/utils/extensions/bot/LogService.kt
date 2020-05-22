@@ -6,7 +6,6 @@ import com.jessecorbett.diskord.dsl.DiskordDsl
 import com.jessecorbett.diskord.util.mention
 import com.jessecorbett.diskord.util.sendMessage
 import kotlinx.coroutines.delay
-import kotlinx.serialization.UnstableDefault
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.utils.UTF8Control
 import pw.modder.answernator.utils.extensions.getAuditLog
@@ -14,7 +13,6 @@ import pw.modder.answernator.utils.extensions.getStringOrKey
 import pw.modder.answernator.utils.extensions.toUserMention
 import java.util.*
 
-@UnstableDefault
 @DiskordDsl
 fun Bot.logService() {
     userBanned { ban ->
