@@ -82,7 +82,7 @@ class Config: LocalizedCommand {
                                 val channel = try {
                                     bot.clientStore.channels[extractChannelId(message.words[4])]
                                 } catch (_: Exception) {
-                                    return texts.message("help")
+                                    return texts.errorMessage()
                                 }
 
                                 Db.updateGuildConfig(guild.id) {
@@ -90,7 +90,7 @@ class Config: LocalizedCommand {
                                 }
                                 texts.message("greeting.channelset", channel.get().mention)
                             }
-                            else -> texts.message("help")
+                            else -> texts.errorMessage()
                         }
                     }
                     "defrole" -> {
@@ -125,11 +125,11 @@ class Config: LocalizedCommand {
                         }
                         return texts.message("muterole.set", role.toRoleMention())
                     }
-                    else -> texts.message("help")
+                    else -> texts.errorMessage()
                 }
             }
             "blacklist" -> TODO()
-            else -> texts.message("help")
+            else -> texts.errorMessage()
 
         }
     }
