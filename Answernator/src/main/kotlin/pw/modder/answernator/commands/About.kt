@@ -38,7 +38,7 @@ class About: Command {
             field("Diskord", Globals.getDependencyVersion("com.jessecorbett", "diskord-jvm"), true)
             field("Bot version", Globals.getDependencyVersion("pw.modder", "Answernator"), true)
             field("Commands", CommandList.commands.size.toString(), true)
-            field("Modules", CommandList.modules.joinToString("\n") { "${it.name}@${it.version}" }, true)
+            field("Modules", CommandList.modules.joinToString("\n") { "${it.name}@${it.version}".trim('\n') }, true)
             field("Commands prefix", Globals.config.prefix.toString(), true)
             field("Owner", "<@${Globals.config.author}>", true)
             field("Creator", "<@135017849604276224>", true)

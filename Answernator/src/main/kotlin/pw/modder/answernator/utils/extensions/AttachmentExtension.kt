@@ -8,10 +8,10 @@ import io.ktor.http.userAgent
 import pw.modder.answernator.utils.Globals
 
 private val userAgent = "DiscordBot: (https://gitlab.com/jesselcorbett/diskord, ${Globals.getDependencyVersion("com.jessecorbett", "diskord-jvm")})"
-suspend fun Attachment.downloadAsString(): String {
+suspend fun Attachment.downloadAsString(proxied: Boolean = false): String {
     return Globals.httpClient.get<String> {
         userAgent(userAgent)
-        url(this@downloadAsString.proxiedUrl)
+        url(if (proxied) this@downloadAsString.proxiedUrl else this@downloadAsString.url)
         cookies()
     }
 }
