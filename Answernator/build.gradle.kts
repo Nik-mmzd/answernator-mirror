@@ -3,6 +3,19 @@ plugins {
     kotlin("plugin.serialization")
     id("com.palantir.git-version")
     id("com.github.johnrengelman.shadow")
+    id("maven-publish")
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("Answernator") {
+            from(components["java"])
+        }
+    }
+
+    repositories {
+        mavenLocal()
+    }
 }
 
 val diskordVersion: String by project
