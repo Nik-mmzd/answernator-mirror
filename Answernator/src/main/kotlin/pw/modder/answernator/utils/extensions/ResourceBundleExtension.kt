@@ -9,6 +9,7 @@ fun ResourceBundle.getStringSafe(key: String): String? {
         null
     }
 }
+
 fun ResourceBundle.getStringOrKey(key: String): String = getStringSafe(key) ?: key
 
 

@@ -3,18 +3,26 @@ package pw.modder.answernator.utils.extensions.bot
 import com.jessecorbett.diskord.api.exception.DiscordBadPermissionsException
 import com.jessecorbett.diskord.api.model.Message
 import com.jessecorbett.diskord.dsl.Bot
+import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.dsl.DiskordDsl
 import com.jessecorbett.diskord.util.words
 import mu.KotlinLogging
 import pw.modder.answernator.db.Db
-import pw.modder.answernator.utils.Command
+import pw.modder.answernator.db.GuildConfig
 import pw.modder.answernator.utils.CommandList
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.UTF8Control
+import pw.modder.answernator.utils.extensions.channelType
 import pw.modder.answernator.utils.extensions.formatString
 import pw.modder.answernator.utils.extensions.getStringOrKey
 import pw.modder.answernator.utils.extensions.getStringSafe
 import java.util.*
+
+private fun String.asMessage() = CombinedMessageEmbed(text = this)
+
+private fun Message.getGuildConfig(): GuildConfig? {
+    return Db.guilds.get(guildId ?: return null)
+}
 
 private val logger = KotlinLogging.logger {}
 @DiskordDsl
@@ -26,58 +34,50 @@ fun Bot.commandService() {
         logger.debug { "received message, message text: ${message.content}" }
         if (message.content.first() != config.prefix) return@messageCreated
 
-        val guildConfig = message.guildId?.run { Db.guilds.get(this) }
-        val locale = guildConfig?.run { Locale(lang) } ?: config.locale
+        val guildConfig = message.getGuildConfig()
+        val locale = Locale(guildConfig?.lang ?: config.lang)
 //        val blacklist = guildConfig?.run { commandsBlacklist.split('|') } ?: listOf()
         val texts = ResourceBundle.getBundle("locale.botGlobal", locale, UTF8Control())
 
-        val channelType =if (message.guildId == null) Command.ChannelTypes.DIRECT else Command.ChannelTypes.GUILD
-        CommandList.commands.singleOrNull { command ->
-            logger.debug { "probing command ${command.name}, searching for ${message.words.first()}" }
-            message.words.first().equals("${config.prefix}${command.name}", true) && channelType in command.channels
-        }?.run {
-            logger.debug { "found command $name, running" }
-//            if (name in blacklist) {
-//                logger.debug { "command $name is blacklisted on this guild" }
-//                message.reply(texts.formatString("bot.blacklisted", name))
-//                return@messageCreated
-//            }
-            if (check(message, message.guildId?.run { clientStore.guilds[this] })) {
-                val reply = try {
-                    action(this@commandService, message, locale)
-                } catch (e: DiscordBadPermissionsException) {
-                    val perm = requiredPermission
+        val command = CommandList.findCommand(name = message.words.first().drop(1), channelType = message.channelType)
+            ?: return@messageCreated // if command not found: do nothing
 
-                    if (perm == null) {
-                        message.reply(texts.getStringOrKey("bot.badPermissions"))
-                        return@run
-                    }
-
-                    message.reply(texts.formatString(
-                        "bot.badPermissions.perm",
-                        texts.getStringSafe("bot.badPermissions.${perm.name}") ?: perm.name
-                    ))
-                    return@run
-                } catch (e: NotImplementedError) {
-                    val text = e.message?.run { texts.formatString("bot.notImplemented.message", "${config.prefix}$name", this) }
-                        ?: texts.formatString("bot.notImplemented", "${config.prefix}$name")
-                    message.reply(text)
-                    return@run
-                } catch (e: Exception) {
-                    logger.error(e) { "got error while running command" }
-                    message.reply(
-                        texts.formatString("bot.error", "${config.prefix}$name")
-                    )
-                    return@run
-                }
-
-                message.reply(reply.text, reply.embed())
-                return@run
-            }
-
-            message.reply(
-                texts.getStringOrKey("bot.noPerms")
-            )
+        logger.debug { "found command ${command.name}, checking" }
+        if (!command.check(message, clientStore.guilds)) {
+            message.reply(texts.getStringOrKey("bot.noPerms"))
+            return@messageCreated
         }
+
+        logger.debug { "found command ${command.name}, running" }
+        val reply = try {
+            command.action(this, message, locale)
+
+        } catch (e: DiscordBadPermissionsException) { // Bot is missing permissions to run this command
+            with(command.requiredPermission) {
+                if (this == null) {
+                    texts.getStringOrKey("bot.badPermissions")
+                } else {
+                    texts.formatString(
+                        "bot.badPermissions.perm",
+                        texts.getStringSafe("bot.badPermissions.${name}") ?: name
+                    )
+                }
+            }.asMessage()
+
+        } catch (e: NotImplementedError) { // if feature is not implemented
+            with(e.message) {
+                if (this == null) {
+                    texts.formatString("bot.notImplemented", "${config.prefix}${command.name}")
+                } else {
+                    texts.formatString("bot.notImplemented.message", "${config.prefix}${command.name}", this)
+                }
+            }.asMessage()
+
+        } catch (e: Exception) { // and any other exception
+            logger.error(e) { "got error while running command" }
+            texts.formatString("bot.error", "${config.prefix}${command.name}").asMessage()
+        }
+
+        message.reply(reply.text, reply.embed())
     }
 }

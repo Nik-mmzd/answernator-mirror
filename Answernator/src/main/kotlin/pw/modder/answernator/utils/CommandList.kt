@@ -21,4 +21,12 @@ object CommandList {
         modules = ServiceLoader.load(ModuleInfoProvider::class.java, classLoader).toList()
         logger.info { "Loaded ${commands.size} commands, ${modules.size} modules" }
     }
+
+    fun findCommand(name: String, ignoreCase: Boolean = true): Command? {
+        return commands.singleOrNull { it.name.equals(name, ignoreCase) }
+    }
+
+    fun findCommand(name: String, ignoreCase: Boolean = true, channelType: Command.ChannelTypes): Command? {
+        return commands.singleOrNull { it.name.equals(name, ignoreCase) && channelType in it.channels }
+    }
 }

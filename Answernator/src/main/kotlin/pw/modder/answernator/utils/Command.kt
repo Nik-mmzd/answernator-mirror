@@ -6,6 +6,7 @@ import com.jessecorbett.diskord.api.model.Permissions
 import com.jessecorbett.diskord.api.rest.client.GuildClient
 import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
+import com.jessecorbett.diskord.util.GuildClients
 import com.jessecorbett.diskord.util.authorId
 import mu.KLogger
 import mu.KotlinLogging
@@ -49,13 +50,13 @@ interface Command {
         return true
     }
 
-    suspend fun check(message: Message, guildClient: GuildClient? = null): Boolean {
+    suspend fun check(message: Message, guildClients: GuildClients): Boolean {
         check(message)?.run { return this }
 
         logger.debug { "getting permissions" }
-        val permissions = when (guildClient) {
+        val permissions = when (val gid = message.guildId) {
             null -> Permissions.NONE
-            else -> message.partialMember?.computePermissions(guildClient, message.authorId) ?: Permissions.NONE
+            else -> message.partialMember?.computePermissions(guildClients[gid], message.authorId) ?: Permissions.NONE
         }
 
         return check(permissions)

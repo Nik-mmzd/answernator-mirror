@@ -54,7 +54,7 @@ class Help: LocalizedCommand {
                 description = texts.formatString("not_found", message.words[1].removeGraves())
             }
 
-        if (message.authorId != Globals.config.author && !cmd.check(message, guildClient)) return dslmessage {
+        if (message.authorId != Globals.config.author && !cmd.check(message, bot.clientStore.guilds)) return dslmessage {
             title = texts.formatString("title", message.words[1])
             description = texts.getStringOrKey("no_permissions")
         }

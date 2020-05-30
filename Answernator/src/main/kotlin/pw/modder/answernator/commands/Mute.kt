@@ -3,9 +3,9 @@ package pw.modder.answernator.commands
 import com.jessecorbett.diskord.api.model.Message
 import com.jessecorbett.diskord.api.model.Permission
 import com.jessecorbett.diskord.api.model.Permissions
-import com.jessecorbett.diskord.api.rest.client.GuildClient
 import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
+import com.jessecorbett.diskord.util.GuildClients
 import com.jessecorbett.diskord.util.mention
 import com.jessecorbett.diskord.util.sendMessage
 import com.jessecorbett.diskord.util.words
@@ -36,8 +36,8 @@ class Mute: LocalizedCommand {
         return super.check(message, permissions) && Db.guilds.get(message.guildId ?: return false).muteRole.isNotEmpty()
     }
 
-    override suspend fun check(message: Message, guildClient: GuildClient?): Boolean {
-        return super.check(message, guildClient) && Db.guilds.get(message.guildId ?: return false).muteRole.isNotEmpty()
+    override suspend fun check(message: Message, guildClients: GuildClients): Boolean {
+        return super.check(message, guildClients) && Db.guilds.get(message.guildId ?: return false).muteRole.isNotEmpty()
     }
 
     override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {

@@ -3,9 +3,9 @@ package pw.modder.answernator.commands
 import com.jessecorbett.diskord.api.model.Message
 import com.jessecorbett.diskord.api.model.Permission
 import com.jessecorbett.diskord.api.model.Permissions
-import com.jessecorbett.diskord.api.rest.client.GuildClient
 import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
+import com.jessecorbett.diskord.util.GuildClients
 import com.jessecorbett.diskord.util.mention
 import com.jessecorbett.diskord.util.words
 import pw.modder.answernator.cache.GuildCache.getCached
@@ -23,9 +23,9 @@ class DefRole: LocalizedCommand {
     override val cmdType = Command.CommandGroup.MODER
     override val requiredPermission: Permission? = Permission.MANAGE_ROLES
 
-    override suspend fun check(message: Message, guildClient: GuildClient?): Boolean {
+    override suspend fun check(message: Message, guildClients: GuildClients): Boolean {
         val cfg = Db.guilds.get(message.guildId ?: return false) ?: return false
-        return cfg.greetingsChannel.isNotEmpty() && super.check(message, guildClient)
+        return cfg.greetingsChannel.isNotEmpty() && super.check(message, guildClients)
     }
 
     override fun check(message: Message, permissions: Permissions): Boolean {

@@ -3,11 +3,11 @@ package pw.modder.answernator.`fun`.commands
 import com.jessecorbett.diskord.api.model.Message
 import com.jessecorbett.diskord.api.model.Permissions
 import com.jessecorbett.diskord.api.rest.EmbedImage
-import com.jessecorbett.diskord.api.rest.client.GuildClient
 import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.dsl.field
 import com.jessecorbett.diskord.dsl.footer
+import com.jessecorbett.diskord.util.GuildClients
 import com.jessecorbett.diskord.util.words
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.utils.Command
@@ -23,9 +23,9 @@ class Tsar: LocalizedCommand {
     override val name = "царь"
     override val cmdType = Command.CommandGroup.FUN
 
-    override suspend fun check(message: Message, guildClient: GuildClient?): Boolean {
+    override suspend fun check(message: Message, guildClients: GuildClients): Boolean {
         val locale = message.guildId?.run { Locale(Db.guilds.get(this).lang) } ?: Globals.config.locale
-        return locale == Locale("ru") && super.check(message, guildClient)
+        return locale == Locale("ru") && super.check(message, guildClients)
     }
 
     override fun check(message: Message, permissions: Permissions): Boolean {
