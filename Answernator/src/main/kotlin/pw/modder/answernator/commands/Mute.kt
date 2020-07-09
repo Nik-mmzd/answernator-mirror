@@ -17,14 +17,14 @@ import pw.modder.answernator.db.Db.muteMember
 import pw.modder.answernator.db.Db.unmuteMember
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.Globals
-import pw.modder.answernator.utils.LocalizedCommand
+import pw.modder.answernator.utils.LocalizedGuildCommand
 import pw.modder.answernator.utils.extensions.bot.isMe
 import pw.modder.answernator.utils.extensions.isAdmin
 import pw.modder.answernator.utils.extensions.isUserMention
 import java.util.*
 
 private val logger = KotlinLogging.logger {  }
-class Mute: LocalizedCommand {
+class Mute: LocalizedGuildCommand {
     override val name = "mute"
     override val userGroup = Command.UserGroup.PERMISSION
     override val permission = Permission.MANAGE_MESSAGES
@@ -40,9 +40,9 @@ class Mute: LocalizedCommand {
         return super.check(message, guildClients) && Db.guilds.get(message.guildId ?: return false).muteRole.isNotEmpty()
     }
 
-    override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
+    override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle, guildId: String): CombinedMessageEmbed {
         logger.debug { "Getting guild..." }
-        val guildClient = bot.clientStore.guilds[message.guildId ?: return texts.errorMessage()]
+        val guildClient = bot.clientStore.guilds[guildId]
         val guild = guildClient.getCached()
         val muteRole = Db.guilds.get(guild.id).muteRole
 

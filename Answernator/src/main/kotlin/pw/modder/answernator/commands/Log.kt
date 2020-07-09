@@ -44,7 +44,7 @@ class Log: LocalizedCommand {
             "memberjoin" -> process(bot, guild.guildId, message.words[2], LogConfigs.memberJoinLogChannel, texts)
             "memberleave" -> process(bot, guild.guildId, message.words[2], LogConfigs.memberLeaveLogChannel, texts)
             "memberban" -> process(bot, guild.guildId, message.words[2], LogConfigs.memberBanLogChannel, texts)
-            "memeberunban" -> process(bot, guild.guildId, message.words[2], LogConfigs.memberUnbanLogChannel, texts)
+            "memberunban" -> process(bot, guild.guildId, message.words[2], LogConfigs.memberUnbanLogChannel, texts)
             "membermute" -> process(bot, guild.guildId, message.words[2], LogConfigs.memberMuteLogChannel, texts)
             "memberunmute" -> process(bot, guild.guildId, message.words[2], LogConfigs.memberUnmuteLogChannel, texts)
 //            "messagedelete" -> process(bot, guild.guildId, message.words[2], LogConfigs.messageDeleteLogChannel, texts)
