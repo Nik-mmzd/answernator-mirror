@@ -1,3 +1,5 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar as ShadowJarTaskType
+
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
@@ -39,10 +41,11 @@ repositories {
     jcenter()
 }
 
+val debugImplementation by configurations.creating
+
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation("com.jessecorbett:diskord:$diskordVersion")
-    implementation("org.slf4j:slf4j-simple:$slf4jVersion")
     implementation("commons-io:commons-io:$commonsIoVersion")
     implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
     implementation("com.google.guava:guava:$guavaVersion")
@@ -54,6 +57,8 @@ dependencies {
     implementation("io.ktor:ktor-client-cio:$ktorVersion")
     implementation("com.h2database:h2:$h2Version")
     implementation("joda-time:joda-time:$jodaTimeVersion")
+
+    shadow("org.slf4j:slf4j-simple:$slf4jVersion")
 }
 
 val jar by tasks.getting(Jar::class) {
@@ -93,5 +98,8 @@ tasks {
     shadowJar {
         dependsOn(createDependenciesFile)
         from("$buildDir/dependencies.txt")
+        dependencies {
+            exclude(dependency("org.slf4j:slf4j-simple:$slf4jVersion"))
+        }
     }
 }
