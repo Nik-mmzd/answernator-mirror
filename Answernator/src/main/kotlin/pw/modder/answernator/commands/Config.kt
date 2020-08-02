@@ -94,7 +94,7 @@ class Config: LocalizedCommand {
                         }
                     }
                     "defrole" -> {
-                        if (message.words.getOrNull(2).equals("remove", true)) {
+                        if (message.words.getOrNull(3).equals("remove", true)) {
                             Db.updateGuildConfig(guild.id) {
                                 it[defaultRole] = ""
                             }
@@ -110,7 +110,7 @@ class Config: LocalizedCommand {
                         return texts.message("defrole.set", role.toRoleMention())
                     }
                     "muterole" -> {
-                        if (message.words.getOrNull(2).equals("remove", true)) {
+                        if (message.words.getOrNull(3).equals("remove", true)) {
                             Db.updateGuildConfig(guild.id) {
                                 it[muteRole] = ""
                             }
