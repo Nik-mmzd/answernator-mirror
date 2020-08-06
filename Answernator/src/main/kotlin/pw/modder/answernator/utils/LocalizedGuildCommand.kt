@@ -13,5 +13,8 @@ interface LocalizedGuildCommand: LocalizedCommand {
         }
     }
 
+    override val channels: EnumSet<Command.ChannelTypes>
+        get() = EnumSet.of(Command.ChannelTypes.GUILD)
+
     suspend fun action(bot: Bot, message: Message, texts: ResourceBundle, guildId: String): CombinedMessageEmbed
 }
