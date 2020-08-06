@@ -6,3 +6,4 @@ pw.modder.answernator.tools.commands.localized.Clear
 pw.modder.answernator.tools.commands.localized.Info
 pw.modder.answernator.tools.commands.localized.Ban
 pw.modder.answernator.tools.commands.localized.Kick
+pw.modder.answernator.tools.commands.localized.SelfInfo
