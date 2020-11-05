@@ -29,21 +29,21 @@ fun Bot.logService() {
         if (logConfig.memberBanLogChannel.isNotEmpty()) {
             val guildConfig = Db.guilds.get(ban.guildId)
             val texts = ResourceBundle.getBundle("locale.botGlobal", Locale(guildConfig.lang), UTF8Control())
-            if (auditLog == null) {
-                client.sendMessage(texts.getStringOrKey("bot.log.ban").format(ban.user.mention))
-                return@userBanned
+
+            when {
+                auditLog == null -> client.sendMessage(texts.getStringOrKey("bot.log.ban").format(ban.user.mention))
+                auditLog.reason.isNullOrEmpty() -> client.sendMessage(texts.getStringOrKey("bot.log.ban").format(ban.user.mention))
+                else -> {
+                    val reasonParts = auditLog.reason.split('|', limit = 2)
+                    client.sendMessage(
+                        texts.getStringOrKey("bot.log.ban.full").format(
+                            ban.user.mention,
+                            if (reasonParts.size == 1) auditLog.userId.toUserMention() else reasonParts.first().toUserMention(),
+                            reasonParts.last()
+                        )
+                    )
+                }
             }
-
-            val reasonParts = auditLog.reason?.split('|', limit = 2)?.takeIf { it.isNotEmpty() }
-                ?: listOf(texts.getStringOrKey("bot.log.reason.unknown"))
-
-            client.sendMessage(
-                texts.getStringOrKey("bot.log.ban.full").format(
-                    ban.user.mention,
-                    if (reasonParts.size == 1) auditLog.userId.toUserMention() else reasonParts.first().toUserMention(),
-                    reasonParts.last()
-                )
-            )
         }
     }
     userUnbanned { unBan ->
