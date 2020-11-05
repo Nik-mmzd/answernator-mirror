@@ -58,7 +58,7 @@ dependencies {
     implementation("com.h2database:h2:$h2Version")
     implementation("joda-time:joda-time:$jodaTimeVersion")
 
-    shadow("org.slf4j:slf4j-simple:$slf4jVersion")
+    implementation("org.slf4j:slf4j-simple:$slf4jVersion")
 }
 
 val jar by tasks.getting(Jar::class) {
@@ -98,8 +98,5 @@ tasks {
     shadowJar {
         dependsOn(createDependenciesFile)
         from("$buildDir/dependencies.txt")
-        dependencies {
-            exclude(dependency("org.slf4j:slf4j-simple:$slf4jVersion"))
-        }
     }
 }
