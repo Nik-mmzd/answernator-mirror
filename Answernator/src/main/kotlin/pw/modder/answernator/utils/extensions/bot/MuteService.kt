@@ -33,7 +33,7 @@ fun Bot.muteService() {
         val roleId = config.muteRole.takeIf { it.isNotEmpty() } ?: return@guildMemberUpdated
         val logConfig = Db.logs.get(it.guildId)
         val guild = clientStore.guilds[it.guildId]
-        val texts = ResourceBundle.getBundle("locale.mute", UTF8Control())
+        val texts = ResourceBundle.getBundle("locale.mute", Locale(config.lang), UTF8Control())
 
         if (it.roles.any { it == roleId } && !guild.memberIsMuted(it.user.id)) {
             try {
