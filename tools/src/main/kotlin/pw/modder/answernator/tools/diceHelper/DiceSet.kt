@@ -11,7 +11,7 @@ data class DiceSet(val max: Int, val count: Int, val modifier: Int, val tries: I
             repeat(tries) {
                 add(buildList {
                     repeat(count) {
-                        add(random.nextInt(1, max+1))
+                        add(random.nextInt(1, max+1) + modifier)
                     }
                 })
             }
