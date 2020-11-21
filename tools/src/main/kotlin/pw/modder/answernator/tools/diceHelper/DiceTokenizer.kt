@@ -1,6 +1,6 @@
 package pw.modder.answernator.tools.diceHelper
 
-private val DiceTokenRegex = Regex("""([\D\S]?)(\d+)""")
+private val DiceTokenRegex = Regex("""([^\d\s]?)(\d+)""")
 
 class DiceLimitExceededException(message: String?, cause: Exception? = null): Exception(message, cause)
 
