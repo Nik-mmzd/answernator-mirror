@@ -52,7 +52,7 @@ class DiceSet(
             val roll = dices.map { it.roll(explode, explodeLimit, modifier) }.flatten()
             when(keep) {
                 0 -> add(roll)
-                else -> add(roll.sorted().take(keep))
+                else -> add(roll.sortedDescending().take(keep))
             }
         }
     }
