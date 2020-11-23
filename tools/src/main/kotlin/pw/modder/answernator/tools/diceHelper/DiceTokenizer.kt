@@ -22,14 +22,14 @@ enum class DiceTokens(
 }
 
 private val dice_tokens = mapOf(
-    'd' to DiceTokens.FACES,
-    'k' to DiceTokens.KEEP,
-    'e' to DiceTokens.EXPLODE,
-    '(' to DiceTokens.LEFT_BRACKET,
-    ')' to DiceTokens.RIGHT_BRACKET,
-    'x' to DiceTokens.TRIES,
-    't' to DiceTokens.TRIES,
-    '*' to DiceTokens.TRIES,
+    'd' to DiceTokens.FACES,//
+    'k' to DiceTokens.KEEP,//
+    'e' to DiceTokens.EXPLODE,//
+    '(' to DiceTokens.LEFT_BRACKET,//
+    ')' to DiceTokens.RIGHT_BRACKET,//
+    'x' to DiceTokens.TRIES,//
+    't' to DiceTokens.TRIES,//
+    '*' to DiceTokens.TRIES,//
     '+' to DiceTokens.POSITIVE_MODIFIER,
     '-' to DiceTokens.NEGATIVE_MODIFIER,
     ' ' to DiceTokens.SPACE,
