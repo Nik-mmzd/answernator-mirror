@@ -17,7 +17,8 @@ class Dice(val faces: Int) {
             var explodes = 0
             do {
                 add(Globals.random.nextInt(1, faces+1) + modifier)
-                if (last() == faces) explodes++
+                if (last() != faces + modifier) break
+                explodes++
             } while (explode && (limit == 0 || explodes < limit))
         }
     }
