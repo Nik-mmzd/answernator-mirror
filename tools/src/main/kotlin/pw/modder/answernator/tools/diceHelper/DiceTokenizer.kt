@@ -18,7 +18,7 @@ enum class DiceTokens(
     TRIES,
     LEFT_BRACKET(hasValue = false),
     RIGHT_BRACKET(hasValue = false),
-    SPACE(hasValue = false)
+    SPACE(hasValue = false, allowCombined = true)
 }
 
 private val dice_tokens = mapOf(
@@ -57,9 +57,8 @@ class DiceTokenizer(val input: String) {
                     tokenPos--
 
                 var valueLastPos = 1
-                while (input[tokenPos + valueLastPos].isDigit()) {
+                while (tokenPos + valueLastPos <= input.lastIndex && input[tokenPos + valueLastPos].isDigit()) {
                     valueLastPos++
-                    if (tokenPos + valueLastPos > input.lastIndex) break
                 }
 
                 if (valueLastPos == 1 && !token.allowEmpty)

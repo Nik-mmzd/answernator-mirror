@@ -15,8 +15,8 @@ class DiceSerializer(val input: List<DiceToken>) {
                 DiceTokens.TRIES -> b.append("x", it.value)
                 DiceTokens.NEGATIVE_MODIFIER -> b.append("-", it.value)
                 DiceTokens.POSITIVE_MODIFIER -> b.append("+", it.value)
-                DiceTokens.RIGHT_BRACKET -> b.append("(")
-                DiceTokens.LEFT_BRACKET -> b.append(")")
+                DiceTokens.LEFT_BRACKET -> b.append("(")
+                DiceTokens.RIGHT_BRACKET -> b.append(")")
             }
         }
 

@@ -13,7 +13,7 @@ class DiceParser(val tokenizer: DiceTokenizer) {
 
             tokens.forEachIndexed { index, diceToken ->
                 if (diceToken.type == DiceTokens.SPACE && !insideBrackets) {
-                    add(tokens.subList(start, index-1))
+                    add(tokens.subList(start, index))
                     start = index+1
                     return@forEachIndexed
                 }
@@ -31,31 +31,33 @@ class DiceParser(val tokenizer: DiceTokenizer) {
                 }
 
                 if (index == tokens.lastIndex) {
-                    add(tokens.subList(start, index))
+                    add(tokens.subList(start, index+1))
                 }
             }
-        }.forEach {
-            val duplicates = it.filterNot { it.type.allowCombined }.groupingBy { it.type }.eachCount().filter { it.value > 0 }
+        }.forEach { rawDiceSet ->
+            val duplicates = rawDiceSet.filterNot { it.type.allowCombined }.groupingBy { it.type }.eachCount().filter { it.value > 1 }
 
             if (duplicates.isNotEmpty()) {
                 throw InvalidArgumentException("Tokens ${duplicates.keys.joinToString()} must be specified only once")
             }
 
             val betweenBrackets = try {
-                it.subList(
-                    it.indexOfFirst { it.type == DiceTokens.LEFT_BRACKET } + 1,
-                    it.indexOfFirst { it.type == DiceTokens.RIGHT_BRACKET } - 1
+                rawDiceSet.subList(
+                    rawDiceSet.indexOfFirst { it.type == DiceTokens.LEFT_BRACKET } + 1,
+                    rawDiceSet.indexOfFirst { it.type == DiceTokens.RIGHT_BRACKET }
                 )
             } catch (_: IndexOutOfBoundsException) {
                 listOf<DiceToken>()
+            } catch (_: IllegalArgumentException) {
+                listOf<DiceToken>()
             }
 
-            val outsidBrackets = it.filterNot { it in betweenBrackets || it.type == DiceTokens.LEFT_BRACKET || it.type == DiceTokens.RIGHT_BRACKET }
+            val outsideBrackets = rawDiceSet.filterNot { it in betweenBrackets || it.type == DiceTokens.LEFT_BRACKET || it.type == DiceTokens.RIGHT_BRACKET }
 
             if (betweenBrackets.any { !it.type.allowCombined })
                 throw InvalidArgumentException("Brackets contains invalid tokens")
 
-            if (betweenBrackets.isNotEmpty() && outsidBrackets.any { it.type.allowCombined })
+            if (betweenBrackets.isNotEmpty() && outsideBrackets.filterNot { it.type == DiceTokens.SPACE }.any { it.type.allowCombined })
                 throw InvalidArgumentException("Combinable tokens outside brackets")
 
             val dices = mutableListOf<Dice>()
@@ -103,7 +105,7 @@ class DiceParser(val tokenizer: DiceTokenizer) {
             var tries = DiceConfig.defaultTries
             var mod = DiceConfig.defaultModifier
 
-            outsidBrackets.forEach { token ->
+            outsideBrackets.forEach { token ->
                 when(token.type) {
                     DiceTokens.DICES -> dicesCount = token.value.toInt()
                     DiceTokens.FACES -> faces = token.value.toInt()
@@ -112,6 +114,7 @@ class DiceParser(val tokenizer: DiceTokenizer) {
                     DiceTokens.POSITIVE_MODIFIER -> mod = token.value.toInt()
                     DiceTokens.NEGATIVE_MODIFIER -> mod = -token.value.toInt()
                     DiceTokens.EXPLODE -> explode = token.value.toIntOrNull() ?: explode
+                    else -> {}
                 }
             }
 
@@ -125,7 +128,7 @@ class DiceParser(val tokenizer: DiceTokenizer) {
                     keep = keep,
                     tries = tries,
                     modifier = mod,
-                    tokens = it
+                    tokens = rawDiceSet
             ))
         }
 
