@@ -32,7 +32,9 @@ private val dice_tokens = mapOf(
     '*' to DiceTokens.TRIES,
     '+' to DiceTokens.POSITIVE_MODIFIER,
     '-' to DiceTokens.NEGATIVE_MODIFIER,
-    ' ' to DiceTokens.SPACE
+    ' ' to DiceTokens.SPACE,
+    ';' to DiceTokens.SPACE,
+    ',' to DiceTokens.SPACE
 )
 
 data class DiceToken(val type: DiceTokens, val value: String)
@@ -46,6 +48,11 @@ class DiceTokenizer(val input: String) {
                 val token = dice_tokens[input[tokenPos]]
                     ?: DiceTokens.DICES.takeIf { input[tokenPos].isDigit() }
                     ?: throw InvalidArgumentException("Found unknown token ${input[tokenPos]}")
+
+                if (token == DiceTokens.SPACE && last().type == DiceTokens.SPACE) {
+                    tokenPos++
+                    continue
+                }
 
                 if (!token.hasValue) {
                     tokenPos++
