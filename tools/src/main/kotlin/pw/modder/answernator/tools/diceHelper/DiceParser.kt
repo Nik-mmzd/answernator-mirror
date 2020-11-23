@@ -82,11 +82,11 @@ class DiceParser(val tokenizer: DiceTokenizer) {
                     DiceTokens.FACES -> when(lastToken) {
                         DiceTokens.FACES -> {
                             repeat(dicesCount) { dices.add(Dice(faces)) }
-                            faces = token.value.toInt()
+                            faces = token.value.toIntOrNull() ?: DiceConfig.defautDiceFaces
                             dicesCount = DiceConfig.defaultDices
                         }
                         else -> {
-                            faces = token.value.toInt()
+                            faces = token.value.toIntOrNull() ?: DiceConfig.defautDiceFaces
                             lastToken = token.type
                         }
                     }
@@ -110,7 +110,7 @@ class DiceParser(val tokenizer: DiceTokenizer) {
             outsideBrackets.forEach { token ->
                 when(token.type) {
                     DiceTokens.DICES -> dicesCount = token.value.toInt()
-                    DiceTokens.FACES -> faces = token.value.toInt()
+                    DiceTokens.FACES -> faces = token.value.toIntOrNull() ?: DiceConfig.defautDiceFaces
                     DiceTokens.KEEP -> keep = token.value.toInt()
                     DiceTokens.TRIES -> tries = token.value.toInt()
                     DiceTokens.POSITIVE_MODIFIER -> mod = token.value.toInt()

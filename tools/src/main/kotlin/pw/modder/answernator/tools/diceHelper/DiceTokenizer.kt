@@ -10,7 +10,7 @@ enum class DiceTokens(
     val hasValue: Boolean = true
 ) {
     DICES(allowCombined = true),
-    FACES(allowCombined = true),
+    FACES(allowCombined = true, allowEmpty = true),
     KEEP,
     EXPLODE(allowEmpty = true),
     POSITIVE_MODIFIER,
