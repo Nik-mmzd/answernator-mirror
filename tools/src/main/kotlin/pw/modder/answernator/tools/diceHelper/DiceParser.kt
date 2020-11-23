@@ -66,7 +66,7 @@ class DiceParser(val tokenizer: DiceTokenizer) {
             var lastToken = DiceTokens.SPACE
 
             // parse dices in brackets
-            betweenBrackets.forEach { token ->
+            betweenBrackets.forEachIndexed { index, token ->
                 when(token.type) {
                     DiceTokens.DICES -> when(lastToken) {
                         DiceTokens.DICES -> {
@@ -97,6 +97,8 @@ class DiceParser(val tokenizer: DiceTokenizer) {
                         lastToken = token.type
                     }
                 }
+
+                if (index == betweenBrackets.lastIndex) repeat(dicesCount) { dices.add(Dice(faces)) }
             }
 
             // parse other tokens

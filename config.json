@@ -1,0 +1,12 @@
+{
+    "token": "token-here",
+    "bot_id": "180080318135402497",
+    "lang": "ru",
+    "prefix": "!",
+    "author": "135017849604276224",
+    "langs": [
+        "ru",
+        "en"
+    ],
+    "status": "$help"
+}
