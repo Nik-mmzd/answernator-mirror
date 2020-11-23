@@ -12,15 +12,15 @@ class Dice(val faces: Int) {
     }
 
     @OptIn(ExperimentalStdlibApi::class)
-    fun roll(explode: Boolean, limit: Int, modifier: Int): List<Int> {
-        return buildList {
+    fun roll(explode: Boolean, limit: Int, modifier: Int): Int {
+        return buildList<Int> {
             var explodes = 0
             do {
-                add(Globals.random.nextInt(1, faces+1) + modifier)
-                if (last() != faces + modifier) break
+                add(Globals.random.nextInt(1, faces+1))
+                if (last() != faces) break
                 explodes++
             } while (explode && (limit == 0 || explodes < limit))
-        }
+        }.sum() + modifier
     }
 }
 
@@ -49,7 +49,7 @@ class DiceSet(
     @OptIn(ExperimentalStdlibApi::class)
     fun roll(): List<List<Int>> = buildList {
         repeat(tries) {
-            val roll = dices.map { it.roll(explode, explodeLimit, modifier) }.flatten()
+            val roll = dices.map { it.roll(explode, explodeLimit, modifier) }
             when(keep) {
                 0 -> add(roll)
                 else -> add(roll.sortedDescending().take(keep))
