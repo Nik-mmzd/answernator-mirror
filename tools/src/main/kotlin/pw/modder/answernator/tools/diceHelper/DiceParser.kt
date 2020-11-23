@@ -113,7 +113,7 @@ class DiceParser(val tokenizer: DiceTokenizer) {
                     DiceTokens.TRIES -> tries = token.value.toInt()
                     DiceTokens.POSITIVE_MODIFIER -> mod = token.value.toInt()
                     DiceTokens.NEGATIVE_MODIFIER -> mod = -token.value.toInt()
-                    DiceTokens.EXPLODE -> explode = token.value.toIntOrNull() ?: explode
+                    DiceTokens.EXPLODE -> explode = token.value.toIntOrNull() ?: 0
                     else -> {}
                 }
             }
