@@ -1,0 +1,134 @@
+package pw.modder.answernator.tools.diceHelper
+
+class DiceParser(val tokenizer: DiceTokenizer) {
+    @OptIn(ExperimentalStdlibApi::class)
+    fun parse(): List<DiceSet> {
+        val tokens = tokenizer.tokenize()
+        val result = mutableListOf<DiceSet>()
+
+        // split to raw sets. Check brackets.
+        buildList {
+            var start = 0
+            var insideBrackets = false
+
+            tokens.forEachIndexed { index, diceToken ->
+                if (diceToken.type == DiceTokens.SPACE && !insideBrackets) {
+                    add(tokens.subList(start, index-1))
+                    start = index+1
+                    return@forEachIndexed
+                }
+
+                if (diceToken.type == DiceTokens.LEFT_BRACKET) {
+                    if (insideBrackets)
+                        throw InvalidArgumentException("Multiple brackets inside one another not allowed")
+                    insideBrackets = true
+                }
+
+                if (diceToken.type == DiceTokens.RIGHT_BRACKET) {
+                    if (!insideBrackets)
+                        throw InvalidArgumentException("Impossible to close brackets without opening one")
+                    insideBrackets = false
+                }
+
+                if (index == tokens.lastIndex) {
+                    add(tokens.subList(start, index))
+                }
+            }
+        }.forEach {
+            val duplicates = it.filterNot { it.type.allowCombined }.groupingBy { it.type }.eachCount().filter { it.value > 0 }
+
+            if (duplicates.isNotEmpty()) {
+                throw InvalidArgumentException("Tokens ${duplicates.keys.joinToString()} must be specified only once")
+            }
+
+            val betweenBrackets = try {
+                it.subList(
+                    it.indexOfFirst { it.type == DiceTokens.LEFT_BRACKET } + 1,
+                    it.indexOfFirst { it.type == DiceTokens.RIGHT_BRACKET } - 1
+                )
+            } catch (_: IndexOutOfBoundsException) {
+                listOf<DiceToken>()
+            }
+
+            val outsidBrackets = it.filterNot { it in betweenBrackets || it.type == DiceTokens.LEFT_BRACKET || it.type == DiceTokens.RIGHT_BRACKET }
+
+            if (betweenBrackets.any { !it.type.allowCombined })
+                throw InvalidArgumentException("Brackets contains invalid tokens")
+
+            if (betweenBrackets.isNotEmpty() && outsidBrackets.any { it.type.allowCombined })
+                throw InvalidArgumentException("Combinable tokens outside brackets")
+
+            val dices = mutableListOf<Dice>()
+            var faces: Int = DiceConfig.defautDiceFaces
+            var dicesCount: Int = DiceConfig.defaultDices
+            var lastToken = DiceTokens.SPACE
+
+            // parse dices in brackets
+            betweenBrackets.forEach { token ->
+                when(token.type) {
+                    DiceTokens.DICES -> when(lastToken) {
+                        DiceTokens.DICES -> {
+                            repeat(dicesCount) { dices.add(Dice(faces)) }
+                            dicesCount = token.value.toInt()
+                            faces = DiceConfig.defautDiceFaces
+                        }
+                        else -> {
+                            dicesCount = token.value.toInt()
+                            lastToken = token.type
+                        }
+                    }
+                    DiceTokens.FACES -> when(lastToken) {
+                        DiceTokens.FACES -> {
+                            repeat(dicesCount) { dices.add(Dice(faces)) }
+                            faces = token.value.toInt()
+                            dicesCount = DiceConfig.defaultDices
+                        }
+                        else -> {
+                            faces = token.value.toInt()
+                            lastToken = token.type
+                        }
+                    }
+                    else -> {
+                        repeat(dicesCount) { dices.add(Dice(faces)) }
+                        faces = DiceConfig.defautDiceFaces
+                        dicesCount = DiceConfig.defaultDices
+                        lastToken = token.type
+                    }
+                }
+            }
+
+            // parse other tokens
+            var keep = DiceConfig.defaultKeep
+            var explode = DiceConfig.defaultExplode
+            var tries = DiceConfig.defaultTries
+            var mod = DiceConfig.defaultModifier
+
+            outsidBrackets.forEach { token ->
+                when(token.type) {
+                    DiceTokens.DICES -> dicesCount = token.value.toInt()
+                    DiceTokens.FACES -> faces = token.value.toInt()
+                    DiceTokens.KEEP -> keep = token.value.toInt()
+                    DiceTokens.TRIES -> tries = token.value.toInt()
+                    DiceTokens.POSITIVE_MODIFIER -> mod = token.value.toInt()
+                    DiceTokens.NEGATIVE_MODIFIER -> mod = -token.value.toInt()
+                    DiceTokens.EXPLODE -> explode = token.value.toIntOrNull() ?: explode
+                }
+            }
+
+            if (dices.isEmpty()) repeat(dicesCount) { dices.add(Dice(faces)) }
+
+            result.add(
+                DiceSet(
+                    dices = dices,
+                    explode = explode > -1,
+                    explodeLimit = explode,
+                    keep = keep,
+                    tries = tries,
+                    modifier = mod,
+                    tokens = it
+            ))
+        }
+
+        return result
+    }
+}

@@ -10,12 +10,16 @@ object DiceConfig {
 
     val dicesLimit = props.getProperty("dice.dicesLimit").toInt()
     val throwsLimit = props.getProperty("dice.throwsLimit").toInt()
-    val dotsLimit = props.getProperty("dice.dotsLimit").toInt()
+    val diceFases = props.getProperty("dice.dotsLimit").toInt()
     val modLimit = props.getProperty("dice.modLimit").toInt()
     val triesLimit = props.getProperty("dice.triesLimit").toInt()
+    val keepLimit = 0
+    val explodeLimit = 0
 
-    val defautDicePips = props.getProperty("dice.default.pips").toInt()
+    val defautDiceFaces = props.getProperty("dice.default.pips").toInt()
     val defaultDices = props.getProperty("dice.default.dices").toInt()
     val defaultTries = props.getProperty("dice.default.tries").toInt()
     val defaultModifier = props.getProperty("dice.default.mod").toInt()
+    val defaultKeep = 0
+    val defaultExplode = -1
 }
