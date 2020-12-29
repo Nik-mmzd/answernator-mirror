@@ -26,7 +26,7 @@ class Info: LocalizedGuildOnlyCommand {
     override val cmdType = Command.CommandGroup.ADMIN
 
     private fun ResourceBundle.getPermissionString(perm: Permission): String {
-         return getStringSafe("$name.${perm.name}") ?: "[${perm.name}]"
+         return getStringSafe("$name.permission.${perm.name}") ?: "[${perm.name}]"
     }
 
     override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {

@@ -28,7 +28,7 @@ class SelfInfo: LocalizedGuildCommand {
     }
 
     private fun ResourceBundle.getPermissionString(perm: Permission): String {
-        return getStringSafe("info.${perm.name}") ?: "[${perm.name}]"
+        return getStringSafe("info.permission.${perm.name}") ?: "[${perm.name}]"
     }
 
     override suspend fun action(
