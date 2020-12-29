@@ -11,6 +11,7 @@ import pw.modder.answernator.cache.GuildCache.getCached
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.db.Db.memberIsMuted
 import pw.modder.answernator.tools.commandTypes.LocalizedGuildOnlyCommand
+import pw.modder.answernator.tools.helper.computeRealPermissions
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.Utils
@@ -23,6 +24,10 @@ class Info: LocalizedGuildOnlyCommand {
     override val userGroup = Command.UserGroup.PERMISSION
     override val permission = Permission.MANAGE_GUILD
     override val cmdType = Command.CommandGroup.ADMIN
+
+    private fun ResourceBundle.getPermissionString(perm: Permission): String {
+         return getStringSafe("$name.${perm.name}") ?: "[${perm.name}]"
+    }
 
     override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
         if (message.usersMentioned.size + message.rolesIdsMentioned.size != 1) return texts.errorMessage()
@@ -51,7 +56,7 @@ class Info: LocalizedGuildOnlyCommand {
                 field(texts.getStringOrKey("user.superuser"), texts.getStringOrKey("bool.${id == Globals.config.author}"), true)
 
                 field(texts.getStringOrKey("user.roles"), member.roleIds.joinToString(" ") { it.toRoleMention() }.ifEmpty { texts.getStringOrKey("empty") }, false)
-                field(texts.getStringOrKey("user.rights"), member.computePermissions(guild, id).asList().joinToString(", ") { texts.getStringOrKey("permission.${it.name}") }.ifEmpty { texts.getStringOrKey("empty") }, false)
+                field(texts.getStringOrKey("user.rights"), member.computeRealPermissions(guild, id).asList().joinToString(", ") { texts.getPermissionString(it) }.ifEmpty { texts.getStringOrKey("empty") }, false)
                 field(texts.getStringOrKey("user.joinedAt"), texts.formatString("user.joinedAt.value", Utils.prettyPrintPeriod(texts.locale, member.joinedAt)), false)
                 field(texts.getStringOrKey("user.createdAt"), texts.formatString("user.createdAt.value", Utils.prettyPrintPeriodSnowflake(texts.locale, id)), false)
 

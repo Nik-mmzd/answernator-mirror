@@ -1,6 +1,7 @@
 package pw.modder.answernator.tools.commands.localized
 
 import com.jessecorbett.diskord.api.model.Message
+import com.jessecorbett.diskord.api.model.Permission
 import com.jessecorbett.diskord.api.rest.EmbedImage
 import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
@@ -9,6 +10,7 @@ import com.jessecorbett.diskord.dsl.message
 import com.jessecorbett.diskord.util.toRoleMention
 import pw.modder.answernator.cache.GuildCache.getCached
 import pw.modder.answernator.db.Db.memberIsMuted
+import pw.modder.answernator.tools.helper.computeRealPermissions
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.LocalizedGuildCommand
 import pw.modder.answernator.utils.UTF8Control
@@ -23,6 +25,10 @@ class SelfInfo: LocalizedGuildCommand {
 
     override fun ResourceBundle.getStringOrKey(key: String): String {
         return getStringSafe("info.$key") ?: "info.$key"
+    }
+
+    private fun ResourceBundle.getPermissionString(perm: Permission): String {
+        return getStringSafe("info.${perm.name}") ?: "[${perm.name}]"
     }
 
     override suspend fun action(
@@ -55,7 +61,7 @@ class SelfInfo: LocalizedGuildCommand {
             field(texts.getStringOrKey("user.superuser"), texts.getStringOrKey("bool.${message.author.id == Globals.config.author}"), true)
 
             field(texts.getStringOrKey("user.roles"), member.roleIds.joinToString(" ") { it.toRoleMention() }.ifEmpty { texts.getStringOrKey("empty") }, false)
-            field(texts.getStringOrKey("user.rights"), member.computePermissions(guild, message.author.id).asList().joinToString(", ") { texts.getStringOrKey("permission.${it.name}") }.ifEmpty { texts.getStringOrKey("empty") }, false)
+            field(texts.getStringOrKey("user.rights"), member.computeRealPermissions(guild, message.author.id).asList().joinToString(", ") { texts.getPermissionString(it) }.ifEmpty { texts.getStringOrKey("empty") }, false)
             field(texts.getStringOrKey("user.joinedAt"), texts.formatString("user.joinedAt.value", Utils.prettyPrintPeriod(texts.locale, member.joinedAt)), false)
             field(texts.getStringOrKey("user.createdAt"), texts.formatString("user.createdAt.value", Utils.prettyPrintPeriodSnowflake(texts.locale, message.author.id)), false)
 
