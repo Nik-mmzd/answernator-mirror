@@ -68,27 +68,31 @@ class DiceParser(val tokenizer: DiceTokenizer) {
             // parse dices in brackets
             betweenBrackets.forEachIndexed { index, token ->
                 when(token.type) {
-                    DiceTokens.DICES -> when(lastToken) {
-                        DiceTokens.DICES -> {
-                            repeat(dicesCount) { dices.add(Dice(faces)) }
-                            dicesCount = token.value.toInt()
-                            faces = DiceConfig.defautDiceFaces
+                    DiceTokens.DICES -> {
+                        when(lastToken) {
+                            DiceTokens.DICES -> {
+                                repeat(dicesCount) { dices.add(Dice(faces)) }
+                                dicesCount = token.value.toInt()
+                                faces = DiceConfig.defautDiceFaces
+                            }
+                            else -> {
+                                dicesCount = token.value.toInt()
+                            }
                         }
-                        else -> {
-                            dicesCount = token.value.toInt()
-                            lastToken = token.type
-                        }
+                        lastToken = token.type
                     }
-                    DiceTokens.FACES -> when(lastToken) {
-                        DiceTokens.FACES -> {
-                            repeat(dicesCount) { dices.add(Dice(faces)) }
-                            faces = token.value.toIntOrNull() ?: DiceConfig.defautDiceFaces
-                            dicesCount = DiceConfig.defaultDices
+                    DiceTokens.FACES -> {
+                        when(lastToken) {
+                            DiceTokens.FACES -> {
+                                repeat(dicesCount) { dices.add(Dice(faces)) }
+                                faces = token.value.toIntOrNull() ?: DiceConfig.defautDiceFaces
+                                dicesCount = DiceConfig.defaultDices
+                            }
+                            else -> {
+                                faces = token.value.toIntOrNull() ?: DiceConfig.defautDiceFaces
+                            }
                         }
-                        else -> {
-                            faces = token.value.toIntOrNull() ?: DiceConfig.defautDiceFaces
-                            lastToken = token.type
-                        }
+                        lastToken = token.type
                     }
                     else -> {
                         if (token.type == lastToken) return@forEach
