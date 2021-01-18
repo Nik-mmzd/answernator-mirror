@@ -8,6 +8,7 @@ import com.jessecorbett.diskord.dsl.field
 import mu.KLogger
 import mu.KotlinLogging
 import pw.modder.answernator.tools.diceHelper.*
+import pw.modder.answernator.tools.diceHelper.Dice
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.Globals.random
 import pw.modder.answernator.utils.LocalizedCommand
@@ -20,7 +21,7 @@ class Dice: LocalizedCommand {
     override val cmdType = Command.CommandGroup.FUN
 
     override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
-        val params = message.content.split(" ", limit = 2).getOrNull(1) ?: ""
+        val params = message.content.split(" ", limit = 2).getOrNull(1)?.takeIf { it.isNotEmpty() } ?: "1d6"
 
         val data = try {
             DiceParser(DiceTokenizer(params)).parse()
