@@ -91,6 +91,8 @@ class DiceParser(val tokenizer: DiceTokenizer) {
                         }
                     }
                     else -> {
+                        if (token.type == lastToken) return@forEach
+
                         repeat(dicesCount) { dices.add(Dice(faces)) }
                         faces = DiceConfig.defautDiceFaces
                         dicesCount = DiceConfig.defaultDices
