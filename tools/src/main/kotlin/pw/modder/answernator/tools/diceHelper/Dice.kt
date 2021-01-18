@@ -48,8 +48,6 @@ class DiceSet(
             throw DiceLimitExceededException("Tries count $tries exceeds limit ${DiceConfig.triesLimit}", "tries", tries, DiceConfig.triesLimit)
         if (dices.size < 1)
             throw InvalidArgumentException("Dices count can't be less that 1")
-        if (keep < 1)
-            throw InvalidArgumentException("Dices keep can't be less that 1")
         if (tries < 1)
             throw InvalidArgumentException("Dices tries can't be less that 1")
     }
