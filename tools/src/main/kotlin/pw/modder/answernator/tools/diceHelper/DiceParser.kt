@@ -60,6 +60,9 @@ class DiceParser(val tokenizer: DiceTokenizer) {
             if (betweenBrackets.isNotEmpty() && outsideBrackets.filterNot { it.type == DiceTokens.SPACE }.any { it.type.allowCombined })
                 throw InvalidArgumentException("Combinable tokens outside brackets")
 
+            if (betweenBrackets.isEmpty() && outsideBrackets.filterNot { it.type == DiceTokens.SPACE }.groupBy { it.type }.any { it.value.size > 1 })
+                throw InvalidArgumentException("Combinable tokens outside brackets")
+
             val dices = mutableListOf<Dice>()
             var faces: Int = DiceConfig.defautDiceFaces
             var dicesCount: Int = DiceConfig.defaultDices
@@ -95,7 +98,7 @@ class DiceParser(val tokenizer: DiceTokenizer) {
                         lastToken = token.type
                     }
                     else -> {
-                        if (token.type == lastToken) return@forEach
+                        if (token.type == lastToken) return@forEachIndexed
 
                         repeat(dicesCount) { dices.add(Dice(faces)) }
                         faces = DiceConfig.defautDiceFaces
