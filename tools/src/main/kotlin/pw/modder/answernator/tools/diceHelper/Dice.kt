@@ -10,7 +10,7 @@ class Dice(val faces: Int) {
         if (faces > DiceConfig.diceFases)
             throw DiceLimitExceededException("Faces count $faces exceeds limit ${DiceConfig.diceFases}", "faces", faces, DiceConfig.diceFases)
         if (faces < 2)
-            throw InvalidArgumentException("Dice faces count can't be less that 2")
+            throw InvalidArgumentException("Dice faces count ($faces) can't be less that 2")
     }
 
     @OptIn(ExperimentalStdlibApi::class)
@@ -36,20 +36,16 @@ class DiceSet(
     val tries: Int = 1
 ): List<Dice> by dices {
     init {
-        if (DiceConfig.dicesLimit > 0 && dices.size > DiceConfig.dicesLimit)
+        if (dices.isEmpty() || DiceConfig.dicesLimit in 1 until dices.size)
             throw DiceLimitExceededException("Dices count ${dices.size} exceeds limit ${DiceConfig.dicesLimit}", "dices", dices.size, DiceConfig.dicesLimit)
-        if (DiceConfig.explodeLimit > 0 && explodeLimit > DiceConfig.explodeLimit)
+        if (DiceConfig.explodeLimit in 1 until explodeLimit)
             throw DiceLimitExceededException("Explodes count $explodeLimit exceeds limit ${DiceConfig.explodeLimit}", "explode", explodeLimit, DiceConfig.explodeLimit)
-        if (DiceConfig.keepLimit > 0 && keep > DiceConfig.keepLimit)
+        if (DiceConfig.keepLimit in 1 until keep)
             throw DiceLimitExceededException("Keep count $keep exceeds limit ${DiceConfig.keepLimit}", "keep", keep, DiceConfig.keepLimit)
         if (DiceConfig.modLimit > 0 && abs(modifier) > DiceConfig.modLimit)
             throw DiceLimitExceededException("Modifier $modifier exceeds limit ${DiceConfig.modLimit}", "modifier", modifier, DiceConfig.modLimit)
-        if (DiceConfig.triesLimit > 0 && tries > DiceConfig.triesLimit)
+        if (tries < 1 || DiceConfig.triesLimit in 1 until tries)
             throw DiceLimitExceededException("Tries count $tries exceeds limit ${DiceConfig.triesLimit}", "tries", tries, DiceConfig.triesLimit)
-        if (dices.size < 1)
-            throw InvalidArgumentException("Dices count can't be less that 1")
-        if (tries < 1)
-            throw InvalidArgumentException("Dices tries can't be less that 1")
     }
 
     @OptIn(ExperimentalStdlibApi::class)
