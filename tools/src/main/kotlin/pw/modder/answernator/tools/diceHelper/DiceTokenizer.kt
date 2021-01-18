@@ -49,7 +49,7 @@ class DiceTokenizer(val input: String) {
                     ?: DiceTokens.DICES.takeIf { input[tokenPos].isDigit() }
                     ?: throw InvalidArgumentException("Found unknown token ${input[tokenPos]}")
 
-                if (token == DiceTokens.SPACE && last().type == DiceTokens.SPACE) {
+                if (token == DiceTokens.SPACE && (isEmpty() || last().type == DiceTokens.SPACE)) {
                     tokenPos++
                     continue
                 }
