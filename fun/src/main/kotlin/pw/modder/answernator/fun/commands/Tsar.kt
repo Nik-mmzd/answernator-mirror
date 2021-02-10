@@ -40,7 +40,7 @@ class Tsar: LocalizedCommand {
         return dslmessage {
             title = texts.getString("title")
 
-            field(texts.getString("decree.title"), texts.getRandomString("decree"), false)
+            field(texts.getString("title.decree"), texts.getRandomString("decree"), false)
 
             color = 16711680
             thumbnail = EmbedImage(texts.getString("thumbnail"))
