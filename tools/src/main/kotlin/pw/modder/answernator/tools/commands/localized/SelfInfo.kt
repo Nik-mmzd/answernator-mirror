@@ -16,29 +16,26 @@ import pw.modder.answernator.utils.LocalizedGuildCommand
 import pw.modder.answernator.utils.UTF8Control
 import pw.modder.answernator.utils.Utils
 import pw.modder.answernator.utils.extensions.*
+import pw.modder.answernator.utils.locale.CommandLocaleBundle
 import java.util.*
 
 class SelfInfo: LocalizedGuildCommand {
-    override fun getTexts(locale: Locale): ResourceBundle {
-        return ResourceBundle.getBundle("locale.info", locale, javaClass.classLoader, UTF8Control())
+    override fun getTexts(locale: Locale): CommandLocaleBundle {
+        return CommandLocaleBundle("info", locale, javaClass.classLoader)
     }
 
-    override fun ResourceBundle.getStringOrKey(key: String): String {
-        return getStringSafe("info.$key") ?: "info.$key"
-    }
-
-    private fun ResourceBundle.getPermissionString(perm: Permission): String {
-        return getStringSafe("info.permission.${perm.name}") ?: "[${perm.name}]"
+    private fun CommandLocaleBundle.getPerm(perm: Permission): String {
+        return getNullableString("permission.${perm.name}") ?: perm.name.toUpperCase()
     }
 
     override suspend fun action(
         bot: Bot,
         message: Message,
-        texts: ResourceBundle,
+        texts: CommandLocaleBundle,
         guildId: String
     ): CombinedMessageEmbed {
         val member = message.partialMember
-            ?: return texts.message("error.nomember")
+            ?: return texts.getString("error.nomember").toMessage()
         val guild = bot.clientStore.guilds[guildId].getCached()
 
         return message {
@@ -53,17 +50,17 @@ class SelfInfo: LocalizedGuildCommand {
 
             member.getColor(guild).takeUnless { it == 0 }?.run { color = this }
 
-            field(texts.getStringOrKey("user.username"), message.author.username, true)
-            field(texts.getStringOrKey("user.id"), message.author.id, true)
-            field(texts.getStringOrKey("user.owner"), texts.getStringOrKey("bool.${message.author.id == guild.ownerId}"), true)
-            field(texts.getStringOrKey("user.admin"), texts.getStringOrKey("bool.${member.isAdmin(guild, message.author.id)}"), true)
-            field(texts.getStringOrKey("user.muted"), texts.getStringOrKey("bool.${guild.memberIsMuted(message.author.id)}"), true)
-            field(texts.getStringOrKey("user.superuser"), texts.getStringOrKey("bool.${message.author.id == Globals.config.author}"), true)
+            field(texts.getString("user.username"), message.author.username, true)
+            field(texts.getString("user.id"), message.author.id, true)
+            field(texts.getString("user.owner"), texts.getString("bool.${message.author.id == guild.ownerId}"), true)
+            field(texts.getString("user.admin"), texts.getString("bool.${member.isAdmin(guild, message.author.id)}"), true)
+            field(texts.getString("user.muted"), texts.getString("bool.${guild.memberIsMuted(message.author.id)}"), true)
+            field(texts.getString("user.superuser"), texts.getString("bool.${message.author.id == Globals.config.author}"), true)
 
-            field(texts.getStringOrKey("user.roles"), member.roleIds.joinToString(" ") { it.toRoleMention() }.ifEmpty { texts.getStringOrKey("empty") }, false)
-            field(texts.getStringOrKey("user.rights"), member.computeRealPermissions(guild, message.author.id).asList().joinToString(", ") { texts.getPermissionString(it) }.ifEmpty { texts.getStringOrKey("empty") }, false)
-            field(texts.getStringOrKey("user.joinedAt"), texts.formatString("user.joinedAt.value", Utils.prettyPrintPeriod(texts.locale, member.joinedAt)), false)
-            field(texts.getStringOrKey("user.createdAt"), texts.formatString("user.createdAt.value", Utils.prettyPrintPeriodSnowflake(texts.locale, message.author.id)), false)
+            field(texts.getString("user.roles"), member.roleIds.joinToString(" ") { it.toRoleMention() }.ifEmpty { texts.getString("empty") }, false)
+            field(texts.getString("user.rights"), member.computeRealPermissions(guild, message.author.id).asList().joinToString(", ") { texts.getPerm(it) }.ifEmpty { texts.getString("empty") }, false)
+            field(texts.getString("user.joinedAt"), texts.formatString("user.joinedAt.value", Utils.prettyPrintPeriod(texts.locale, member.joinedAt)), false)
+            field(texts.getString("user.createdAt"), texts.formatString("user.createdAt.value", Utils.prettyPrintPeriodSnowflake(texts.locale, message.author.id)), false)
 
             setCurrentTimestamp()
         }

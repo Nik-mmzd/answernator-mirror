@@ -14,6 +14,7 @@ import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.Utils
 import pw.modder.answernator.utils.extensions.toChannelMention
 import pw.modder.answernator.utils.extensions.toUserMention
+import pw.modder.answernator.utils.locale.CommandLocaleBundle
 import java.util.*
 import com.jessecorbett.diskord.dsl.message as dslmessage
 
@@ -21,63 +22,63 @@ class Guild: LocalizedGuildOnlyCommand {
     override val name = "guild"
     override val userGroup = Command.UserGroup.ADMIN
     override val cmdType = Command.CommandGroup.ADMIN
-    override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
+    override suspend fun action(bot: Bot, message: Message, texts: CommandLocaleBundle): CombinedMessageEmbed {
         if (message.words.getOrNull(1).equals("list", true)) {
             return textMessage(bot.clientStore.discord.getGuilds()
-                .joinToString("\n", prefix = texts.getStringOrKey("list.available")) {
+                .joinToString("\n", prefix = texts.getString("list.available")) {
                     "${it.name}: `${it.id}`"
                 }
             )
         }
 
         val guild =  try {
-            bot.clientStore.guilds[message.words.getOrNull(1) ?: message.guildId ?: return texts.errorMessage()].getCached()
+            bot.clientStore.guilds[message.words.getOrNull(1) ?: message.guildId ?: return texts.getErrorString().toMessage()].getCached()
         } catch (e: DiscordNotFoundException) {
-            return texts.errorMessage()
+            return texts.getErrorString().toMessage()
         }
 
         return dslmessage {
             title = texts.formatString("title", guild.name)
 
-            field(texts.getStringOrKey("owner"), guild.ownerId.toUserMention(), true)
-            field(texts.getStringOrKey("emojis"), guild.emojis.size.toString(), true)
+            field(texts.getString("owner"), guild.ownerId.toUserMention(), true)
+            field(texts.getString("emojis"), guild.emojis.size.toString(), true)
             if (guild.roles.size < 50 && guild.id == message.guildId) {
                 field(
-                    texts.getStringOrKey("roles"),
+                    texts.getString("roles"),
                     guild.roles.filterNot { it.id == guild.id }.joinToString(" ") { it.mention },
                     false
                 )
             } else {
-                field(texts.getStringOrKey("roles"), (guild.roles.size - 1).toString(), true)
+                field(texts.getString("roles"), (guild.roles.size - 1).toString(), true)
             }
-            field(texts.getStringOrKey("created_at"), texts.formatString("created_at.value", Utils.prettyPrintPeriod(texts.locale, Utils.snowflakeCreatedAt(guild.id))), false)
-            field(texts.getStringOrKey("region"), guild.region.capitalize(), true)
-            field(texts.getStringOrKey("features"),
+            field(texts.getString("created_at"), texts.formatString("created_at.value", Utils.prettyPrintPeriod(texts.locale, Utils.snowflakeCreatedAt(guild.id))), false)
+            field(texts.getString("region"), guild.region.capitalize(), true)
+            field(texts.getString("features"),
                 guild.features.joinToString(", ") {
-                    texts.getStringOrKey("features.$it")
-                }.ifEmpty { texts.getStringOrKey("features.empty") },
+                    texts.getString("features.$it")
+                }.ifEmpty { texts.getString("features.empty") },
                 true)
-            field(texts.getStringOrKey("verificationLevel"), texts.getStringOrKey("verification.level.${guild.verificationLevel.name}"), true)
-            field(texts.getStringOrKey("mfaEnabled"), texts.getStringOrKey("mfa.${guild.mfaLevel.name}"), true)
-            field(texts.getStringOrKey("explicitContentFilterLevel"), texts.getStringOrKey("explicitContentFilterLevel.${guild.explicitContentFilterLevel.name}"), true)
+            field(texts.getString("verificationLevel"), texts.getString("verification.level.${guild.verificationLevel.name}"), true)
+            field(texts.getString("mfaEnabled"), texts.getString("mfa.${guild.mfaLevel.name}"), true)
+            field(texts.getString("explicitContentFilterLevel"), texts.getString("explicitContentFilterLevel.${guild.explicitContentFilterLevel.name}"), true)
             guild.iconHash?.run {
                 thumbnail = EmbedImage("https://cdn.discordapp.com/icons/${guild.id}/$this")
             }
             guild.afkChannelId?.run {
-                field(texts.getStringOrKey("afkChannel"), this.toChannelMention(), true)
-                field(texts.getStringOrKey("afkTimeout"), texts.formatString("afkTimeout.value", guild.afkTimeoutSeconds), true)
+                field(texts.getString("afkChannel"), this.toChannelMention(), true)
+                field(texts.getString("afkTimeout"), texts.formatString("afkTimeout.value", guild.afkTimeoutSeconds), true)
             }
 
-            field(texts.getStringOrKey("notifications"), texts.getStringOrKey("notifications.level.${guild.defaultMessageNotificationLevel.name}"), true)
+            field(texts.getString("notifications"), texts.getString("notifications.level.${guild.defaultMessageNotificationLevel.name}"), true)
             guild.widgetEnabled?.run {
-                field(texts.getStringOrKey("widget"), texts.getStringOrKey("widget.$this"), true)
+                field(texts.getString("widget"), texts.getString("widget.$this"), true)
                 guild.widgetChannelId?.run {
-                    field(texts.getStringOrKey("widget.channel"), this.toChannelMention(), true)
+                    field(texts.getString("widget.channel"), this.toChannelMention(), true)
                 }
             }
 
             guild.systemMessageChannelId?.run {
-                field(texts.getStringOrKey("system.channel"), this.toChannelMention(), true)
+                field(texts.getString("system.channel"), this.toChannelMention(), true)
             }
         }
     }

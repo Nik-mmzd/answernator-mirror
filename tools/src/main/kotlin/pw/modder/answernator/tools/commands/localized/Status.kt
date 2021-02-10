@@ -10,6 +10,7 @@ import com.jessecorbett.diskord.util.words
 import kotlinx.coroutines.*
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedCommand
+import pw.modder.answernator.utils.locale.CommandLocaleBundle
 import java.util.*
 
 private var randomGamesTimer: Job? = null
@@ -19,23 +20,23 @@ class Status: LocalizedCommand {
     override val userGroup = Command.UserGroup.OWNER
     override val cmdType = Command.CommandGroup.OWNER
 
-    override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
+    override suspend fun action(bot: Bot, message: Message, texts: CommandLocaleBundle): CombinedMessageEmbed {
         return when(message.words.getOrNull(1)?.toLowerCase()) {
             "online" -> {
                 bot.setActive()
-                texts.message("online")
+                texts.getString("online")
             }
             "dnd" -> {
                 bot.setDoNotDisturb()
-                texts.message("dnd")
+                texts.getString("dnd")
             }
             "idle" -> {
                 bot.setIdle()
-                texts.message("idle")
+                texts.getString("idle")
             }
             "invisible" -> {
                 bot.setInvisible()
-                texts.message("invisible")
+                texts.getString("invisible")
             }
             "game" -> {
                 val game = message.words.drop(2).joinToString(" ")
@@ -46,7 +47,7 @@ class Status: LocalizedCommand {
                         type = ActivityType.GAME
                     )
                 )
-                texts.message("playing", game)
+                texts.formatString("playing", game)
             }
             "randomgame" -> {
                 if (message.words.size == 2) {
@@ -58,24 +59,24 @@ class Status: LocalizedCommand {
                             type = ActivityType.GAME
                         )
                     )
-                    return texts.message("playing", game)
+                    return texts.formatString("playing", game).toMessage()
                 }
                 if (message.words.getOrNull(2)?.toLowerCase() == "stop") {
                     randomGamesTimer?.run {
                         cancel()
                         randomGamesTimer = null
                     }
-                    return texts.message("playing.timed.stopped")
+                    return texts.getString("playing.timed.stopped").toMessage()
                 }
 
                 if (randomGamesTimer != null) {
-                    return texts.message("playing.timed.running")
+                    return texts.getString("playing.timed.running").toMessage()
                 }
 
                 val timeout = message.words[2].toLongOrNull()
-                    ?: return texts.message("playing.timed.error")
+                    ?: return texts.getString("playing.timed.error").toMessage()
 
-                if (timeout < 30) return texts.message("playing.timed.error")
+                if (timeout < 30) return texts.getString("playing.timed.error").toMessage()
 
                 randomGamesTimer = GlobalScope.launch {
                     while (isActive) {
@@ -89,7 +90,7 @@ class Status: LocalizedCommand {
                         delay(timeout*60*1000)
                     }
                 }
-                texts.message("playing.timed.started", timeout)
+                texts.formatString("playing.timed.started", timeout)
             }
             "custom" -> TODO("See https://github.com/discordapp/discord-api-docs/issues/1160")
             /*"custom" -> bot.setStatus(
@@ -108,9 +109,9 @@ class Status: LocalizedCommand {
                         type = ActivityType.GAME
                     )
                 )
-                texts.message("clear")
+                texts.getString("clear")
             }
-            else -> texts.errorMessage()
-        }
+            else -> texts.getErrorString()
+        }.toMessage()
     }
 }

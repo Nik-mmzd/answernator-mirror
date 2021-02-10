@@ -9,6 +9,7 @@ import com.jessecorbett.diskord.util.authorId
 import com.jessecorbett.diskord.util.words
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedCommand
+import pw.modder.answernator.utils.locale.CommandLocaleBundle
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
@@ -26,12 +27,12 @@ class Clear: LocalizedCommand {
     val Message.sentAtDate
         get() = OffsetDateTime.parse(sentAt, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
 
-    override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
+    override suspend fun action(bot: Bot, message: Message, texts: CommandLocaleBundle): CombinedMessageEmbed {
         val channel = bot.clientStore.channels[message.channelId]
         val messages = mutableListOf<String>()
-        val limit = message.words.getOrNull(1)?.toIntOrNull() ?: return texts.errorMessage()
+        val limit = message.words.getOrNull(1)?.toIntOrNull() ?: return texts.getErrorString().toMessage()
 
-        if (limit > 100 || limit < 1) return texts.errorMessage()
+        if (limit > 100 || limit < 1) return texts.getErrorString().toMessage()
         val mentionedUserIds = message.usersMentioned.map { it.id }
 
         val timeLimit = message.sentAtDate.minus(2, ChronoUnit.DAYS)
@@ -48,7 +49,7 @@ class Clear: LocalizedCommand {
 
         } while (messages.size < limit && lastMessage.sentAtDate.isAfter(timeLimit))
 
-        if (messages.isEmpty()) return texts.message("empty")
+        if (messages.isEmpty()) return texts.getString("empty").toMessage()
 
         if (messages.size == 1) {
             channel.deleteMessage(messages.single())
@@ -58,6 +59,6 @@ class Clear: LocalizedCommand {
             ))
         }
 
-        return texts.message("done", messages.size)
+        return texts.formatString("done", messages.size).toMessage()
     }
 }

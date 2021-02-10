@@ -8,6 +8,7 @@ import com.jessecorbett.diskord.util.words
 import pw.modder.answernator.tools.utils.RandomGames
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedCommand
+import pw.modder.answernator.utils.locale.CommandLocaleBundle
 import java.util.*
 
 internal val gamesdb = RandomGames()
@@ -15,9 +16,9 @@ class RandomGame: LocalizedCommand {
     override val name = "randomgame"
     override val cmdType = Command.CommandGroup.FUN
 
-    override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
+    override suspend fun action(bot: Bot, message: Message, texts: CommandLocaleBundle): CombinedMessageEmbed {
         val num = message.words.getOrNull(1)?.toIntOrNull() ?: 1
-        if (num > 64 || num < 1) return texts.errorMessage()
+        if (num > 64 || num < 1) return texts.getErrorString().toMessage()
 
         val gameNames = mutableListOf<String>()
         repeat(num) {

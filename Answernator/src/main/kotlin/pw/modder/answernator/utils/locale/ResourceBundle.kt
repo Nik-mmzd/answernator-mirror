@@ -11,9 +11,9 @@ interface ResourceBundle {
     val locale: Locale
 
     fun getString(key: String): String
-    fun formatString(key: String, vararg args: String): String
+    fun formatString(key: String, vararg args: Any): String
     fun getNullableString(key: String): String?
-    fun formatNullableString(key: String, vararg args: String): String?
+    fun formatNullableString(key: String, vararg args: Any): String?
     fun getRandomString(key: String): String?
 }
 
@@ -29,7 +29,7 @@ class LocaleBundle private constructor(override val name: String, override val l
         return key
     }
 
-    override fun formatString(key: String, vararg args: String): String {
+    override fun formatString(key: String, vararg args: Any): String {
         return getString(key).format(args = *args)
     }
 
@@ -44,7 +44,7 @@ class LocaleBundle private constructor(override val name: String, override val l
         return bundle.getString(keys.random(Globals.random))
     }
 
-    override fun formatNullableString(key: String, vararg args: String): String? {
+    override fun formatNullableString(key: String, vararg args: Any): String? {
         return getNullableString(key)?.format(*args)
     }
 
@@ -67,7 +67,7 @@ class CommandLocaleBundle private constructor(override val name: String, overrid
         return "$name.$key"
     }
 
-    override fun formatString(key: String, vararg args: String): String {
+    override fun formatString(key: String, vararg args: Any): String {
         return getString(key).format(args = *args)
     }
 
@@ -76,7 +76,7 @@ class CommandLocaleBundle private constructor(override val name: String, overrid
         return null
     }
 
-    override fun formatNullableString(key: String, vararg args: String): String? {
+    override fun formatNullableString(key: String, vararg args: Any): String? {
         return getNullableString(key)?.format(*args)
     }
 
