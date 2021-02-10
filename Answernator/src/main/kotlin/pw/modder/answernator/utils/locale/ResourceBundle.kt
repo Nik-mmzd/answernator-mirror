@@ -19,10 +19,10 @@ interface ResourceBundle {
 
 class LocaleBundle private constructor(override val name: String, override val locale: Locale, private val bundle: JavaResourceBundle): ResourceBundle {
     constructor(name: String, locale: Locale, classLoader: ClassLoader):
-            this(name, locale, JavaResourceBundle.getBundle(name, locale, classLoader, UTF8Control))
+            this(name, locale, JavaResourceBundle.getBundle("locale.$name", locale, classLoader, UTF8Control))
 
     constructor(name: String, locale: Locale):
-            this(name, locale, JavaResourceBundle.getBundle(name, locale, UTF8Control))
+            this(name, locale, JavaResourceBundle.getBundle("locale.$name", locale, UTF8Control))
 
     override fun getString(key: String): String {
         if (bundle.containsKey(key)) return bundle.getString(key)
