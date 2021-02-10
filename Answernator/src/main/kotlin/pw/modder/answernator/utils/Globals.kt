@@ -19,7 +19,7 @@ object Globals {
         config = Config.loadFrom(configFile)
     }
 
-     val deps = Utils.loadDependenciesList()
+    val deps = Utils.loadDependenciesList()
 
     fun getDependencyVersion(group: String, name: String) = deps.single { it.group == group && it.name == name }.version
 

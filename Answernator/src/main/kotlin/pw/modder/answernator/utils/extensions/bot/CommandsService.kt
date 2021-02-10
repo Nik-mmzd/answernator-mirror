@@ -11,11 +11,8 @@ import pw.modder.answernator.db.Db
 import pw.modder.answernator.db.GuildConfig
 import pw.modder.answernator.utils.CommandList
 import pw.modder.answernator.utils.Globals
-import pw.modder.answernator.utils.UTF8Control
 import pw.modder.answernator.utils.extensions.channelType
-import pw.modder.answernator.utils.extensions.formatString
-import pw.modder.answernator.utils.extensions.getStringOrKey
-import pw.modder.answernator.utils.extensions.getStringSafe
+import pw.modder.answernator.utils.locale.LocaleBundle
 import java.util.*
 
 private fun String.asMessage() = CombinedMessageEmbed(text = this)
@@ -37,14 +34,14 @@ fun Bot.commandService() {
         val guildConfig = message.getGuildConfig()
         val locale = Locale(guildConfig?.lang ?: config.lang)
 //        val blacklist = guildConfig?.run { commandsBlacklist.split('|') } ?: listOf()
-        val texts = ResourceBundle.getBundle("locale.botGlobal", locale, UTF8Control())
+        val texts = LocaleBundle("botGlobal", locale)
 
         val command = CommandList.findCommand(name = message.words.first().drop(1), channelType = message.channelType)
             ?: return@messageCreated // if command not found: do nothing
 
         logger.debug { "found command ${command.name}, checking" }
         if (!command.check(message, clientStore.guilds)) {
-            message.reply(texts.getStringOrKey("bot.noPerms"))
+            message.reply(texts.getString("bot.noPerms"))
             return@messageCreated
         }
 
@@ -55,11 +52,11 @@ fun Bot.commandService() {
         } catch (e: DiscordBadPermissionsException) { // Bot is missing permissions to run this command
             with(command.requiredPermission) {
                 if (this == null) {
-                    texts.getStringOrKey("bot.badPermissions")
+                    texts.getString("bot.badPermissions")
                 } else {
                     texts.formatString(
                         "bot.badPermissions.perm",
-                        texts.getStringSafe("bot.badPermissions.${name}") ?: name
+                        texts.getNullableString("bot.badPermissions.${name}") ?: name
                     )
                 }
             }.asMessage()

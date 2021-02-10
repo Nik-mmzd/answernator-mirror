@@ -13,6 +13,7 @@ import pw.modder.answernator.db.Db
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedCommand
 import pw.modder.answernator.utils.extensions.isAdmin
+import pw.modder.answernator.utils.locale.CommandLocaleBundle
 import java.util.*
 
 class DefRole: LocalizedCommand {
@@ -33,14 +34,14 @@ class DefRole: LocalizedCommand {
         return cfg.greetingsChannel.isNotEmpty() && super.check(message, permissions)
     }
 
-    override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
-        val gid = message.guildId ?: return textMessage(texts.getStringOrKey("error"))
+    override suspend fun action(bot: Bot, message: Message, texts: CommandLocaleBundle): CombinedMessageEmbed {
+        val gid = message.guildId ?: return texts.getErrorString().toMessage()
         val guild = bot.clientStore.guilds[gid]
         val config = Db.guilds.get(gid)
         val add = when(message.words.getOrNull(1)) {
             "add" -> true
             "remove" -> false
-            else -> return textMessage(texts.getStringOrKey("error"))
+            else -> return texts.getErrorString().toMessage()
         }
 
         val guildObject = guild.getCached()

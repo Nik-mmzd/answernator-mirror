@@ -6,7 +6,7 @@ import java.net.URLConnection
 import java.util.*
 
 
-class UTF8Control : ResourceBundle.Control() {
+object UTF8Control : ResourceBundle.Control() {
     override fun newBundle(
         baseName: String?,
         locale: Locale?,

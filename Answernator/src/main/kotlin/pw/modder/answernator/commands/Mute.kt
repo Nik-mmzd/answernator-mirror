@@ -21,6 +21,7 @@ import pw.modder.answernator.utils.LocalizedGuildCommand
 import pw.modder.answernator.utils.extensions.bot.isMe
 import pw.modder.answernator.utils.extensions.isAdmin
 import pw.modder.answernator.utils.extensions.isUserMention
+import pw.modder.answernator.utils.locale.CommandLocaleBundle
 import java.util.*
 
 private val logger = KotlinLogging.logger {  }
@@ -40,20 +41,25 @@ class Mute: LocalizedGuildCommand {
         return super.check(message, guildClients) && Db.guilds.get(message.guildId ?: return false).muteRole.isNotEmpty()
     }
 
-    override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle, guildId: String): CombinedMessageEmbed {
+    override suspend fun action(
+        bot: Bot,
+        message: Message,
+        texts: CommandLocaleBundle,
+        guildId: String
+    ): CombinedMessageEmbed {
         logger.debug { "Getting guild..." }
         val guildClient = bot.clientStore.guilds[guildId]
         val guild = guildClient.getCached()
         val muteRole = Db.guilds.get(guild.id).muteRole
 
         logger.debug { "Checking configs" }
-        if (muteRole.isEmpty()) return textMessage(texts.getStringOrKey("not.configured"))
-        if (message.words.size < 2) return texts.errorMessage()
-        if (!message.words[1].isUserMention()) return texts.errorMessage()
+        if (muteRole.isEmpty()) return texts.getString("not.configured").toMessage()
+        if (message.words.size < 2) return texts.getErrorString().toMessage()
+        if (!message.words[1].isUserMention()) return texts.getErrorString().toMessage()
 
         message.usersMentioned.singleOrNull()?.run {
             val member = guildClient.getMember(id)
-            if (member.isAdmin(guild, id) || bot.isMe(id)) return texts.message("error.whitelisted", mention)
+            if (member.isAdmin(guild, id) || bot.isMe(id)) return texts.formatString("error.whitelisted", mention).toMessage()
             logger.debug { "Got mentioned user" }
             val logconfig = Db.logs.get(guild.id)
             return when(guild.memberIsMuted(id)) {
@@ -86,9 +92,7 @@ class Mute: LocalizedGuildCommand {
                     logger.debug { "Member is not muted" }
 
                     val reason = message.words.drop(2).joinToString(" ").ifEmpty {
-                        val reasonCount = texts.getStringOrKey("reason.count").toIntOrNull() ?: 1
-                        texts.getStringOrKey("reason.${Globals.random.nextInt(0, reasonCount)}")
-
+                        texts.getRandomString("reason")
                     }
                     logger.debug { "Got mute reason" }
 
@@ -115,6 +119,6 @@ class Mute: LocalizedGuildCommand {
                 }
             }
         }
-        return textMessage(texts.getStringOrKey("error"))
+        return texts.getErrorString().toMessage()
     }
 }

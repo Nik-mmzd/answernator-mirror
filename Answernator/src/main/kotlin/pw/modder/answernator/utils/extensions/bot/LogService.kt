@@ -7,10 +7,9 @@ import com.jessecorbett.diskord.util.mention
 import com.jessecorbett.diskord.util.sendMessage
 import kotlinx.coroutines.delay
 import pw.modder.answernator.db.Db
-import pw.modder.answernator.utils.UTF8Control
 import pw.modder.answernator.utils.extensions.getAuditLog
-import pw.modder.answernator.utils.extensions.getStringOrKey
 import pw.modder.answernator.utils.extensions.toUserMention
+import pw.modder.answernator.utils.locale.LocaleBundle
 import java.util.*
 
 @DiskordDsl
@@ -28,15 +27,16 @@ fun Bot.logService() {
 
         if (logConfig.memberBanLogChannel.isNotEmpty()) {
             val guildConfig = Db.guilds.get(ban.guildId)
-            val texts = ResourceBundle.getBundle("locale.botGlobal", Locale(guildConfig.lang), UTF8Control())
+            val texts = LocaleBundle("botGlobal", Locale(guildConfig.lang))
 
             when {
-                auditLog == null -> client.sendMessage(texts.getStringOrKey("bot.log.ban").format(ban.user.mention))
-                auditLog.reason.isNullOrEmpty() -> client.sendMessage(texts.getStringOrKey("bot.log.ban").format(ban.user.mention))
+                auditLog == null -> client.sendMessage(texts.formatString("bot.log.ban", ban.user.mention))
+                auditLog.reason.isNullOrEmpty() -> client.sendMessage(texts.formatString("bot.log.ban", ban.user.mention))
                 else -> {
                     val reasonParts = auditLog.reason.split('|', limit = 2)
                     client.sendMessage(
-                        texts.getStringOrKey("bot.log.ban.full").format(
+                        texts.formatString(
+                            "bot.log.ban.full",
                             ban.user.mention,
                             if (reasonParts.size == 1) auditLog.userId.toUserMention() else reasonParts.first().toUserMention(),
                             reasonParts.last()
@@ -58,12 +58,12 @@ fun Bot.logService() {
 
         if (logConfig.memberUnbanLogChannel.isNotEmpty()) {
             val guildConfig = Db.guilds.get(unBan.guildId)
-            val texts = ResourceBundle.getBundle("locale.botGlobal", Locale(guildConfig.lang), UTF8Control())
+            val texts = LocaleBundle("botGlobal", Locale(guildConfig.lang))
             clientStore.channels[logConfig.memberUnbanLogChannel].sendMessage(
                 if (auditLog == null)
-                    texts.getStringOrKey("bot.log.unban").format(unBan.user.mention)
+                    texts.formatString("bot.log.unban", unBan.user.mention)
                 else
-                    texts.getStringOrKey("bot.log.unban.full").format(unBan.user.mention, auditLog.userId.toUserMention())
+                    texts.formatString("bot.log.unban.full", unBan.user.mention, auditLog.userId.toUserMention())
             )
         }
     }
@@ -72,9 +72,9 @@ fun Bot.logService() {
 
         if (logConfig.memberJoinLogChannel.isNotEmpty()) {
             val guildConfig = Db.guilds.get(memberJoin.guildId)
-            val texts = ResourceBundle.getBundle("locale.botGlobal", Locale(guildConfig.lang), UTF8Control())
+            val texts = LocaleBundle("botGlobal", Locale(guildConfig.lang))
             clientStore.channels[logConfig.memberJoinLogChannel].sendMessage(
-                texts.getStringOrKey("bot.log.member.join").format(memberJoin.user?.mention ?: "??!? O_o")
+                texts.formatString("bot.log.member.join", memberJoin.user?.mention ?: "??!? O_o")
             )
         }
     }
@@ -83,9 +83,9 @@ fun Bot.logService() {
 
         if (logConfig.memberLeaveLogChannel.isNotEmpty()) {
             val guildConfig = Db.guilds.get(memberLeave.guildId)
-            val texts = ResourceBundle.getBundle("locale.botGlobal", Locale(guildConfig.lang), UTF8Control())
+            val texts = LocaleBundle("botGlobal", Locale(guildConfig.lang))
             clientStore.channels[logConfig.memberLeaveLogChannel].sendMessage(
-                texts.getStringOrKey("bot.log.member.leave").format(memberLeave.user.mention)
+                texts.formatString("bot.log.member.leave", memberLeave.user.mention)
             )
         }
     }

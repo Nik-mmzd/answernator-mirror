@@ -11,6 +11,7 @@ import pw.modder.answernator.db.LogConfigs
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedCommand
 import pw.modder.answernator.utils.extensions.toChannelMention
+import pw.modder.answernator.utils.locale.CommandLocaleBundle
 import java.util.*
 import com.jessecorbett.diskord.dsl.message as dslmessage
 
@@ -20,25 +21,25 @@ class Log: LocalizedCommand {
     override val cmdType = Command.CommandGroup.ADMIN
     override val channels: EnumSet<Command.ChannelTypes> = EnumSet.of(Command.ChannelTypes.GUILD)
 
-    override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
+    override suspend fun action(bot: Bot, message: Message, texts: CommandLocaleBundle): CombinedMessageEmbed {
 
         val guild = message.guildId?.run { bot.clientStore.guilds[this] }
-            ?: return texts.errorMessage()
+            ?: return texts.getErrorString().toMessage()
 
         if (message.words.getOrNull(1)?.toLowerCase() == "get") {
             val log = Db.logs.get(guild.guildId)
             return dslmessage {
-                title = texts.getStringOrKey("get.title")
+                title = texts.getString("get.title")
 
-                field(texts.getStringOrKey("get.memberjoin"), log.memberJoinLogChannel.toChannelMention().ifEmpty { texts.getStringOrKey("get.disabled") }, true)
-                field(texts.getStringOrKey("get.memberleave"), log.memberLeaveLogChannel.toChannelMention().ifEmpty { texts.getStringOrKey("get.disabled") }, true)
-                field(texts.getStringOrKey("get.memberban"), log.memberBanLogChannel.toChannelMention().ifEmpty { texts.getStringOrKey("get.disabled") }, true)
-                field(texts.getStringOrKey("get.memeberunban"), log.memberUnbanLogChannel.toChannelMention().ifEmpty { texts.getStringOrKey("get.disabled") }, true)
-                field(texts.getStringOrKey("get.membermute"), log.memberMuteLogChannel.toChannelMention().ifEmpty { texts.getStringOrKey("get.disabled") }, true)
-                field(texts.getStringOrKey("get.memberunmute"), log.memberUnmuteLogChannel.toChannelMention().ifEmpty { texts.getStringOrKey("get.disabled") }, true)
+                field(texts.getString("get.memberjoin"), log.memberJoinLogChannel.toChannelMention().ifEmpty { texts.getString("get.disabled") }, true)
+                field(texts.getString("get.memberleave"), log.memberLeaveLogChannel.toChannelMention().ifEmpty { texts.getString("get.disabled") }, true)
+                field(texts.getString("get.memberban"), log.memberBanLogChannel.toChannelMention().ifEmpty { texts.getString("get.disabled") }, true)
+                field(texts.getString("get.memeberunban"), log.memberUnbanLogChannel.toChannelMention().ifEmpty { texts.getString("get.disabled") }, true)
+                field(texts.getString("get.membermute"), log.memberMuteLogChannel.toChannelMention().ifEmpty { texts.getString("get.disabled") }, true)
+                field(texts.getString("get.memberunmute"), log.memberUnmuteLogChannel.toChannelMention().ifEmpty { texts.getString("get.disabled") }, true)
             }
         }
-        if (message.words.size < 3) return texts.errorMessage()
+        if (message.words.size < 3) return texts.getErrorString().toMessage()
 
         return when(message.words[1].toLowerCase()) {
             "memberjoin" -> process(bot, guild.guildId, message.words[2], LogConfigs.memberJoinLogChannel, texts)
@@ -54,7 +55,7 @@ class Log: LocalizedCommand {
             "messagebulkdelete" -> TODO("No messages cache")
             "messagechange" -> TODO("No messages cache")
 
-            else -> texts.errorMessage()
+            else -> texts.getErrorString().toMessage()
         }
     }
 
@@ -64,13 +65,13 @@ class Log: LocalizedCommand {
         throw IllegalArgumentException()
     }
 
-    private fun process(bot: Bot, gid: String, channelId: String, column: Column<String>, texts: ResourceBundle): CombinedMessageEmbed {
+    private fun process(bot: Bot, gid: String, channelId: String, column: Column<String>, texts: CommandLocaleBundle): CombinedMessageEmbed {
         val channel = channelId.takeUnless { it.equals("disable", true) }?.run { bot.clientStore.channels[extractChannelId(this)] }
 
         Db.updateLogConfig(gid) {
             it[column] = channel?.channelId ?: ""
         }
-        if (channel == null) return texts.message("${column.name}.disabled")
-        return texts.message(column.name, "<#${channel.channelId}>")
+        if (channel == null) return texts.getString("${column.name}.disabled").toMessage()
+        return texts.formatString(column.name, "<#${channel.channelId}>").toMessage()
     }
 }

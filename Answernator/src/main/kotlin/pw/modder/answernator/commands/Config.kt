@@ -14,6 +14,7 @@ import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.LocalizedCommand
 import pw.modder.answernator.utils.extensions.toChannelMention
 import pw.modder.answernator.utils.extensions.toRoleMention
+import pw.modder.answernator.utils.locale.CommandLocaleBundle
 import java.util.*
 import com.jessecorbett.diskord.dsl.message as dslmessage
 
@@ -24,8 +25,8 @@ class Config: LocalizedCommand {
     override val userGroup = Command.UserGroup.ADMIN
     override val cmdType = Command.CommandGroup.ADMIN
 
-    override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
-        val guildClient = message.guildId?.run { bot.clientStore.guilds[this] } ?: return texts.message("noguild")
+    override suspend fun action(bot: Bot, message: Message, texts: CommandLocaleBundle): CombinedMessageEmbed {
+        val guildClient = message.guildId?.run { bot.clientStore.guilds[this] } ?: return texts.getString("noguild").toMessage()
         val guild = guildClient.get()
         val config = Db.guilds.get(guild.id)
 
@@ -33,16 +34,16 @@ class Config: LocalizedCommand {
             "get" -> {
                 dslmessage {
                     title = guild.name
-                    description = texts.getStringOrKey("description")
+                    description = texts.getString("description")
 
-                    field(texts.getStringOrKey("lang"), config.lang, false)
-                    field(texts.getStringOrKey("lang.available"), Globals.config.langs.joinToString(separator = ", ") { "`$it`" }, false)
-                    field(texts.getStringOrKey("greeter"), texts.getStringOrKey("greeter.${config.greetNewUsers}"), false)
-                    field(texts.getStringOrKey("greeting"), String.format(config.greetingText, "%user%", "%guild%"), false)
-                    field(texts.getStringOrKey("greeting.help"), texts.getStringOrKey("greeting.help.value"), false)
-                    field(texts.getStringOrKey("greeting.channel"), getGreetingsChannelName(bot.clientStore, config, texts), false)
-                    field(texts.getStringOrKey("muterole"), config.muteRole.toRoleMention().ifEmpty { texts.getStringOrKey("role.notset") }, true)
-                    field(texts.getStringOrKey("defrole"), config.defaultRole.toRoleMention().ifEmpty { texts.getStringOrKey("role.notset") }, true)
+                    field(texts.getString("lang"), config.lang, false)
+                    field(texts.getString("lang.available"), Globals.config.langs.joinToString(separator = ", ") { "`$it`" }, false)
+                    field(texts.getString("greeter"), texts.getString("greeter.${config.greetNewUsers}"), false)
+                    field(texts.getString("greeting"), String.format(config.greetingText, "%user%", "%guild%"), false)
+                    field(texts.getString("greeting.help"), texts.getString("greeting.help.value"), false)
+                    field(texts.getString("greeting.channel"), getGreetingsChannelName(bot.clientStore, config, texts), false)
+                    field(texts.getString("muterole"), config.muteRole.toRoleMention().ifEmpty { texts.getString("role.notset") }, true)
+                    field(texts.getString("defrole"), config.defaultRole.toRoleMention().ifEmpty { texts.getString("role.notset") }, true)
                 }
             }
             "set" -> {
@@ -52,8 +53,8 @@ class Config: LocalizedCommand {
                             Db.updateGuildConfig(guild.id) {
                                 it[lang] = message.words[3]
                             }
-                            texts.message("locale.updated", message.words[3])
-                        } else texts.message("locale.notfound", message.words[3])
+                            texts.formatString("locale.updated", message.words[3]).toMessage()
+                        } else texts.formatString("locale.notfound", message.words[3]).toMessage()
                     }
                     "greet" -> {
                         when(message.words.getOrNull(3)) {
@@ -64,33 +65,33 @@ class Config: LocalizedCommand {
                                         .replace("%user%", "%1\$s")
                                         .replace("%guild%", "%2\$s")
                                 }
-                                texts.message("greeting.applied")
+                                texts.getString("greeting.applied").toMessage()
                             }
                             "enable" -> {
                                 Db.updateGuildConfig(guild.id) {
                                     it[greetNewUsers] = true
                                 }
-                                texts.message("greeting.enabled")
+                                texts.getString("greeting.enabled").toMessage()
                             }
                             "disable" -> {
                                 Db.updateGuildConfig(guild.id) {
                                     it[greetNewUsers] = false
                                 }
-                                texts.message("greeting.disabled")
+                                texts.getString("greeting.disabled").toMessage()
                             }
                             "channel" -> {
                                 val channel = try {
                                     bot.clientStore.channels[extractChannelId(message.words[4])]
                                 } catch (_: Exception) {
-                                    return texts.errorMessage()
+                                    return texts.getErrorString().toMessage()
                                 }
 
                                 Db.updateGuildConfig(guild.id) {
                                     it[greetingsChannel] = channel.channelId
                                 }
-                                texts.message("greeting.channelset", channel.get().mention)
+                                texts.formatString("greeting.channelset", channel.get().mention).toMessage()
                             }
-                            else -> texts.errorMessage()
+                            else -> texts.getErrorString().toMessage()
                         }
                     }
                     "defrole" -> {
@@ -98,49 +99,49 @@ class Config: LocalizedCommand {
                             Db.updateGuildConfig(guild.id) {
                                 it[defaultRole] = ""
                             }
-                            return texts.message("defrole.removed")
+                            return texts.getString("defrole.removed").toMessage()
                         }
 
                         val role = message.rolesIdsMentioned.singleOrNull()
-                            ?: return texts.errorMessage()
+                            ?: return texts.getErrorString().toMessage()
 
                         Db.updateGuildConfig(guild.id) {
                             it[defaultRole] = role
                         }
-                        return texts.message("defrole.set", role.toRoleMention())
+                        return texts.formatString("defrole.set", role.toRoleMention()).toMessage()
                     }
                     "muterole" -> {
                         if (message.words.getOrNull(3).equals("remove", true)) {
                             Db.updateGuildConfig(guild.id) {
                                 it[muteRole] = ""
                             }
-                            return texts.message("muterole.removed")
+                            return texts.getString("muterole.removed").toMessage()
                         }
 
                         val role = message.rolesIdsMentioned.singleOrNull()
-                            ?: return texts.errorMessage()
+                            ?: return texts.getErrorString().toMessage()
 
                         Db.updateGuildConfig(guild.id) {
                             it[muteRole] = role
                         }
-                        return texts.message("muterole.set", role.toRoleMention())
+                        return texts.formatString("muterole.set", role.toRoleMention()).toMessage()
                     }
-                    else -> texts.errorMessage()
+                    else -> texts.getErrorString().toMessage()
                 }
             }
             "blacklist" -> TODO()
-            else -> texts.errorMessage()
+            else -> texts.getErrorString().toMessage()
 
         }
     }
 
-    private fun getGreetingsChannelName(clientStore: ClientStore, config: GuildConfig, texts: ResourceBundle): String {
-        if (config.greetingsChannel.isEmpty()) return texts.getStringOrKey("greeting.channel.notset")
+    private fun getGreetingsChannelName(clientStore: ClientStore, config: GuildConfig, texts: CommandLocaleBundle): String {
+        if (config.greetingsChannel.isEmpty()) return texts.getString("greeting.channel.notset")
 
         val channel = try {
             clientStore.channels[config.greetingsChannel]
         } catch (_: Exception) {
-            return texts.getStringOrKey("greeting.channel.error")
+            return texts.getString("greeting.channel.error")
         }
 
         return channel.channelId.toChannelMention()

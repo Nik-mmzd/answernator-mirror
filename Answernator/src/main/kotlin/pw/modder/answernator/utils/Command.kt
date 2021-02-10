@@ -3,7 +3,6 @@ package pw.modder.answernator.utils
 import com.jessecorbett.diskord.api.model.Message
 import com.jessecorbett.diskord.api.model.Permission
 import com.jessecorbett.diskord.api.model.Permissions
-import com.jessecorbett.diskord.api.rest.client.GuildClient
 import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.util.GuildClients
@@ -12,7 +11,6 @@ import mu.KLogger
 import mu.KotlinLogging
 import pw.modder.answernator.utils.extensions.computePermissions
 import java.util.*
-import com.jessecorbett.diskord.dsl.message as dslmessage
 
 private val logger: KLogger = KotlinLogging.logger {}
 interface Command {
@@ -68,7 +66,8 @@ interface Command {
         return check(permissions)
     }
 
-    fun textMessage(message: String): CombinedMessageEmbed = dslmessage { text = message }
+    fun textMessage(message: String): CombinedMessageEmbed = CombinedMessageEmbed(message)
+    fun String.toMessage(): CombinedMessageEmbed = CombinedMessageEmbed(this)
 
     fun getHelp(locale: Locale): String? {
         return null

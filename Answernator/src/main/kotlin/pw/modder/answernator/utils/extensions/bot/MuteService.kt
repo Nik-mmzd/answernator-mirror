@@ -9,9 +9,7 @@ import pw.modder.answernator.db.Db
 import pw.modder.answernator.db.Db.memberIsMuted
 import pw.modder.answernator.db.Db.muteMember
 import pw.modder.answernator.db.Db.unmuteMember
-import pw.modder.answernator.utils.Globals
-import pw.modder.answernator.utils.UTF8Control
-import pw.modder.answernator.utils.extensions.getStringOrKey
+import pw.modder.answernator.utils.locale.CommandLocaleBundle
 import java.util.*
 
 private val logger = KotlinLogging.logger {}
@@ -33,17 +31,25 @@ fun Bot.muteService() {
         val roleId = config.muteRole.takeIf { it.isNotEmpty() } ?: return@guildMemberUpdated
         val logConfig = Db.logs.get(it.guildId)
         val guild = clientStore.guilds[it.guildId]
-        val texts = ResourceBundle.getBundle("locale.mute", Locale(config.lang), UTF8Control())
+        val texts = CommandLocaleBundle("mute", Locale(config.lang))
 
         if (it.roles.any { it == roleId } && !guild.memberIsMuted(it.user.id)) {
             try {
                 logConfig.memberMuteLogChannel.takeIf { it.isNotEmpty() }?.run {
+                    if (it.user.id == getMe().id) {
+                        clientStore.channels[this].sendMessage(
+                            texts.formatString("muted.self", it.user.mention)
+                        )
+                        return@guildMemberUpdated
+                    }
+
                     clientStore.channels[this].sendMessage(
-                        String.format(
-                            texts.getStringOrKey("mute.muted"),
+                        texts.formatString(
+                            "muted",
                             it.user.mention,
-                            texts.getStringOrKey("mute.reason.${Globals.random.nextInt(0, texts.getStringOrKey("mute.reason.count").toIntOrNull() ?: 1)}")
-                        ))
+                            texts.getRandomString("reason")
+                        )
+                    )
                 }
             } catch (e: Exception) {
                 logger.warn(e) { "Logger: Error while auto-muting by role update" }
@@ -59,7 +65,7 @@ fun Bot.muteService() {
                 logConfig.memberUnmuteLogChannel.takeIf { it.isNotEmpty() }?.run {
                     clientStore.channels[this].sendMessage(
                         String.format(
-                            texts.getStringOrKey("mute.unmuted"),
+                            texts.getString("unmuted"),
                             it.user.mention
                         ))
                 }
