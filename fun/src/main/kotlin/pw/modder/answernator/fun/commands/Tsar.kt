@@ -14,11 +14,11 @@ import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.LocalizedCommand
 import pw.modder.answernator.utils.extensions.setCurrentTimestamp
+import pw.modder.answernator.utils.locale.CommandLocaleBundle
 import java.util.*
 import kotlin.random.Random
 import com.jessecorbett.diskord.dsl.message as dslmessage
 
-private val random = Random(System.currentTimeMillis())
 class Tsar: LocalizedCommand {
     override val name = "царь"
     override val cmdType = Command.CommandGroup.FUN
@@ -33,24 +33,20 @@ class Tsar: LocalizedCommand {
         return locale == Locale("ru") && super.check(message, permissions)
     }
 
-    override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
+    override suspend fun action(bot: Bot, message: Message, texts: CommandLocaleBundle): CombinedMessageEmbed {
         if (message.words.getOrNull(1)?.toLowerCase() != "велит")
-            return texts.message("invalid")
-
-        val decreeCount = texts.getStringOrKey("decree.count").toInt()
-        val signCount = texts.getStringOrKey("sign.count").toInt()
-
+            return texts.getString("invalid").toMessage()
 
         return dslmessage {
-            title = texts.getStringOrKey("title")
+            title = texts.getString("title")
 
-            field(texts.getStringOrKey("decree.title"), texts.getStringOrKey("decree.${random.nextInt(0, decreeCount)}"), false)
+            field(texts.getString("decree.title"), texts.getRandomString("decree"), false)
 
             color = 16711680
-            thumbnail = EmbedImage(texts.getStringOrKey("thumbnail"))
+            thumbnail = EmbedImage(texts.getString("thumbnail"))
 
-            footer(texts.getStringOrKey("sign.${random.nextInt(0, signCount)}")) {
-                iconUrl = texts.getStringOrKey("footer.icon")
+            footer(texts.getRandomString("sign")) {
+                iconUrl = texts.getString("footer.icon")
             }
 
             setCurrentTimestamp()

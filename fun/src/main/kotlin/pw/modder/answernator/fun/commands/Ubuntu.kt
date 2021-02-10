@@ -10,6 +10,7 @@ import kotlinx.serialization.json.JsonConfiguration
 import pw.modder.answernator.`fun`.utils.UbuntuWord
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedCommand
+import pw.modder.answernator.utils.locale.CommandLocaleBundle
 import java.util.*
 
 class Ubuntu: LocalizedCommand {
@@ -18,7 +19,7 @@ class Ubuntu: LocalizedCommand {
     private val data = Json(JsonConfiguration.Stable)
         .parse(UbuntuWord.serializer().list, javaClass.classLoader.getResourceAsStream("ubuntu.json").reader().readText())
 
-    override suspend fun action(bot: Bot, message: Message, texts: ResourceBundle): CombinedMessageEmbed {
+    override suspend fun action(bot: Bot, message: Message, texts: CommandLocaleBundle): CombinedMessageEmbed {
         return textMessage("${message.author.mention}, ${data.random().run { first.random() + ' ' + second.random() }}")
     }
 }
