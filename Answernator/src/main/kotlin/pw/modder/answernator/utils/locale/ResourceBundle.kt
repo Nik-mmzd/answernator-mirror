@@ -72,7 +72,7 @@ class CommandLocaleBundle private constructor(override val name: String, overrid
     }
 
     override fun getNullableString(key: String): String? {
-        if (bundle.containsKey("$name.$key")) return bundle.getString(key)
+        if (bundle.containsKey("$name.$key")) return bundle.getString("$name.$key")
         return null
     }
 
