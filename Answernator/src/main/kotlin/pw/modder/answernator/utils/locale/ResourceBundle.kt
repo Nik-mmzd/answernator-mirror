@@ -96,7 +96,7 @@ class CommandLocaleBundle private constructor(override val name: String, overrid
 
     fun getErrorString(key: String = "error"): String {
         if (bundle.containsKey("$name.help.usage"))
-            return "${bundle.getString("$name.key")}\n${bundle.getString("$name.help.usage")}"
+            return "${getString(key)}\n${bundle.getString("$name.help.usage")}"
 
         return getString(key)
     }
