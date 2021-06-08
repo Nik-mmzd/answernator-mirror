@@ -5,6 +5,8 @@ import com.jessecorbett.diskord.api.model.Message
 import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.dsl.DiskordDsl
+import com.jessecorbett.diskord.util.isFromBot
+import com.jessecorbett.diskord.util.isFromUser
 import com.jessecorbett.diskord.util.words
 import mu.KotlinLogging
 import pw.modder.answernator.db.Db
@@ -28,6 +30,8 @@ fun Bot.commandService() {
 
     messageCreated { message: Message ->
         if (message.content.isEmpty()) return@messageCreated
+        if (message.author.isBot) return@messageCreated
+
         logger.debug { "received message, message text: ${message.content}" }
         if (message.content.first() != config.prefix) return@messageCreated
 

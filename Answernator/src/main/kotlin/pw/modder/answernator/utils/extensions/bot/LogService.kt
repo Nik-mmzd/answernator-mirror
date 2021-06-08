@@ -29,20 +29,18 @@ fun Bot.logService() {
             val guildConfig = Db.guilds.get(ban.guildId)
             val texts = LocaleBundle("botGlobal", Locale(guildConfig.lang))
 
+            val reasonParts = auditLog?.reason?.split('|', limit = 2)
             when {
-                auditLog == null -> client.sendMessage(texts.formatString("bot.log.ban", ban.user.mention))
-                auditLog.reason.isNullOrEmpty() -> client.sendMessage(texts.formatString("bot.log.ban", ban.user.mention))
-                else -> {
-                    val reasonParts = auditLog.reason.split('|', limit = 2)
-                    client.sendMessage(
-                        texts.formatString(
-                            "bot.log.ban.full",
-                            ban.user.mention,
-                            if (reasonParts.size == 1) auditLog.userId.toUserMention() else reasonParts.first().toUserMention(),
-                            reasonParts.last()
-                        )
-                    )
-                }
+                // if no audit log we do not know who banned the user. "User AA was banned"
+                auditLog == null -> client.sendMessage(texts.formatString("bot.log.ban.unknown", ban.user.mention))
+                // we have audit log and know who banned a user but have no reason
+                reasonParts == null || reasonParts.isEmpty() -> client.sendMessage(texts.formatString("bot.log.ban.noreason", ban.user.mention, auditLog.userId.toUserMention()))
+                // seems like it's not a bot format but a reason itself
+                reasonParts.size == 1 -> client.sendMessage(texts.formatString("bot.log.ban.reason", ban.user.mention, auditLog.userId.toUserMention(), auditLog.reason))
+                // wtf? We have a reason in bot format, but reason is empty.
+                reasonParts[1].isEmpty() -> client.sendMessage(texts.formatString("bot.log.ban.noreason", ban.user.mention, reasonParts[0].toUserMention()))
+                // bot format, we know all data
+                else -> client.sendMessage(texts.formatString("bot.log.ban.reason", ban.user.mention, reasonParts[0].toUserMention(), reasonParts[1]))
             }
         }
     }
