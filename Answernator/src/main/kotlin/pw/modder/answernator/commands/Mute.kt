@@ -33,14 +33,6 @@ class Mute: LocalizedGuildCommand {
     override val channels = EnumSet.of(Command.ChannelTypes.GUILD)
     override val requiredPermission: Permission? = Permission.MANAGE_ROLES
 
-    override fun check(message: Message, permissions: Permissions): Boolean {
-        return super.check(message, permissions) && Db.guilds.get(message.guildId ?: return false).muteRole.isNotEmpty()
-    }
-
-    override suspend fun check(message: Message, guildClients: GuildClients): Boolean {
-        return super.check(message, guildClients) && Db.guilds.get(message.guildId ?: return false).muteRole.isNotEmpty()
-    }
-
     override suspend fun action(
         bot: Bot,
         message: Message,
@@ -112,14 +104,6 @@ class Unmute: LocalizedGuildCommand {
     override val cmdType = Command.CommandGroup.MODER
     override val channels = EnumSet.of(Command.ChannelTypes.GUILD)
     override val requiredPermission: Permission? = Permission.MANAGE_ROLES
-
-    override fun check(message: Message, permissions: Permissions): Boolean {
-        return super.check(message, permissions) && Db.guilds.get(message.guildId ?: return false).muteRole.isNotEmpty()
-    }
-
-    override suspend fun check(message: Message, guildClients: GuildClients): Boolean {
-        return super.check(message, guildClients) && Db.guilds.get(message.guildId ?: return false).muteRole.isNotEmpty()
-    }
 
     override fun getTexts(locale: Locale): CommandLocaleBundle {
         return CommandLocaleBundle("mute", locale, javaClass.classLoader)
