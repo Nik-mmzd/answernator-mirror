@@ -11,6 +11,7 @@ import pw.modder.answernator.cache.GuildCache.getCached
 import pw.modder.answernator.tools.commandTypes.LocalizedGuildOnlyCommand
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.extensions.bot.isMe
+import pw.modder.answernator.utils.extensions.extractMentionedId
 import pw.modder.answernator.utils.extensions.isAdmin
 import pw.modder.answernator.utils.extensions.isUserMention
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
@@ -24,10 +25,17 @@ class Kick: LocalizedGuildOnlyCommand {
     override val requiredPermission: Permission? = Permission.KICK_MEMBERS
 
     override suspend fun action(bot: Bot, message: Message, texts: CommandLocaleBundle): CombinedMessageEmbed {
-        if (message.words.getOrNull(1)?.isUserMention() != true || message.usersMentioned.size != 1) return texts.getErrorString().toMessage()
+        if (message.words.size < 2) return texts.getErrorString().toMessage()
+        val mentionedUserId = message.words[1].extractMentionedId()
+            ?: return texts.getErrorString().toMessage()
 
-        val mentionedUser = message.usersMentioned.single()
-        if (mentionedUser.id == message.authorId || bot.isMe(mentionedUser)) return texts.getString("whitelisted").toMessage()
+        val mentionedUser = message.usersMentioned.find { it.id == mentionedUserId }
+            ?: return texts.getErrorString().toMessage()
+
+        if (mentionedUser.id == message.authorId)
+            return texts.formatString("whitelisted.author", mentionedUser.mention).toMessage()
+        if (bot.isMe(mentionedUser.id))
+            return texts.formatString("whitelisted.self", mentionedUser.mention).toMessage()
 
         val client = bot.clientStore.guilds[message.guildId ?: return texts.getErrorString().toMessage()]
 

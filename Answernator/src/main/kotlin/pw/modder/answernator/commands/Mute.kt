@@ -16,15 +16,11 @@ import pw.modder.answernator.db.Db.unmuteMember
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedGuildCommand
 import pw.modder.answernator.utils.extensions.bot.isMe
+import pw.modder.answernator.utils.extensions.extractMentionedId
 import pw.modder.answernator.utils.extensions.isAdmin
 import pw.modder.answernator.utils.extensions.isUserMention
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
 import java.util.*
-
-private val snowflakeRegex = Regex("\\d{18}")
-private fun String.extractMentionedId(): String? {
-    return snowflakeRegex.find(this)?.value
-}
 
 private val logger = KotlinLogging.logger {  }
 class Mute: LocalizedGuildCommand {
@@ -51,6 +47,7 @@ class Mute: LocalizedGuildCommand {
         if (message.words.size < 2) return texts.getErrorString().toMessage()
 
         val mentionedUserId = message.words[1].extractMentionedId()
+            ?: return texts.getErrorString().toMessage()
         val mentionedUser = message.usersMentioned.find { it.id == mentionedUserId }
             ?: return texts.getErrorString().toMessage()
 
@@ -62,7 +59,7 @@ class Mute: LocalizedGuildCommand {
 
             if (guild.memberIsMuted(id)) {
                 logger.debug { "Member is muted" }
-                return texts.formatString("log.muted.already", mention).toMessage()
+                return texts.formatString("muted.already", mention).toMessage()
             }
 
             logger.debug { "Member is not muted" }
@@ -137,7 +134,7 @@ class Unmute: LocalizedGuildCommand {
 
             if (!guild.memberIsMuted(id)) {
                 logger.debug { "Member is not muted" }
-                return texts.formatString("log.unmuted.already", mention).toMessage()
+                return texts.formatString("unmuted.already", mention).toMessage()
             }
 
             logger.debug { "Member is muted" }

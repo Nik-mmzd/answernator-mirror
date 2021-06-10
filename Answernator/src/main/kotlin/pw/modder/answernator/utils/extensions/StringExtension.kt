@@ -21,3 +21,8 @@ private fun String.isMention(mentionType: MentionType): Boolean {
 fun String.isUserMention(): Boolean = isMention(MentionType.USER) || isMention(MentionType.USERNAME)
 fun String.isChannelMention(): Boolean = isMention(MentionType.CHANNEL)
 fun String.isRoleMention(): Boolean = isMention(MentionType.ROLE)
+
+private val SNOWFLAKE_REGEX = Regex("\\d{18}")
+fun String.extractMentionedId(): String? {
+    return SNOWFLAKE_REGEX.find(this)?.value
+}
