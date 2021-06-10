@@ -2,10 +2,8 @@ package pw.modder.answernator.commands
 
 import com.jessecorbett.diskord.api.model.Message
 import com.jessecorbett.diskord.api.model.Permission
-import com.jessecorbett.diskord.api.model.Permissions
 import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
-import com.jessecorbett.diskord.util.GuildClients
 import com.jessecorbett.diskord.util.mention
 import com.jessecorbett.diskord.util.sendMessage
 import com.jessecorbett.diskord.util.words
@@ -16,13 +14,17 @@ import pw.modder.answernator.db.Db.memberIsMuted
 import pw.modder.answernator.db.Db.muteMember
 import pw.modder.answernator.db.Db.unmuteMember
 import pw.modder.answernator.utils.Command
-import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.LocalizedGuildCommand
 import pw.modder.answernator.utils.extensions.bot.isMe
 import pw.modder.answernator.utils.extensions.isAdmin
 import pw.modder.answernator.utils.extensions.isUserMention
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
 import java.util.*
+
+private val snowflakeRegex = Regex("\\d{18}")
+private fun String.extractMentionedId(): String? {
+    return snowflakeRegex.find(this)?.value
+}
 
 private val logger = KotlinLogging.logger {  }
 class Mute: LocalizedGuildCommand {
@@ -47,13 +49,12 @@ class Mute: LocalizedGuildCommand {
         logger.debug { "Checking configs" }
         if (muteRole.isEmpty()) return texts.getString("not.configured").toMessage()
         if (message.words.size < 2) return texts.getErrorString().toMessage()
-        if (!message.words[1].isUserMention()) return texts.getErrorString().toMessage()
 
-        if (message.usersMentioned.size != 1) {
-            return texts.getErrorString().toMessage()
-        }
+        val mentionedUserId = message.words[1].extractMentionedId()
+        val mentionedUser = message.usersMentioned.find { it.id == mentionedUserId }
+            ?: return texts.getErrorString().toMessage()
 
-        with(message.usersMentioned.single()) {
+        with(mentionedUser) {
             if (bot.isMe(id)) return texts.formatString("muted.self", mention).toMessage() // easter egg
             val member = guildClient.getMember(id)
             if (member.isAdmin(guild, id)) return texts.formatString("error.whitelisted", mention).toMessage()
