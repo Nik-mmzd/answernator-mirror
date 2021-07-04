@@ -127,25 +127,25 @@ class Config: LocalizedCommand {
                         }
                         return texts.formatString("muterole.set", role.toRoleMention()).toMessage()
                     }
+                    "antispam" -> when(message.words.getOrNull(3)) {
+                        "enable" -> {
+                            Db.updateGuildConfig(guild.id) {
+                                it[antiSpam] = true
+                            }
+                            return texts.getString("antispam.enabled").toMessage()
+                        }
+                        "disable" -> {
+                            Db.updateGuildConfig(guild.id) {
+                                it[antiSpam] = false
+                            }
+                            return texts.getString("antispam.disabled").toMessage()
+                        }
+                        else -> texts.getErrorString().toMessage()
+                    }
                     else -> texts.getErrorString().toMessage()
                 }
             }
             "blacklist" -> TODO()
-            "antispam" -> when(message.words.getOrNull(3)) {
-                "enable" -> {
-                    Db.updateGuildConfig(guild.id) {
-                        it[antiSpam] = true
-                    }
-                    return texts.getString("antispam.enabled").toMessage()
-                }
-                "disable" -> {
-                    Db.updateGuildConfig(guild.id) {
-                        it[antiSpam] = false
-                    }
-                    return texts.getString("antispam.disabled").toMessage()
-                }
-                else -> texts.getErrorString().toMessage()
-            }
             else -> texts.getErrorString().toMessage()
 
         }
