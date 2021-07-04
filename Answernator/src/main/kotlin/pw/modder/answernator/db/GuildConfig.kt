@@ -12,7 +12,7 @@ class GuildConfig(id: EntityID<Int>) : IntEntity(id) {
     var greetNewUsers by GuildConfigs.greetNewUsers
     var greetingText by GuildConfigs.greetingText
     var greetingsChannel by GuildConfigs.greetingsChannel
-    var commandsBlacklist by GuildConfigs.commandsBlacklist
     var muteRole by GuildConfigs.muteRole
     var defaultRole by GuildConfigs.defaultRole
+    var antiSpam by GuildConfigs.antiSpam
 }

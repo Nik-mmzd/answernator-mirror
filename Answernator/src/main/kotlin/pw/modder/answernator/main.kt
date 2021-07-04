@@ -17,5 +17,6 @@ suspend fun main() {
         muteService()
         defaultRoleService()
         logService()
+        antiSpam()
     }
 }

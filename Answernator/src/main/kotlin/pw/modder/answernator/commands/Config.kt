@@ -44,6 +44,7 @@ class Config: LocalizedCommand {
                     field(texts.getString("greeting.channel"), getGreetingsChannelName(bot.clientStore, config, texts), false)
                     field(texts.getString("muterole"), config.muteRole.toRoleMention().ifEmpty { texts.getString("role.notset") }, true)
                     field(texts.getString("defrole"), config.defaultRole.toRoleMention().ifEmpty { texts.getString("role.notset") }, true)
+                    field(texts.getString("antispam"), texts.getString("antispam.enabled.${config.antiSpam}"), true)
                 }
             }
             "set" -> {
@@ -130,6 +131,21 @@ class Config: LocalizedCommand {
                 }
             }
             "blacklist" -> TODO()
+            "antispam" -> when(message.words.getOrNull(3)) {
+                "enable" -> {
+                    Db.updateGuildConfig(guild.id) {
+                        it[antiSpam] = true
+                    }
+                    return texts.getString("antispam.enabled").toMessage()
+                }
+                "disable" -> {
+                    Db.updateGuildConfig(guild.id) {
+                        it[antiSpam] = false
+                    }
+                    return texts.getString("antispam.disabled").toMessage()
+                }
+                else -> texts.getErrorString().toMessage()
+            }
             else -> texts.getErrorString().toMessage()
 
         }
