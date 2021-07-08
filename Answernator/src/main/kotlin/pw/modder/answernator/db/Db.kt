@@ -1,71 +1,84 @@
 package pw.modder.answernator.db
 
-import com.google.common.cache.CacheBuilder
-import com.google.common.cache.CacheLoader
 import com.jessecorbett.diskord.api.model.Guild
 import com.jessecorbett.diskord.api.rest.client.GuildClient
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.statements.UpdateStatement
 import org.jetbrains.exposed.sql.transactions.transaction
-import java.util.concurrent.TimeUnit
+import pw.modder.answernator.db.guild.*
+import pw.modder.answernator.utils.locale.LocaleBundle
+import java.util.*
 
 object Db {
-    private const val guildConfigCacheSize = 32L
-    private const val guildLogsConfigCacheSize = 32L
     private const val dbfile = "answernator"
 
     init {
         Database.connect("jdbc:h2:./$dbfile;DB_CLOSE_DELAY=-1", driver = "org.h2.Driver", user = "root", password = "")
 
-        transaction {
-            SchemaUtils.create (GuildConfigs, LogConfigs, GuildMutes)
-        }
-    }
+        val newMutesExists = Mutes.exists()
+        val newConfigsExists = Configs.exists()
 
-    val guilds = CacheBuilder.newBuilder()
-        .maximumSize(guildConfigCacheSize)
-        .expireAfterAccess(1, TimeUnit.DAYS)
-        .build(
-            object : CacheLoader<String, GuildConfig>() {
-                override fun load(key: String): GuildConfig {
-                    return transaction {
-                        GuildConfig.find { GuildConfigs.guildId eq key }.firstOrNull()
-                            ?: GuildConfig.new {
-                                guildId = key
-                            }
-                    }
+        transaction {
+            SchemaUtils.create (Configs, Mutes, MutesRef)
+        }
+
+        if (!newConfigsExists) {
+            GuildConfig.all().forEach { guild ->
+                val log = LogConfig.find { LogConfigs.guildId eq guild.guildId }.single()
+                val texts = LocaleBundle("botGlobal", Locale(guild.lang))
+
+                val newconf = Config.new {
+                    guildId = guild.guildId
+                    features = 0
+                    lang = guild.lang
+                    greeting = guild.greetingText
+                    greetingChannel = guild.greetingsChannel.takeUnless { it.isEmpty() }
+                    muteRole = guild.muteRole.takeUnless { it.isEmpty() }
+                    defaultRole = guild.defaultRole.takeUnless { it.isEmpty() }
+                    antiSpamWarn = 3
+                    antiSpamBan = 5
+                    antiSpamWarnText = texts.getString("bot.antispam.warning")
+                    antiSpamBanText = texts.getString("bot.antispam.reason")
+                    memberBanLogChannel = log.memberBanLogChannel.takeUnless { it.isEmpty() }
+                    memberJoinLogChannel = log.memberJoinLogChannel.takeUnless { it.isEmpty() }
+                    memberLeaveLogChannel = log.memberLeaveLogChannel.takeUnless { it.isEmpty() }
+                    memberUnbanLogChannel = log.memberUnbanLogChannel.takeUnless { it.isEmpty() }
+                    memberMuteLogChannel = log.memberMuteLogChannel.takeUnless { it.isEmpty() }
+                    memberUnmuteLogChannel = log.memberUnmuteLogChannel.takeUnless { it.isEmpty() }
+                }
+
+                if (guild.antiSpam) newconf.enable(Features.ANTI_SPAM)
+                if (guild.greetNewUsers) newconf.enable(Features.GREETING)
+                if (guild.defaultRole.isNotEmpty()) newconf.enable(Features.DEFAULT_ROLE)
+
+                if (log.memberBanLogChannel.isNotEmpty()) newconf.enable(Features.LOG_BAN)
+                if (log.memberUnbanLogChannel.isNotEmpty()) newconf.enable(Features.LOG_UNBAN)
+                if (log.memberMuteLogChannel.isNotEmpty()) newconf.enable(Features.LOG_MUTE)
+                if (log.memberUnmuteLogChannel.isNotEmpty()) newconf.enable(Features.LOG_UNMUTE)
+                if (log.memberJoinLogChannel.isNotEmpty()) newconf.enable(Features.LOG_JOIN)
+                if (log.memberLeaveLogChannel.isNotEmpty()) newconf.enable(Features.LOG_LEAVE)
+
+            }
+        }
+
+        if (!newMutesExists) {
+            GuildMutes.selectAll().forEach {
+                Mute.new {
+                    guild = it[GuildMutes.guildId]
+                    memberId = it[GuildMutes.memberId]
                 }
             }
-        )
-
-    val logs = CacheBuilder.newBuilder()
-        .maximumSize(guildLogsConfigCacheSize)
-        .expireAfterAccess(1, TimeUnit.DAYS)
-        .build(
-            object : CacheLoader<String, LogConfig>() {
-                override fun load(key: String): LogConfig {
-                    return transaction {
-                        LogConfig.find { LogConfigs.guildId eq key }.firstOrNull()
-                            ?: LogConfig.new {
-                                guildId = key
-                            }
-                    }
-                }
-            }
-        )
-
-    fun updateGuildConfig(guildId: String, block: GuildConfigs.(UpdateStatement) -> Unit) {
-        transaction {
-            GuildConfigs.update({GuildConfigs.guildId eq guildId}, body = block)
         }
-        guilds.invalidate(guildId)
+
+        if (GuildConfigs.exists()) SchemaUtils.drop(GuildConfigs)
+        if (LogConfigs.exists()) SchemaUtils.drop(LogConfigs)
+        if (GuildMutes.exists()) SchemaUtils.drop(GuildMutes)
     }
 
-    fun updateLogConfig(guildId: String, block: LogConfigs.(UpdateStatement) -> Unit) {
+    fun updateConfig(guildId: String, block: Config.() -> Unit) {
         transaction {
-            LogConfigs.update({LogConfigs.guildId eq guildId}, body = block)
+            Config.find { Configs.guildId eq guildId }.first().block()
         }
-        logs.invalidate(guildId)
     }
 
     private fun isMuted(guildId: String, memberId: String): Boolean {
