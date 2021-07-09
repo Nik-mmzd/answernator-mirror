@@ -1,11 +1,12 @@
 package pw.modder.answernator.db
 
-import com.jessecorbett.diskord.api.model.Guild
-import com.jessecorbett.diskord.api.rest.client.GuildClient
+import com.google.common.base.Defaults
 import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.statements.UpdateStatement
 import org.jetbrains.exposed.sql.transactions.transaction
 import pw.modder.answernator.db.guild.*
+import pw.modder.answernator.db.guild.GuildConfig as NewGuildConfig
+import pw.modder.answernator.db.guild.LogConfig as NewLogConfig
+import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.locale.LocaleBundle
 import java.util.*
 
@@ -19,7 +20,7 @@ object Db {
         val newConfigsExists = Configs.exists()
 
         transaction {
-            SchemaUtils.create (Configs, Mutes, MutesRef)
+            SchemaUtils.create (Configs, Mutes, MutesRef, BlacklistedCommands, BlacklistedCommandsRef)
         }
 
         if (!newConfigsExists) {
@@ -31,6 +32,7 @@ object Db {
                     guildId = guild.guildId
                     features = 0
                     lang = guild.lang
+                    cmdPrefix = Globals.config.prefix
                     greeting = guild.greetingText
                     greetingChannel = guild.greetingsChannel.takeUnless { it.isEmpty() }
                     muteRole = guild.muteRole.takeUnless { it.isEmpty() }
@@ -81,53 +83,55 @@ object Db {
         }
     }
 
-    private fun isMuted(guildId: String, memberId: String): Boolean {
+    fun createDefaultConfig(guild: String): Config {
+        val conf = Globals.config
+        val texts = LocaleBundle("botGlobal", Locale(conf.lang))
+
         return transaction {
-            GuildMutes.select {
-                GuildMutes.memberId eq memberId and(GuildMutes.guildId eq guildId)
-            }.count()
-        } > 0
-    }
-
-    private fun mute(guild: String, member: String) {
-        transaction {
-            GuildMutes.insert {
-                it[guildId] = guild
-                it[memberId] = member
+            Config.new {
+                guildId = guild
+                features = 0
+                lang = Globals.config.lang
+                cmdPrefix = Globals.config.prefix
+                greeting = texts.getString("bot.greeting.message")
+                greetingChannel = null
+                muteRole = null
+                defaultRole = null
+                antiSpamWarn = 3
+                antiSpamBan = 5
+                antiSpamWarnText = texts.getString("bot.antispam.warning")
+                antiSpamBanText = texts.getString("bot.antispam.reason")
+                memberBanLogChannel = null
+                memberJoinLogChannel = null
+                memberLeaveLogChannel = null
+                memberUnbanLogChannel = null
+                memberMuteLogChannel = null
+                memberUnmuteLogChannel = null
             }
         }
     }
 
-    private fun unmute(guild: String, member: String) {
-        transaction {
-            GuildMutes.deleteWhere {
-                GuildMutes.guildId eq guild
-                GuildMutes.memberId eq member
-            }
+    fun getConfig(guildId: String): Config {
+        return transaction {
+            Config.find { Configs.guildId eq guildId }.first()
         }
     }
 
-    fun GuildClient.memberIsMuted(memberId: String): Boolean {
-        return isMuted(guildId, memberId)
+    fun getGuildConfig(guildId: String): NewGuildConfig {
+        return transaction {
+            NewGuildConfig.find { Configs.guildId eq guildId }.first()
+        }
     }
 
-    fun Guild.memberIsMuted(memberId: String): Boolean {
-        return isMuted(id, memberId)
+    fun getLogConfig(guildId: String): NewLogConfig {
+        return transaction {
+            NewLogConfig.find { Configs.guildId eq guildId }.first()
+        }
     }
 
-    fun GuildClient.muteMember(memberId: String) {
-        mute(guildId, memberId)
-    }
-
-    fun Guild.muteMember(memberId: String) {
-        mute(id, memberId)
-    }
-
-    fun GuildClient.unmuteMember(memberId: String) {
-        unmute(guildId, memberId)
-    }
-
-    fun Guild.unmuteMember(memberId: String) {
-        unmute(id, memberId)
+    fun getAntiSpamConfig(guildId: String): AntiSpamConfig {
+        return transaction {
+            AntiSpamConfig.find { Configs.guildId eq guildId }.first()
+        }
     }
 }

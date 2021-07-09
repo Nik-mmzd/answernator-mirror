@@ -4,6 +4,7 @@ import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 
+@Deprecated("Use db.guild.LogConfig instead")
 class LogConfig(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<LogConfig>(LogConfigs)
 

@@ -6,6 +6,8 @@ import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.dsl.field
 import com.jessecorbett.diskord.util.authorId
 import com.jessecorbett.diskord.util.words
+import org.jetbrains.exposed.sql.transactions.transaction
+import pw.modder.answernator.db.Db
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.CommandList
 import pw.modder.answernator.utils.extensions.bot.getMe
@@ -63,6 +65,12 @@ class CommandInfo: Command {
             }
             memberPerms?.run {
                 field("Member can use", cmd.check(message, this).toBoolString(), true)
+            }
+            if (message.guildId != null) {
+                val config = Db.getGuildConfig(message.guildId!!)
+                val isBlacklisted = transaction { config.blacklistedCommands }.any { it.command.equals(name, true) }
+
+                field("Is blacklisted", isBlacklisted.toBoolString(), true)
             }
         }
     }

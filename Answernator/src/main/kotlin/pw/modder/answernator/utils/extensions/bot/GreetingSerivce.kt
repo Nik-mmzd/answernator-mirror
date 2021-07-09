@@ -5,15 +5,16 @@ import com.jessecorbett.diskord.dsl.DiskordDsl
 import com.jessecorbett.diskord.util.mention
 import com.jessecorbett.diskord.util.sendMessage
 import pw.modder.answernator.db.Db
+import pw.modder.answernator.db.guild.Features
 
 @DiskordDsl
 fun Bot.greetingService() {
     userJoinedGuild {
-        val config = Db.guilds.get(it.guildId)
-        if (config.greetNewUsers && config.greetingsChannel.isNotEmpty()) {
-            clientStore.channels[config.greetingsChannel].sendMessage(
+        val config = Db.getGuildConfig(it.guildId)
+        if (config.isEnabled(Features.GREETING) && config.greetingChannel != null) {
+            clientStore.channels[config.greetingChannel!!].sendMessage(
                 String.format(
-                    config.greetingText,
+                    config.greeting,
                     it.user?.mention ?: "??!?? O_o",
                     clientStore.guilds[it.guildId].get().name
                 ))

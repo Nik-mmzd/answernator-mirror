@@ -9,6 +9,7 @@ object Configs: IntIdTable() {
     val guildId = varchar("guild_id", 18)
     val features = integer("features")
     val lang = varchar("lang", 2)
+    val commandPrefix = char("command_prefix")
 
     val greetingText = varchar("greeting_text", 2000)
     val greetingChannel = varchar("greeting_channel_id", 18).nullable()
@@ -32,12 +33,69 @@ object Configs: IntIdTable() {
 //    val messageChangedLogChannel = varchar("message_update_channel", 18).default("") // https://discordapp.com/developers/docs/topics/gateway#message-update
 }
 
-class Config(id: EntityID<Int>): IntEntity(id) {
-    companion object : IntEntityClass<Config>(Configs)
+open class BaseConfig(id: EntityID<Int>): IntEntity(id) {
+    companion object : IntEntityClass<BaseConfig>(Configs)
 
     var guildId by Configs.guildId
     var features by Configs.features
     var lang by Configs.lang
+    var cmdPrefix by Configs.commandPrefix
+
+    var mutes by Mute via MutesRef
+    var blacklistedCommands by BlacklistedCommand via BlacklistedCommandsRef
+
+    fun isEnabled(feature: Features): Boolean {
+        return (features and(1 ushr feature.ordinal)) > 0
+    }
+
+    fun getEnabled(): List<Features> {
+        return Features.values().filter { isEnabled(it) }
+    }
+
+    fun enable(feature: Features) {
+        features = features or(1 ushr feature.ordinal)
+    }
+
+    fun disable(feature: Features) {
+        features = features and((1 ushr feature.ordinal).inv())
+    }
+}
+
+class GuildConfig(id: EntityID<Int>): BaseConfig(id) {
+    companion object : IntEntityClass<GuildConfig>(Configs)
+
+    var greeting by Configs.greetingText
+    var greetingChannel by Configs.greetingChannel
+    var muteRole by Configs.muteRoleId
+    var defaultRole by Configs.defaultRoleId
+}
+
+class AntiSpamConfig(id: EntityID<Int>): BaseConfig(id) {
+    companion object : IntEntityClass<AntiSpamConfig>(Configs)
+
+    var antiSpamWarnText by Configs.antiSpamWarnText
+    var antiSpamBanText by Configs.antiSpamBanText
+    var antiSpamWarn by Configs.antiSpamWarn
+    var antiSpamBan by Configs.antiSpamBan
+}
+
+class LogConfig(id: EntityID<Int>): BaseConfig(id) {
+    companion object : IntEntityClass<LogConfig>(Configs)
+
+    var memberJoinLogChannel by Configs.memberJoinLogChannel
+    var memberLeaveLogChannel by Configs.memberLeaveLogChannel
+    var memberBanLogChannel by Configs.memberBanLogChannel
+    var memberUnbanLogChannel by Configs.memberUnbanLogChannel
+    var memberMuteLogChannel by Configs.memberMuteLogChannel
+    var memberUnmuteLogChannel by Configs.memberUnmuteLogChannel
+
+//    var messageDeleteLogChannel by Configs.messageDeleteLogChannel
+//    var messageBulkDeleteLogChannel by Configs.messageBulkDeleteLogChannel
+//    var messageChangedLogChannel by Configs.messageChangedLogChannel
+}
+
+class Config(id: EntityID<Int>): BaseConfig(id) {
+    companion object : IntEntityClass<Config>(Configs)
 
     var greeting by Configs.greetingText
     var greetingChannel by Configs.greetingChannel
@@ -59,26 +117,10 @@ class Config(id: EntityID<Int>): IntEntity(id) {
 //    var messageDeleteLogChannel by Configs.messageDeleteLogChannel
 //    var messageBulkDeleteLogChannel by Configs.messageBulkDeleteLogChannel
 //    var messageChangedLogChannel by Configs.messageChangedLogChannel
-
-    var mutes by Mute via MutesRef
-
-    fun isEnabled(feature: Features): Boolean {
-        return (features and(1 shl feature.ordinal)) > 0
-    }
-
-    fun getEnabled(): List<Features> {
-        return Features.values().filter { isEnabled(it) }
-    }
-
-    fun enable(feature: Features) {
-        features = features or(1 shl feature.ordinal)
-    }
-
-    fun disable(feature: Features) {
-        features = features and((1 shl feature.ordinal).inv())
-    }
 }
 
 enum class Features {
-    GREETING, DEFAULT_ROLE, ANTI_SPAM, ANTI_SPAM_SILENT, LOG_BAN, LOG_UNBAN, LOG_MUTE, LOG_UNMUTE, LOG_JOIN, LOG_LEAVE
+    GREETING, DEFAULT_ROLE,
+    ANTI_SPAM, ANTI_SPAM_SILENT,
+    LOG_BAN, LOG_UNBAN, LOG_MUTE, LOG_UNMUTE, LOG_JOIN, LOG_LEAVE
 }

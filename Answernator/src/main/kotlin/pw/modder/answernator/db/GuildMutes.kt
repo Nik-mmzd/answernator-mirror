@@ -2,6 +2,7 @@ package pw.modder.answernator.db
 
 import org.jetbrains.exposed.sql.Table
 
+@Deprecated("Use db.guild.Mutes instead")
 object GuildMutes: Table() {
     val id = integer("id").autoIncrement()
     var guildId = varchar("guild_id", 18).index()

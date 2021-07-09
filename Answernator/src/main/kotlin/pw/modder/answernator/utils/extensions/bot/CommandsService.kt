@@ -2,26 +2,23 @@ package pw.modder.answernator.utils.extensions.bot
 
 import com.jessecorbett.diskord.api.exception.DiscordBadPermissionsException
 import com.jessecorbett.diskord.api.model.Message
+import com.jessecorbett.diskord.api.model.Permission
 import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.dsl.DiskordDsl
-import com.jessecorbett.diskord.util.isFromBot
-import com.jessecorbett.diskord.util.isFromUser
+import com.jessecorbett.diskord.util.authorId
 import com.jessecorbett.diskord.util.words
 import mu.KotlinLogging
+import org.jetbrains.exposed.sql.transactions.transaction
+import pw.modder.answernator.cache.GuildCache.getCached
 import pw.modder.answernator.db.Db
-import pw.modder.answernator.db.GuildConfig
 import pw.modder.answernator.utils.CommandList
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.extensions.channelType
+import pw.modder.answernator.utils.extensions.computePermissions
 import pw.modder.answernator.utils.locale.LocaleBundle
-import java.util.*
 
 private fun String.asMessage() = CombinedMessageEmbed(text = this)
-
-private fun Message.getGuildConfig(): GuildConfig? {
-    return Db.guilds.get(guildId ?: return null)
-}
 
 private val logger = KotlinLogging.logger {}
 @DiskordDsl
@@ -29,19 +26,31 @@ fun Bot.commandService() {
     val config = Globals.config
 
     messageCreated { message: Message ->
-        if (message.content.isEmpty()) return@messageCreated
-        if (message.author.isBot) return@messageCreated
+        if (message.content.isEmpty())
+            return@messageCreated
+        if (message.author.isBot)
+            return@messageCreated
 
         logger.debug { "received message, message text: ${message.content}" }
-        if (message.content.first() != config.prefix) return@messageCreated
+        val guildConfig = message.guildId.takeUnless { it == null }?.run { Db.getGuildConfig(this) }
 
-        val guildConfig = message.getGuildConfig()
-        val locale = Locale(guildConfig?.lang ?: config.lang)
-//        val blacklist = guildConfig?.run { commandsBlacklist.split('|') } ?: listOf()
-        val texts = LocaleBundle("botGlobal", locale)
+        if (message.content.first() != guildConfig?.cmdPrefix ?: config.prefix)
+            return@messageCreated
+
+        val texts = LocaleBundle("botGlobal", guildConfig?.lang ?: config.lang)
 
         val command = CommandList.findCommand(name = message.words.first().drop(1), channelType = message.channelType)
             ?: return@messageCreated // if command not found: do nothing
+
+        val blacklisted = transaction { guildConfig?.blacklistedCommands }?.any { it.command.equals(command.name, true) } == true
+        if (blacklisted && guildConfig != null) {
+            val guild = clientStore.guilds[guildConfig.guildId].getCached()
+
+            // if not author and not admin => blacklist
+            if (message.authorId != guild.ownerId &&
+                message.partialMember?.computePermissions(guild, message.authorId)?.contains(Permission.ADMINISTRATOR) != true)
+                    return@messageCreated
+        }
 
         logger.debug { "found command ${command.name}, checking" }
         if (!command.check(message, clientStore.guilds)) {
@@ -51,7 +60,7 @@ fun Bot.commandService() {
 
         logger.debug { "found command ${command.name}, running" }
         val reply = try {
-            command.action(this, message, locale)
+            command.action(this, message, texts.locale)
 
         } catch (e: DiscordBadPermissionsException) { // Bot is missing permissions to run this command
             with(command.requiredPermission) {

@@ -2,6 +2,7 @@ package pw.modder.answernator.db
 
 import org.jetbrains.exposed.dao.id.IntIdTable
 
+@Deprecated("Use db.guild.Configs instead")
 object LogConfigs: IntIdTable() {
     val guildId = varchar("guild_id", 18).index(isUnique = true)
 

@@ -24,6 +24,9 @@ class LocaleBundle private constructor(override val name: String, override val l
     constructor(name: String, locale: Locale):
             this(name, locale, JavaResourceBundle.getBundle("locale.$name", locale, UTF8Control))
 
+    constructor(name: String, locale: String):
+            this(name, Locale(locale), JavaResourceBundle.getBundle("locale.$name", Locale(locale), UTF8Control))
+
     override fun getString(key: String): String {
         if (bundle.containsKey(key)) return bundle.getString(key)
         return key
