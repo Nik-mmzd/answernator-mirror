@@ -15,65 +15,72 @@ object Db {
     fun initDb() {
         Database.connect("jdbc:h2:./$dbfile;DB_CLOSE_DELAY=-1", driver = "org.h2.Driver", user = "root", password = "")
 
-        val newMutesExists = Mutes.exists()
-        val newConfigsExists = Configs.exists()
+        val newMutesExists = transaction { Mutes.exists() }
+        val newConfigsExists = transaction { Configs.exists() }
 
         transaction {
             SchemaUtils.create (Configs, Mutes, MutesRef, BlacklistedCommands, BlacklistedCommandsRef)
         }
 
         if (!newConfigsExists) {
-            GuildConfig.all().forEach { guild ->
-                val log = LogConfig.find { LogConfigs.guildId eq guild.guildId }.single()
-                val texts = LocaleBundle("botGlobal", Locale(guild.lang))
+            transaction {
+                GuildConfig.all().forEach { guild ->
+                    val log = LogConfig.find { LogConfigs.guildId eq guild.guildId }.single()
+                    val texts = LocaleBundle("botGlobal", Locale(guild.lang))
 
-                val newconf = Config.new {
-                    guildId = guild.guildId
-                    features = 0
-                    lang = guild.lang
-                    cmdPrefix = Globals.config.prefix
-                    greeting = guild.greetingText
-                    greetingChannel = guild.greetingsChannel.takeUnless { it.isEmpty() }
-                    muteRole = guild.muteRole.takeUnless { it.isEmpty() }
-                    defaultRole = guild.defaultRole.takeUnless { it.isEmpty() }
-                    antiSpamWarn = 3
-                    antiSpamBan = 5
-                    antiSpamWarnText = texts.getString("bot.antispam.warning")
-                    antiSpamBanText = texts.getString("bot.antispam.reason")
-                    memberBanLogChannel = log.memberBanLogChannel.takeUnless { it.isEmpty() }
-                    memberJoinLogChannel = log.memberJoinLogChannel.takeUnless { it.isEmpty() }
-                    memberLeaveLogChannel = log.memberLeaveLogChannel.takeUnless { it.isEmpty() }
-                    memberUnbanLogChannel = log.memberUnbanLogChannel.takeUnless { it.isEmpty() }
-                    memberMuteLogChannel = log.memberMuteLogChannel.takeUnless { it.isEmpty() }
-                    memberUnmuteLogChannel = log.memberUnmuteLogChannel.takeUnless { it.isEmpty() }
+                    val newconf = Config.new {
+                        guildId = guild.guildId
+                        features = 0
+                        lang = guild.lang
+                        cmdPrefix = Globals.config.prefix
+                        greeting = guild.greetingText
+                        greetingChannel = guild.greetingsChannel.takeUnless { it.isEmpty() }
+                        muteRole = guild.muteRole.takeUnless { it.isEmpty() }
+                        defaultRole = guild.defaultRole.takeUnless { it.isEmpty() }
+                        antiSpamWarn = 3
+                        antiSpamBan = 5
+                        antiSpamWarnText = texts.getString("bot.antispam.warning")
+                        antiSpamBanText = texts.getString("bot.antispam.reason")
+                        memberBanLogChannel = log.memberBanLogChannel.takeUnless { it.isEmpty() }
+                        memberJoinLogChannel = log.memberJoinLogChannel.takeUnless { it.isEmpty() }
+                        memberLeaveLogChannel = log.memberLeaveLogChannel.takeUnless { it.isEmpty() }
+                        memberUnbanLogChannel = log.memberUnbanLogChannel.takeUnless { it.isEmpty() }
+                        memberMuteLogChannel = log.memberMuteLogChannel.takeUnless { it.isEmpty() }
+                        memberUnmuteLogChannel = log.memberUnmuteLogChannel.takeUnless { it.isEmpty() }
+                    }
+
+                    if (guild.antiSpam) newconf.enable(Features.ANTI_SPAM)
+                    if (guild.greetNewUsers) newconf.enable(Features.GREETING)
+                    if (guild.defaultRole.isNotEmpty()) newconf.enable(Features.DEFAULT_ROLE)
+
+                    if (log.memberBanLogChannel.isNotEmpty()) newconf.enable(Features.LOG_BAN)
+                    if (log.memberUnbanLogChannel.isNotEmpty()) newconf.enable(Features.LOG_UNBAN)
+                    if (log.memberMuteLogChannel.isNotEmpty()) newconf.enable(Features.LOG_MUTE)
+                    if (log.memberUnmuteLogChannel.isNotEmpty()) newconf.enable(Features.LOG_UNMUTE)
+                    if (log.memberJoinLogChannel.isNotEmpty()) newconf.enable(Features.LOG_JOIN)
+                    if (log.memberLeaveLogChannel.isNotEmpty()) newconf.enable(Features.LOG_LEAVE)
+
                 }
-
-                if (guild.antiSpam) newconf.enable(Features.ANTI_SPAM)
-                if (guild.greetNewUsers) newconf.enable(Features.GREETING)
-                if (guild.defaultRole.isNotEmpty()) newconf.enable(Features.DEFAULT_ROLE)
-
-                if (log.memberBanLogChannel.isNotEmpty()) newconf.enable(Features.LOG_BAN)
-                if (log.memberUnbanLogChannel.isNotEmpty()) newconf.enable(Features.LOG_UNBAN)
-                if (log.memberMuteLogChannel.isNotEmpty()) newconf.enable(Features.LOG_MUTE)
-                if (log.memberUnmuteLogChannel.isNotEmpty()) newconf.enable(Features.LOG_UNMUTE)
-                if (log.memberJoinLogChannel.isNotEmpty()) newconf.enable(Features.LOG_JOIN)
-                if (log.memberLeaveLogChannel.isNotEmpty()) newconf.enable(Features.LOG_LEAVE)
-
             }
         }
 
         if (!newMutesExists) {
-            GuildMutes.selectAll().forEach {
-                Mute.new {
-                    guild = it[GuildMutes.guildId]
-                    memberId = it[GuildMutes.memberId]
+            transaction {
+                GuildMutes.selectAll().forEach {
+                    Mute.new {
+                        guild = it[GuildMutes.guildId]
+                        memberId = it[GuildMutes.memberId]
+                    }
                 }
             }
+
         }
 
-        if (GuildConfigs.exists()) SchemaUtils.drop(GuildConfigs)
-        if (LogConfigs.exists()) SchemaUtils.drop(LogConfigs)
-        if (GuildMutes.exists()) SchemaUtils.drop(GuildMutes)
+        transaction {
+            if (GuildConfigs.exists()) SchemaUtils.drop(GuildConfigs)
+            if (LogConfigs.exists()) SchemaUtils.drop(LogConfigs)
+            if (GuildMutes.exists()) SchemaUtils.drop(GuildMutes)
+        }
     }
 
     fun updateConfig(guildId: String, block: Config.() -> Unit) {
