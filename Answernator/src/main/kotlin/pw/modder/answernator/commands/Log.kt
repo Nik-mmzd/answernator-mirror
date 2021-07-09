@@ -35,12 +35,12 @@ class Log: LocalizedCommand {
             return dslmessage {
                 title = texts.getString("get.title")
 
-                field(texts.getString("get.memberjoin"), texts.formatString("get.status", texts.getString("get.status.${config.isEnabled(Features.LOG_JOIN)}"), config.memberJoinLogChannel ?: texts.getString("get.not.set")), true)
-                field(texts.getString("get.memberleave"), texts.formatString("get.status", texts.getString("get.status.${config.isEnabled(Features.LOG_LEAVE)}"), config.memberLeaveLogChannel ?: texts.getString("get.not.set")), true)
-                field(texts.getString("get.memberban"), texts.formatString("get.status", texts.getString("get.status.${config.isEnabled(Features.LOG_BAN)}"), config.memberBanLogChannel ?: texts.getString("get.not.set")), true)
-                field(texts.getString("get.memeberunban"), texts.formatString("get.status", texts.getString("get.status.${config.isEnabled(Features.LOG_UNBAN)}"), config.memberUnbanLogChannel ?: texts.getString("get.not.set")), true)
-                field(texts.getString("get.membermute"), texts.formatString("get.status", texts.getString("get.status.${config.isEnabled(Features.LOG_MUTE)}"), config.memberMuteLogChannel ?: texts.getString("get.not.set")), true)
-                field(texts.getString("get.memberunmute"), texts.formatString("get.status", texts.getString("get.status.${config.isEnabled(Features.LOG_UNMUTE)}"), config.memberUnmuteLogChannel ?: texts.getString("get.not.set")), true)
+                field(texts.getString("get.memberjoin"), formatField(texts, config, Features.LOG_JOIN, config.memberJoinLogChannel), true)
+                field(texts.getString("get.memberleave"), formatField(texts, config, Features.LOG_LEAVE, config.memberLeaveLogChannel), true)
+                field(texts.getString("get.memberban"), formatField(texts, config, Features.LOG_BAN, config.memberBanLogChannel), true)
+                field(texts.getString("get.memeberunban"), formatField(texts, config, Features.LOG_UNBAN, config.memberUnbanLogChannel), true)
+                field(texts.getString("get.membermute"), formatField(texts, config, Features.LOG_MUTE, config.memberMuteLogChannel), true)
+                field(texts.getString("get.memberunmute"), formatField(texts, config, Features.LOG_UNMUTE, config.memberUnmuteLogChannel), true)
             }
 
         if (message.words.size < 3) return texts.getErrorString().toMessage()
@@ -109,6 +109,10 @@ class Log: LocalizedCommand {
 
             else -> texts.getErrorString().toMessage()
         }
+    }
+
+    private fun formatField(texts: CommandLocaleBundle, config: LogConfig, feature: Features, channel: String?): String {
+        return texts.formatString("get.status", texts.getString("get.status.${config.isEnabled(feature)}"), channel?.toChannelMention() ?: texts.getString("get.not.set"))
     }
 
     private fun process(action: String, name: String, config: LogConfig, texts: CommandLocaleBundle, feature: Features, block: LogConfig.() -> Unit): CombinedMessageEmbed {
