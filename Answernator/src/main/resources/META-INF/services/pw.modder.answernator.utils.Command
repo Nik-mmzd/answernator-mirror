@@ -9,3 +9,4 @@ pw.modder.answernator.commands.DefRole
 pw.modder.answernator.commands.Leave
 pw.modder.answernator.commands.Sudo
 pw.modder.answernator.commands.Unmute
+pw.modder.answernator.commands.AntiSpam

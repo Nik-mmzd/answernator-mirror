@@ -11,8 +11,6 @@ import pw.modder.answernator.cache.AntiSpamCache
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.db.guild.Features
 import pw.modder.answernator.utils.Globals
-import pw.modder.answernator.utils.locale.LocaleBundle
-import java.util.*
 
 private val logger = KotlinLogging.logger {}
 
@@ -39,7 +37,7 @@ fun Bot.antiSpam() {
                 if (config.isEnabled(Features.ANTI_SPAM_SILENT))
                     return@messageCreated
 
-                clientStore.channels[message.channelId].sendMessage(config.antiSpamWarnText.replace("%user%", message.author.mention))
+                clientStore.channels[message.channelId].sendMessage(config.antiSpamWarnText.format(message.author.mention))
             }
             config.antiSpamBan -> {
                 logger.info { "Creating ban: guild $guild, message ${message.id}, user ${message.authorId}, content = <${message.content}>" }
