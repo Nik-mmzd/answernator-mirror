@@ -55,7 +55,7 @@ class SelfInfo: LocalizedGuildCommand {
             field(texts.getString("user.id"), message.author.id, true)
             field(texts.getString("user.owner"), texts.getString("bool.${message.author.id == guild.ownerId}"), true)
             field(texts.getString("user.admin"), texts.getString("bool.${member.isAdmin(guild, message.author.id)}"), true)
-            field(texts.getString("user.muted"), texts.getString("bool.${transaction { Db.getGuildConfig(guildId).mutes }.any { it.memberId == message.authorId }}"), true)
+            field(texts.getString("user.muted"), texts.getString("bool.${transaction { Db.getGuildConfig(guildId).mutes.any { it.memberId == message.authorId }}}"), true)
             field(texts.getString("user.superuser"), texts.getString("bool.${message.author.id == Globals.config.author}"), true)
 
             field(texts.getString("user.roles"), member.roleIds.joinToString(" ") { it.toRoleMention() }.ifEmpty { texts.getString("empty") }, false)

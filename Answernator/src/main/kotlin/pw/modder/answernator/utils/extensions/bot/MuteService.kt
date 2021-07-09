@@ -24,7 +24,7 @@ fun Bot.muteService() {
         val config = Db.getGuildConfig(it.guildId)
         if (config.muteRole == null) return@userJoinedGuild
 
-        if (!transaction { config.mutes }.any { it.memberId == memberId }) return@userJoinedGuild
+        if (!transaction { config.mutes.any { it.memberId == memberId } }) return@userJoinedGuild
 
         clientStore.guilds[it.guildId].addMemberRole(userId = memberId, roleId = config.muteRole!!)
         logger.debug { "Member muted automatically: Guild ${it.guildId}, User ${it.user?.username} ID ${it.user?.id}" }
@@ -34,7 +34,7 @@ fun Bot.muteService() {
         val config = Db.getConfig(update.guildId)
         val roleId = config.muteRole ?: return@guildMemberUpdated
 
-        val mute = transaction { config.mutes }.firstOrNull()
+        val mute = transaction { config.mutes.firstOrNull() }
 
         val client = clientStore.guilds[update.guildId]
         val texts = CommandLocaleBundle("mute", Locale(config.lang))

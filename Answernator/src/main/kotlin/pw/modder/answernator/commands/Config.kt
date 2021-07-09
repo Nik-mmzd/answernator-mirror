@@ -33,7 +33,7 @@ class Config: LocalizedCommand {
         val guild = guildClient.getCached()
         val config = Db.getConfig(guild.id)
 
-        if (message.words.isEmpty())
+        if (message.words.size < 2)
             return texts.getErrorString().toMessage()
 
         return when(message.words[1].toLowerCase()) {
@@ -59,7 +59,7 @@ class Config: LocalizedCommand {
                         config.defaultRole?.toRoleMention() ?: texts.getString("role.notset")
                     ), false)
 
-                    field(texts.getString("blacklist"), transaction { config.blacklistedCommands }.joinToString(separator = ", ") { "`${it.command}`" }, false)
+                    field(texts.getString("blacklist"), transaction { config.blacklistedCommands.joinToString(separator = ", ") { "`${it.command}`" } }, false)
 
                     field(texts.getString("antispam"), texts.formatString("antispam.text",
                         texts.getString("antispam.${config.isEnabled(Features.ANTI_SPAM)}"),
@@ -174,12 +174,12 @@ class Config: LocalizedCommand {
                 when(message.words.getOrNull(3)) {
                     "show", "get" -> dslmessage {
                         title = texts.getString("blacklist.title")
-                        description = transaction { config.blacklistedCommands }.joinToString(separator = ", ") { "`${it.command}`" }
+                        description = transaction { config.blacklistedCommands.joinToString(separator = ", ") { "`${it.command}`" } }
                     }
                     "add" -> {
                         val cmd = message.words.getOrNull(4)
                             ?: return texts.getString("blacklist.nocommand").toMessage()
-                        if (transaction { config.blacklistedCommands }.any { it.command.equals(cmd, true) })
+                        if (transaction { config.blacklistedCommands.any { it.command.equals(cmd, true) }})
                             return texts.getString("blacklist.add.already").toMessage()
                         if (CommandList.findCommand(cmd) == null)
                             return texts.getString("blacklist.add.notfound").toMessage()
@@ -193,7 +193,7 @@ class Config: LocalizedCommand {
                     "remove", "rm", "delete" -> {
                         val cmd = message.words.getOrNull(4)
                             ?: return texts.getString("blacklist.nocommand").toMessage()
-                        val blacklistedCommand = transaction { config.blacklistedCommands }.find { it.command.equals(cmd, true) }
+                        val blacklistedCommand = transaction { config.blacklistedCommands.find { it.command.equals(cmd, true) } }
                             ?: return texts.getString("blacklist.remove.already").toMessage()
 
                         transaction { blacklistedCommand.delete() }

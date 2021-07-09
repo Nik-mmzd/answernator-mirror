@@ -68,7 +68,7 @@ class CommandInfo: Command {
             }
             if (message.guildId != null) {
                 val config = Db.getGuildConfig(message.guildId!!)
-                val isBlacklisted = transaction { config.blacklistedCommands }.any { it.command.equals(name, true) }
+                val isBlacklisted = transaction { config.blacklistedCommands.any { it.command.equals(name, true) } }
 
                 field("Is blacklisted", isBlacklisted.toBoolString(), true)
             }
