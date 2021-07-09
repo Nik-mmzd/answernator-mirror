@@ -6,6 +6,7 @@ import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.dsl.field
 import com.jessecorbett.diskord.util.toRoleMention
 import com.jessecorbett.diskord.util.words
+import org.jetbrains.exposed.sql.SizedCollection
 import org.jetbrains.exposed.sql.transactions.transaction
 import pw.modder.answernator.cache.GuildCache.getCached
 import pw.modder.answernator.db.Db
@@ -181,10 +182,13 @@ class Config: LocalizedCommand {
                         if (CommandList.findCommand(cmd) == null)
                             return texts.getString("blacklist.add.notfound").toMessage()
 
-                        transaction { BlacklistedCommand.new {
+                        val newCmd = transaction { BlacklistedCommand.new {
                             this.command = cmd.toLowerCase()
                             this.guild = guild.id
                         } }
+                        transaction {
+                            config.blacklistedCommands = SizedCollection(config.blacklistedCommands + newCmd)
+                        }
                         texts.formatString("blacklist.add", cmd).toMessage()
                     }
                     "remove", "rm", "delete" -> {

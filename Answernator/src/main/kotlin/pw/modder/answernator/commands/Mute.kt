@@ -8,6 +8,7 @@ import com.jessecorbett.diskord.util.mention
 import com.jessecorbett.diskord.util.sendMessage
 import com.jessecorbett.diskord.util.words
 import mu.KotlinLogging
+import org.jetbrains.exposed.sql.SizedCollection
 import org.jetbrains.exposed.sql.transactions.transaction
 import pw.modder.answernator.cache.GuildCache.getCached
 import pw.modder.answernator.db.Db
@@ -81,6 +82,9 @@ class Mute: LocalizedGuildCommand {
                     this.guild = guildId
                     this.memberId = mentionedUser.id
                 }
+            }
+            transaction {
+                config.mutes = SizedCollection(config.mutes + mute)
             }
             logger.debug { "Member muted in DB" }
 
