@@ -3,6 +3,7 @@ package pw.modder.answernator.commands
 import com.jessecorbett.diskord.api.model.Message
 import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
+import com.jessecorbett.diskord.dsl.field
 import com.jessecorbett.diskord.util.toRoleMention
 import com.jessecorbett.diskord.util.words
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -15,6 +16,7 @@ import pw.modder.answernator.utils.CommandList
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.LocalizedCommand
 import pw.modder.answernator.utils.extensions.channelsIdsMentioned
+import pw.modder.answernator.utils.extensions.toChannelMention
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
 import java.util.*
 import com.jessecorbett.diskord.dsl.message as dslmessage
@@ -37,7 +39,35 @@ class Config: LocalizedCommand {
         return when(message.words[1].toLowerCase()) {
             "get", "show" -> {
                 dslmessage {
-                    TODO()
+                    title = guild.name
+                    description = texts.getString("description")
+
+                    field(texts.getString("lang"), config.lang, true)
+                    field(texts.getString("prefix"), config.cmdPrefix.toString(), true)
+                    field(texts.getString("lang.available"), Globals.config.langs.joinToString(separator = ", ") { "`$it`" }, true)
+
+                    field(texts.getString("greeter"), texts.formatString("greeter.text",
+                        texts.getString("greeter.${config.isEnabled(Features.GREETING)}"),
+                        config.greetingChannel?.toChannelMention() ?: texts.getString("channel.notset"),
+                        config.greeting.format("%user%", "%guild%")
+                    ), false)
+
+                    field(texts.getString("muterole"), config.muteRole?.toRoleMention()?: texts.getString("role.notset"), false)
+
+                    field(texts.getString("defrole"), texts.formatString("defrole.text",
+                        texts.getString("defrole.${config.isEnabled(Features.DEFAULT_ROLE)}"),
+                        config.defaultRole?.toRoleMention() ?: texts.getString("role.notset")
+                    ), false)
+
+                    field(texts.getString("blacklist"), transaction { config.blacklistedCommands }.joinToString(separator = ", ") { "`${it.command}`" }, false)
+
+                    field(texts.getString("antispam"), texts.formatString("antispam.text",
+                        texts.getString("antispam.${config.isEnabled(Features.ANTI_SPAM)}"),
+                        texts.getString("antispam.${config.isEnabled(Features.ANTI_SPAM_SILENT)}"),
+                        config.antiSpamWarn,
+                        config.antiSpamBan
+                    ), false)
+
                 }
             }
             "lang" -> {
@@ -143,7 +173,8 @@ class Config: LocalizedCommand {
             "blacklist" -> {
                 when(message.words.getOrNull(3)) {
                     "show", "get" -> dslmessage {
-                        TODO()
+                        title = texts.getString("blacklist.title")
+                        description = transaction { config.blacklistedCommands }.joinToString(separator = ", ") { "`${it.command}`" }
                     }
                     "add" -> {
                         val cmd = message.words.getOrNull(4)
