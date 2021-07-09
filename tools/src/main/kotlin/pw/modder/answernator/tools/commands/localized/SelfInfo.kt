@@ -7,13 +7,14 @@ import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.dsl.field
 import com.jessecorbett.diskord.dsl.message
+import com.jessecorbett.diskord.util.authorId
 import com.jessecorbett.diskord.util.toRoleMention
+import org.jetbrains.exposed.sql.transactions.transaction
 import pw.modder.answernator.cache.GuildCache.getCached
-import pw.modder.answernator.db.Db.memberIsMuted
+import pw.modder.answernator.db.Db
 import pw.modder.answernator.tools.helper.computeRealPermissions
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.LocalizedGuildCommand
-import pw.modder.answernator.utils.UTF8Control
 import pw.modder.answernator.utils.Utils
 import pw.modder.answernator.utils.extensions.*
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
@@ -54,7 +55,7 @@ class SelfInfo: LocalizedGuildCommand {
             field(texts.getString("user.id"), message.author.id, true)
             field(texts.getString("user.owner"), texts.getString("bool.${message.author.id == guild.ownerId}"), true)
             field(texts.getString("user.admin"), texts.getString("bool.${member.isAdmin(guild, message.author.id)}"), true)
-            field(texts.getString("user.muted"), texts.getString("bool.${guild.memberIsMuted(message.author.id)}"), true)
+            field(texts.getString("user.muted"), texts.getString("bool.${transaction { Db.getGuildConfig(guildId).mutes }.any { it.memberId == message.authorId }}"), true)
             field(texts.getString("user.superuser"), texts.getString("bool.${message.author.id == Globals.config.author}"), true)
 
             field(texts.getString("user.roles"), member.roleIds.joinToString(" ") { it.toRoleMention() }.ifEmpty { texts.getString("empty") }, false)
