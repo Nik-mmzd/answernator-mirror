@@ -25,7 +25,7 @@ object Db {
         if (!newConfigsExists) {
             transaction {
                 GuildConfig.all().forEach { guild ->
-                    val log = LogConfig.find { LogConfigs.guildId eq guild.guildId }.single()
+                    val log = LogConfig.find { LogConfigs.guildId eq guild.guildId }.singleOrNull()
                     val texts = LocaleBundle("botGlobal", Locale(guild.lang))
 
                     val newconf = Config.new {
@@ -41,25 +41,26 @@ object Db {
                         antiSpamBan = 5
                         antiSpamWarnText = texts.getString("bot.antispam.warning")
                         antiSpamBanText = texts.getString("bot.antispam.reason")
-                        memberBanLogChannel = log.memberBanLogChannel.takeUnless { it.isEmpty() }
-                        memberJoinLogChannel = log.memberJoinLogChannel.takeUnless { it.isEmpty() }
-                        memberLeaveLogChannel = log.memberLeaveLogChannel.takeUnless { it.isEmpty() }
-                        memberUnbanLogChannel = log.memberUnbanLogChannel.takeUnless { it.isEmpty() }
-                        memberMuteLogChannel = log.memberMuteLogChannel.takeUnless { it.isEmpty() }
-                        memberUnmuteLogChannel = log.memberUnmuteLogChannel.takeUnless { it.isEmpty() }
+                        memberBanLogChannel = log?.memberBanLogChannel?.takeUnless { it.isEmpty() }
+                        memberJoinLogChannel = log?.memberJoinLogChannel?.takeUnless { it.isEmpty() }
+                        memberLeaveLogChannel = log?.memberLeaveLogChannel?.takeUnless { it.isEmpty() }
+                        memberUnbanLogChannel = log?.memberUnbanLogChannel?.takeUnless { it.isEmpty() }
+                        memberMuteLogChannel = log?.memberMuteLogChannel?.takeUnless { it.isEmpty() }
+                        memberUnmuteLogChannel = log?.memberUnmuteLogChannel?.takeUnless { it.isEmpty() }
                     }
 
                     if (guild.antiSpam) newconf.enable(Features.ANTI_SPAM)
                     if (guild.greetNewUsers) newconf.enable(Features.GREETING)
                     if (guild.defaultRole.isNotEmpty()) newconf.enable(Features.DEFAULT_ROLE)
 
-                    if (log.memberBanLogChannel.isNotEmpty()) newconf.enable(Features.LOG_BAN)
-                    if (log.memberUnbanLogChannel.isNotEmpty()) newconf.enable(Features.LOG_UNBAN)
-                    if (log.memberMuteLogChannel.isNotEmpty()) newconf.enable(Features.LOG_MUTE)
-                    if (log.memberUnmuteLogChannel.isNotEmpty()) newconf.enable(Features.LOG_UNMUTE)
-                    if (log.memberJoinLogChannel.isNotEmpty()) newconf.enable(Features.LOG_JOIN)
-                    if (log.memberLeaveLogChannel.isNotEmpty()) newconf.enable(Features.LOG_LEAVE)
-
+                    if (log != null) {
+                        if (log.memberBanLogChannel.isNotEmpty()) newconf.enable(Features.LOG_BAN)
+                        if (log.memberUnbanLogChannel.isNotEmpty()) newconf.enable(Features.LOG_UNBAN)
+                        if (log.memberMuteLogChannel.isNotEmpty()) newconf.enable(Features.LOG_MUTE)
+                        if (log.memberUnmuteLogChannel.isNotEmpty()) newconf.enable(Features.LOG_UNMUTE)
+                        if (log.memberJoinLogChannel.isNotEmpty()) newconf.enable(Features.LOG_JOIN)
+                        if (log.memberLeaveLogChannel.isNotEmpty()) newconf.enable(Features.LOG_LEAVE)
+                    }
                 }
             }
         }
