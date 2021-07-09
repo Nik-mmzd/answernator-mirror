@@ -1,6 +1,5 @@
 package pw.modder.answernator.db
 
-import com.google.common.base.Defaults
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import pw.modder.answernator.db.guild.*
@@ -13,7 +12,7 @@ import java.util.*
 object Db {
     private const val dbfile = "answernator"
 
-    init {
+    fun initDb() {
         Database.connect("jdbc:h2:./$dbfile;DB_CLOSE_DELAY=-1", driver = "org.h2.Driver", user = "root", password = "")
 
         val newMutesExists = Mutes.exists()
