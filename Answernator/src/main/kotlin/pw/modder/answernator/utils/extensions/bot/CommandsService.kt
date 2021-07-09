@@ -42,8 +42,7 @@ fun Bot.commandService() {
         val command = CommandList.findCommand(name = message.words.first().drop(1), channelType = message.channelType)
             ?: return@messageCreated // if command not found: do nothing
 
-        val blacklisted = transaction { guildConfig?.blacklistedCommands?.any { it.command == command.name } } == true
-        if (blacklisted && guildConfig != null) {
+        if (guildConfig != null && Db.isBlackListed(guildConfig.guildId, command.name)) {
             val guild = clientStore.guilds[guildConfig.guildId].getCached()
 
             // if not author and not admin => blacklist

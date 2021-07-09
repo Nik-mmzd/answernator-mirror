@@ -41,9 +41,6 @@ open class BaseConfig(id: EntityID<Int>): IntEntity(id) {
     var lang by Configs.lang
     var cmdPrefix by Configs.commandPrefix
 
-    var mutes by Mute via MutesRef
-    var blacklistedCommands by BlacklistedCommand via BlacklistedCommandsRef
-
     fun isEnabled(feature: Features): Boolean {
         return (features and(1 shl feature.ordinal)) > 0
     }

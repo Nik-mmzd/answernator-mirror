@@ -52,7 +52,7 @@ class Info: LocalizedGuildOnlyCommand {
                 field(texts.getString("user.id"), id, true)
                 field(texts.getString("user.owner"), texts.getString("bool.${id == guild.ownerId}"), true)
                 field(texts.getString("user.admin"), texts.getString("bool.${member.isAdmin(guild, id)}"), true)
-                field(texts.getString("user.muted"), texts.getString("bool.${transaction { Db.getGuildConfig(guild.id).mutes.any { it.memberId == this@run.id }}}"), true)
+                field(texts.getString("user.muted"), texts.getString("bool.${Db.isMuted(guild.id, id)}"), true)
                 field(texts.getString("user.superuser"), texts.getString("bool.${id == Globals.config.author}"), true)
 
                 field(texts.getString("user.roles"), member.roleIds.joinToString(" ") { it.toRoleMention() }.ifEmpty { texts.getString("empty") }, false)

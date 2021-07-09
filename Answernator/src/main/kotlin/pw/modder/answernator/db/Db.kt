@@ -22,7 +22,7 @@ object Db {
         logger.info { "Newmutes: $newMutesExists newconfigs $newConfigsExists" }
 
         transaction {
-            SchemaUtils.create (Configs, Mutes, MutesRef, BlacklistedCommands, BlacklistedCommandsRef)
+            SchemaUtils.create (Configs, Mutes, BlacklistedCommands)
         }
 
         if (!newConfigsExists) {
@@ -142,5 +142,25 @@ object Db {
         return transaction {
             AntiSpamConfig.find { Configs.guildId eq guildId }.first()
         }
+    }
+
+    fun isMuted(guildId: String, memberId: String): Boolean {
+        return transaction { Mute.find { Mutes.guildId eq guildId and(Mutes.memberId eq memberId) }.count() > 0L }
+    }
+
+    fun getMute(guildId: String, memberId: String): Mute? {
+        return transaction { Mute.find { Mutes.guildId eq guildId and(Mutes.memberId eq memberId) }.firstOrNull() }
+    }
+
+    fun isBlackListed(guildId: String, command: String): Boolean {
+        return transaction { BlacklistedCommand.find { BlacklistedCommands.guildId eq guildId and(BlacklistedCommands.command eq command) }.count() > 0L }
+    }
+
+    fun getBlackListed(guildId: String): List<String> {
+        return transaction { BlacklistedCommand.find { BlacklistedCommands.guildId eq guildId }.map { it.command } }
+    }
+
+    fun getBlackListedCommand(guildId: String, command: String): BlacklistedCommand? {
+        return transaction { BlacklistedCommand.find { BlacklistedCommands.guildId eq guildId and(BlacklistedCommands.command eq command) }.firstOrNull() }
     }
 }

@@ -20,10 +20,3 @@ object Mutes: IntIdTable() {
     val guildId = varchar("guild_id", 18).index()
     val memberId = varchar("member_id", 18).index()
 }
-
-object MutesRef: Table() {
-    val guild = reference("config", Configs)
-    val mute = reference("mute", Mutes)
-
-    override val primaryKey: PrimaryKey = PrimaryKey(guild, mute)
-}

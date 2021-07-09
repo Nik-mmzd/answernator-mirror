@@ -58,7 +58,7 @@ class Mute: LocalizedGuildCommand {
             if (member.isAdmin(guild, id)) return texts.formatString("error.whitelisted", mention).toMessage()
             logger.debug { "Got mentioned user" }
 
-            if (transaction { config.mutes.any { it.memberId == id } }) {
+            if (Db.isMuted(guildId, id)) {
                 logger.debug { "Member is muted" }
                 return texts.formatString("muted.already", mention).toMessage()
             }
@@ -82,9 +82,6 @@ class Mute: LocalizedGuildCommand {
                     this.guild = guildId
                     this.memberId = mentionedUser.id
                 }
-            }
-            transaction {
-                config.mutes = SizedCollection(config.mutes + mute)
             }
             logger.debug { "Member muted in DB" }
 
@@ -140,7 +137,7 @@ class Unmute: LocalizedGuildCommand {
             if (member.isAdmin(guild, id) || bot.isMe(id)) return texts.formatString("error.whitelisted", mention).toMessage()
             logger.debug { "Got mentioned user" }
 
-            val mute = transaction { config.mutes.firstOrNull { it.memberId == id } }
+            val mute = Db.getMute(guildId, id)
 
             if (mute == null) {
                 logger.debug { "Member is not muted" }

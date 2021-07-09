@@ -59,7 +59,7 @@ class Config: LocalizedCommand {
                         config.defaultRole?.toRoleMention() ?: texts.getString("role.notset")
                     ), false)
 
-                    field(texts.getString("blacklist"), transaction { config.blacklistedCommands.joinToString(separator = ", ") { "`${it.command}`" } }.ifEmpty { texts.getString("blacklist.none") }, false)
+                    field(texts.getString("blacklist"), transaction { Db.getBlackListed(guild.id).joinToString(separator = ", ") { "`$it`" } }.ifEmpty { texts.getString("blacklist.none") }, false)
 
                     field(texts.getString("antispam"), texts.formatString("antispam.text",
                         texts.getString("antispam.${config.isEnabled(Features.ANTI_SPAM)}"),
@@ -172,12 +172,12 @@ class Config: LocalizedCommand {
                 when(message.words.getOrNull(2)) {
                     "show", "get" -> dslmessage {
                         title = texts.getString("blacklist.title")
-                        description = transaction { config.blacklistedCommands.joinToString(separator = ", ") { "`${it.command}`" } }
+                        description = Db.getBlackListed(guild.id).joinToString(separator = ", ") { "`$it`" }
                     }
                     "add" -> {
                         val cmd = message.words.getOrNull(3)
                             ?: return texts.getString("blacklist.nocommand").toMessage()
-                        if (transaction { config.blacklistedCommands.any { it.command.equals(cmd, true) }})
+                        if (Db.isBlackListed(guild.id, cmd))
                             return texts.getString("blacklist.add.already").toMessage()
                         if (CommandList.findCommand(cmd) == null)
                             return texts.getString("blacklist.add.notfound").toMessage()
@@ -186,15 +186,12 @@ class Config: LocalizedCommand {
                             this.command = cmd.toLowerCase()
                             this.guild = guild.id
                         } }
-                        transaction {
-                            config.blacklistedCommands = SizedCollection(config.blacklistedCommands + newCmd)
-                        }
                         texts.formatString("blacklist.add", cmd).toMessage()
                     }
                     "remove", "rm", "delete" -> {
                         val cmd = message.words.getOrNull(3)
                             ?: return texts.getString("blacklist.nocommand").toMessage()
-                        val blacklistedCommand = transaction { config.blacklistedCommands.find { it.command.equals(cmd, true) } }
+                        val blacklistedCommand = Db.getBlackListedCommand(guild.id, cmd)
                             ?: return texts.getString("blacklist.remove.already").toMessage()
 
                         transaction { blacklistedCommand.delete() }

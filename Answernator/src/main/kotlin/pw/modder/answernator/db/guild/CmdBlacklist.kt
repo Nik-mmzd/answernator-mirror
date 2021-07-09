@@ -16,10 +16,3 @@ object BlacklistedCommands: IntIdTable() {
     val guildId = varchar("guild_id", 18).index()
     val command = varchar("command", 32).index()
 }
-
-object BlacklistedCommandsRef: Table() {
-    val guild = reference("config", Configs)
-    val command = reference("command", BlacklistedCommands)
-
-    override val primaryKey: PrimaryKey = PrimaryKey(guild, command)
-}

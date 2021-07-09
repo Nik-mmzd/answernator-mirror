@@ -34,7 +34,7 @@ class Help: LocalizedCommand {
             }
             val blacklist = when(guildClient) {
                 null -> listOf()
-                else -> transaction { Db.getGuildConfig(guildClient.guildId).blacklistedCommands.map { it.command } }
+                else -> Db.getBlackListed(guildClient.guildId)
             }
 
             val cmds = when(permissions.contains(Permission.ADMINISTRATOR)) {
