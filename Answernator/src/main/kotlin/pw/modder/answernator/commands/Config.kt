@@ -150,7 +150,7 @@ class Config: LocalizedCommand {
                 }
             }
             "muterole" -> {
-                when(message.words.getOrNull(3)) {
+                when(message.words.getOrNull(2)) {
                     "set" -> {
                         if (message.rolesIdsMentioned.size != 1)
                             return texts.getString("muterole.invalid").toMessage()
@@ -168,13 +168,13 @@ class Config: LocalizedCommand {
                 }
             }
             "blacklist" -> {
-                when(message.words.getOrNull(3)) {
+                when(message.words.getOrNull(2)) {
                     "show", "get" -> dslmessage {
                         title = texts.getString("blacklist.title")
                         description = transaction { config.blacklistedCommands.joinToString(separator = ", ") { "`${it.command}`" } }
                     }
                     "add" -> {
-                        val cmd = message.words.getOrNull(4)
+                        val cmd = message.words.getOrNull(3)
                             ?: return texts.getString("blacklist.nocommand").toMessage()
                         if (transaction { config.blacklistedCommands.any { it.command.equals(cmd, true) }})
                             return texts.getString("blacklist.add.already").toMessage()
@@ -188,7 +188,7 @@ class Config: LocalizedCommand {
                         texts.formatString("blacklist.add", cmd).toMessage()
                     }
                     "remove", "rm", "delete" -> {
-                        val cmd = message.words.getOrNull(4)
+                        val cmd = message.words.getOrNull(3)
                             ?: return texts.getString("blacklist.nocommand").toMessage()
                         val blacklistedCommand = transaction { config.blacklistedCommands.find { it.command.equals(cmd, true) } }
                             ?: return texts.getString("blacklist.remove.already").toMessage()
