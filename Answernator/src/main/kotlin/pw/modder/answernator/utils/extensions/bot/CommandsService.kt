@@ -42,7 +42,7 @@ fun Bot.commandService() {
         val command = CommandList.findCommand(name = message.words.first().drop(1), channelType = message.channelType)
             ?: return@messageCreated // if command not found: do nothing
 
-        val blacklisted = transaction { guildConfig?.blacklistedCommands }?.any { it.command.equals(command.name, true) } == true
+        val blacklisted = transaction { guildConfig?.blacklistedCommands }?.any { it.command == command.name } == true
         if (blacklisted && guildConfig != null) {
             val guild = clientStore.guilds[guildConfig.guildId].getCached()
 

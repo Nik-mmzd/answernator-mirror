@@ -185,7 +185,7 @@ class Config: LocalizedCommand {
                             return texts.getString("blacklist.add.notfound").toMessage()
 
                         transaction { BlacklistedCommand.new {
-                            this.command = cmd
+                            this.command = cmd.toLowerCase()
                             this.guild = guild.id
                         } }
                         texts.formatString("blacklist.add", cmd).toMessage()

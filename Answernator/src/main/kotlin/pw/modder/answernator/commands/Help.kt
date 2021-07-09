@@ -1,12 +1,15 @@
 package pw.modder.answernator.commands
 
 import com.jessecorbett.diskord.api.model.Message
+import com.jessecorbett.diskord.api.model.Permission
 import com.jessecorbett.diskord.api.model.Permissions
 import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.dsl.field
 import com.jessecorbett.diskord.util.authorId
 import com.jessecorbett.diskord.util.words
+import org.jetbrains.exposed.sql.transactions.transaction
+import pw.modder.answernator.db.Db
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.CommandList
 import pw.modder.answernator.utils.Globals
@@ -29,7 +32,15 @@ class Help: LocalizedCommand {
                 null -> Permissions.NONE
                 else -> message.partialMember?.computePermissions(guildClient, message.authorId) ?: Permissions.NONE
             }
-            val cmds = CommandList.commands.filter { it.check(message, permissions) }.groupBy { it.cmdType }
+            val blacklist = when(guildClient) {
+                null -> listOf()
+                else -> transaction { Db.getGuildConfig(guildClient.guildId).blacklistedCommands }.map { it.command }
+            }
+
+            val cmds = when(permissions.contains(Permission.ADMINISTRATOR)) {
+                true -> CommandList.commands.filter { it.check(message, permissions) }.groupBy { it.cmdType }
+                false -> CommandList.commands.filterNot { it.name in blacklist }.filter { it.check(message, permissions) }.groupBy { it.cmdType }
+            }
 
             return dslmessage {
                 title = texts.getString("title_cmdlist")
