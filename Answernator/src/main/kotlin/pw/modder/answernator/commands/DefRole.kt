@@ -24,20 +24,14 @@ class DefRole: LocalizedCommand {
     override val cmdType = Command.CommandGroup.MODER
     override val requiredPermission: Permission? = Permission.MANAGE_ROLES
 
-    override suspend fun check(message: Message, guildClients: GuildClients): Boolean {
-        val cfg = Db.guilds.get(message.guildId ?: return false) ?: return false
-        return cfg.greetingsChannel.isNotEmpty() && super.check(message, guildClients)
-    }
-
-    override fun check(message: Message, permissions: Permissions): Boolean {
-        val cfg = Db.guilds.get(message.guildId ?: return false) ?: return false
-        return cfg.greetingsChannel.isNotEmpty() && super.check(message, permissions)
-    }
-
     override suspend fun action(bot: Bot, message: Message, texts: CommandLocaleBundle): CombinedMessageEmbed {
         val gid = message.guildId ?: return texts.getErrorString().toMessage()
         val guild = bot.clientStore.guilds[gid]
-        val config = Db.guilds.get(gid)
+        val config = Db.getGuildConfig(gid)
+
+        if (config.defaultRole == null)
+            return texts.getString("not.configured").toMessage()
+
         val add = when(message.words.getOrNull(1)) {
             "add" -> true
             "remove" -> false
@@ -49,8 +43,8 @@ class DefRole: LocalizedCommand {
 
         mentionedUsers.forEach {
             when(add) {
-                true -> guild.addMemberRole(it.id, config.defaultRole)
-                false -> guild.removeMemberRole(it.id, config.defaultRole)
+                true -> guild.addMemberRole(it.id, config.defaultRole!!)
+                false -> guild.removeMemberRole(it.id, config.defaultRole!!)
             }
         }
         return textMessage(texts.formatString("done.$add", mentionedUsers.joinToString(" ") { it.mention }))

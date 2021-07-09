@@ -7,9 +7,9 @@ import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.dsl.field
 import com.jessecorbett.diskord.util.toRoleMention
+import org.jetbrains.exposed.sql.transactions.transaction
 import pw.modder.answernator.cache.GuildCache.getCached
 import pw.modder.answernator.db.Db
-import pw.modder.answernator.db.Db.memberIsMuted
 import pw.modder.answernator.tools.commandTypes.LocalizedGuildOnlyCommand
 import pw.modder.answernator.tools.helper.computeRealPermissions
 import pw.modder.answernator.utils.Command
@@ -17,7 +17,6 @@ import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.Utils
 import pw.modder.answernator.utils.extensions.*
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
-import java.util.*
 import com.jessecorbett.diskord.dsl.message as dslmessage
 
 class Info: LocalizedGuildOnlyCommand {
@@ -53,7 +52,7 @@ class Info: LocalizedGuildOnlyCommand {
                 field(texts.getString("user.id"), id, true)
                 field(texts.getString("user.owner"), texts.getString("bool.${id == guild.ownerId}"), true)
                 field(texts.getString("user.admin"), texts.getString("bool.${member.isAdmin(guild, id)}"), true)
-                field(texts.getString("user.muted"), texts.getString("bool.${guild.memberIsMuted(id)}"), true)
+                field(texts.getString("user.muted"), texts.getString("bool.${transaction { Db.getGuildConfig(guild.id).mutes.any { it.memberId == this@run.id }}}"), true)
                 field(texts.getString("user.superuser"), texts.getString("bool.${id == Globals.config.author}"), true)
 
                 field(texts.getString("user.roles"), member.roleIds.joinToString(" ") { it.toRoleMention() }.ifEmpty { texts.getString("empty") }, false)
@@ -68,7 +67,7 @@ class Info: LocalizedGuildOnlyCommand {
         message.rolesIdsMentioned.singleOrNull()?.let { roleId ->
             guild.roles.singleOrNull { role -> role.id == roleId }
         }?.run {
-            val config = Db.guilds.get(guildId)
+            val config = Db.getGuildConfig(guildId)
 
             return dslmessage {
                 title = texts.formatString("role.title", name)

@@ -24,13 +24,13 @@ class Tsar: LocalizedCommand {
     override val cmdType = Command.CommandGroup.FUN
 
     override suspend fun check(message: Message, guildClients: GuildClients): Boolean {
-        val locale = message.guildId?.run { Locale(Db.guilds.get(this).lang) } ?: Globals.config.locale
-        return locale == Locale("ru") && super.check(message, guildClients)
+        val locale = message.guildId?.run { Db.getGuildConfig(this).lang } ?: Globals.config.lang
+        return locale.equals("ru", true) && super.check(message, guildClients)
     }
 
     override fun check(message: Message, permissions: Permissions): Boolean {
-        val locale = message.guildId?.run { Locale(Db.guilds.get(this).lang) } ?: Globals.config.locale
-        return locale == Locale("ru") && super.check(message, permissions)
+        val locale = message.guildId?.run { Db.getGuildConfig(this).lang } ?: Globals.config.lang
+        return locale.equals("ru", true) && super.check(message, permissions)
     }
 
     override suspend fun action(bot: Bot, message: Message, texts: CommandLocaleBundle): CombinedMessageEmbed {

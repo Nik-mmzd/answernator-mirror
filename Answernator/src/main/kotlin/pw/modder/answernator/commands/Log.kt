@@ -7,10 +7,9 @@ import com.jessecorbett.diskord.dsl.field
 import com.jessecorbett.diskord.util.words
 import org.jetbrains.exposed.sql.Column
 import pw.modder.answernator.db.Db
-import pw.modder.answernator.db.LogConfigs
+import pw.modder.answernator.db.guild.Features
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedCommand
-import pw.modder.answernator.utils.extensions.toChannelMention
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
 import java.util.*
 import com.jessecorbett.diskord.dsl.message as dslmessage
@@ -25,20 +24,22 @@ class Log: LocalizedCommand {
 
         val guild = message.guildId?.run { bot.clientStore.guilds[this] }
             ?: return texts.getErrorString().toMessage()
+        val config = Db.getLogConfig(guild.guildId)
 
-        if (message.words.getOrNull(1)?.toLowerCase() == "get") {
-            val log = Db.logs.get(guild.guildId)
+        if (message.words.size == 1) return texts.getErrorString().toMessage()
+
+        if (message.words[1].equals("get", true))
             return dslmessage {
                 title = texts.getString("get.title")
 
-                field(texts.getString("get.memberjoin"), log.memberJoinLogChannel.toChannelMention().ifEmpty { texts.getString("get.disabled") }, true)
-                field(texts.getString("get.memberleave"), log.memberLeaveLogChannel.toChannelMention().ifEmpty { texts.getString("get.disabled") }, true)
-                field(texts.getString("get.memberban"), log.memberBanLogChannel.toChannelMention().ifEmpty { texts.getString("get.disabled") }, true)
-                field(texts.getString("get.memeberunban"), log.memberUnbanLogChannel.toChannelMention().ifEmpty { texts.getString("get.disabled") }, true)
-                field(texts.getString("get.membermute"), log.memberMuteLogChannel.toChannelMention().ifEmpty { texts.getString("get.disabled") }, true)
-                field(texts.getString("get.memberunmute"), log.memberUnmuteLogChannel.toChannelMention().ifEmpty { texts.getString("get.disabled") }, true)
+                field(texts.getString("get.memberjoin"), texts.formatString("get.status", texts.getString("get.status.${config.isEnabled(Features.LOG_JOIN)}"), config.memberJoinLogChannel ?: texts.getString("get.not.set")), true)
+                field(texts.getString("get.memberleave"), texts.formatString("get.status", texts.getString("get.status.${config.isEnabled(Features.LOG_LEAVE)}"), config.memberLeaveLogChannel ?: texts.getString("get.not.set")), true)
+                field(texts.getString("get.memberban"), texts.formatString("get.status", texts.getString("get.status.${config.isEnabled(Features.LOG_BAN)}"), config.memberBanLogChannel ?: texts.getString("get.not.set")), true)
+                field(texts.getString("get.memeberunban"), texts.formatString("get.status", texts.getString("get.status.${config.isEnabled(Features.LOG_UNBAN)}"), config.memberUnbanLogChannel ?: texts.getString("get.not.set")), true)
+                field(texts.getString("get.membermute"), texts.formatString("get.status", texts.getString("get.status.${config.isEnabled(Features.LOG_MUTE)}"), config.memberMuteLogChannel ?: texts.getString("get.not.set")), true)
+                field(texts.getString("get.memberunmute"), texts.formatString("get.status", texts.getString("get.status.${config.isEnabled(Features.LOG_UNMUTE)}"), config.memberUnmuteLogChannel ?: texts.getString("get.not.set")), true)
             }
-        }
+
         if (message.words.size < 3) return texts.getErrorString().toMessage()
 
         return when(message.words[1].toLowerCase()) {

@@ -11,7 +11,6 @@ import pw.modder.answernator.`fun`.utils.UbuntuWord
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedCommand
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
-import java.util.*
 
 class Ubuntu: LocalizedCommand {
     override val name: String = "ubuntu"
