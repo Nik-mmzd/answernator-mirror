@@ -12,7 +12,7 @@ private val logger = KotlinLogging.logger {}
 @DiskordDsl
 fun Bot.configService() {
     guildCreated {
-        if (transaction { Config.find { Configs.guildId eq it.id } }.count() == 0L) {
+        if (transaction { Config.find { Configs.guildId eq it.id }.count() } == 0L) {
             Db.createDefaultConfig(it.id)
             logger.debug { "Created default config for guild ${it.name} (ID ${it.id})" }
         }

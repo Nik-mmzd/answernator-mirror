@@ -1,5 +1,6 @@
 package pw.modder.answernator.db
 
+import mu.KotlinLogging
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import pw.modder.answernator.db.guild.*
@@ -10,6 +11,7 @@ import pw.modder.answernator.utils.locale.LocaleBundle
 import java.util.*
 
 object Db {
+    private val logger = KotlinLogging.logger {  }
     private const val dbfile = "answernator"
 
     fun initDb() {
@@ -17,14 +19,17 @@ object Db {
 
         val newMutesExists = transaction { Mutes.exists() }
         val newConfigsExists = transaction { Configs.exists() }
+        logger.info { "Newmutes: $newMutesExists newconfigs $newConfigsExists" }
 
         transaction {
             SchemaUtils.create (Configs, Mutes, MutesRef, BlacklistedCommands, BlacklistedCommandsRef)
         }
 
         if (!newConfigsExists) {
+            logger.info { "Started newconfig transaction" }
             transaction {
                 GuildConfig.all().forEach { guild ->
+                    logger.info { "migrating ${guild.guildId}" }
                     val log = LogConfig.find { LogConfigs.guildId eq guild.guildId }.singleOrNull()
                     val texts = LocaleBundle("botGlobal", Locale(guild.lang))
 
@@ -66,8 +71,10 @@ object Db {
         }
 
         if (!newMutesExists) {
+            logger.info { "newmutes: transaction" }
             transaction {
                 GuildMutes.selectAll().forEach {
+                    logger.info { "migrating: ${it[GuildMutes.guildId]} ${it[GuildMutes.memberId]}" }
                     Mute.new {
                         guild = it[GuildMutes.guildId]
                         memberId = it[GuildMutes.memberId]
@@ -78,6 +85,7 @@ object Db {
         }
 
         transaction {
+            logger.info { "Dropping tables" }
             if (GuildConfigs.exists()) SchemaUtils.drop(GuildConfigs)
             if (LogConfigs.exists()) SchemaUtils.drop(LogConfigs)
             if (GuildMutes.exists()) SchemaUtils.drop(GuildMutes)
