@@ -5,11 +5,15 @@ import com.jessecorbett.diskord.dsl.Bot
 import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import com.jessecorbett.diskord.dsl.field
 import com.jessecorbett.diskord.util.words
-import org.jetbrains.exposed.sql.Column
+import org.jetbrains.exposed.sql.transactions.transaction
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.db.guild.Features
+import pw.modder.answernator.db.guild.LogConfig
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedCommand
+import pw.modder.answernator.utils.extensions.channelsIdsMentioned
+import pw.modder.answernator.utils.extensions.isChannelMention
+import pw.modder.answernator.utils.extensions.toChannelMention
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
 import java.util.*
 import com.jessecorbett.diskord.dsl.message as dslmessage
@@ -21,7 +25,6 @@ class Log: LocalizedCommand {
     override val channels: EnumSet<Command.ChannelTypes> = EnumSet.of(Command.ChannelTypes.GUILD)
 
     override suspend fun action(bot: Bot, message: Message, texts: CommandLocaleBundle): CombinedMessageEmbed {
-
         val guild = message.guildId?.run { bot.clientStore.guilds[this] }
             ?: return texts.getErrorString().toMessage()
         val config = Db.getLogConfig(guild.guildId)
@@ -42,37 +45,92 @@ class Log: LocalizedCommand {
 
         if (message.words.size < 3) return texts.getErrorString().toMessage()
 
+        val action = when {
+            message.words[2].equals("enable", true) -> "enable"
+            message.words[2].equals("disable", true) -> "disable"
+            message.channelsIdsMentioned.size == 1 && message.words[2].isChannelMention() -> message.channelsIdsMentioned.single()
+            else -> return texts.getErrorString().toMessage()
+        }
+
         return when(message.words[1].toLowerCase()) {
-            "memberjoin" -> process(bot, guild.guildId, message.words[2], LogConfigs.memberJoinLogChannel, texts)
-            "memberleave" -> process(bot, guild.guildId, message.words[2], LogConfigs.memberLeaveLogChannel, texts)
-            "memberban" -> process(bot, guild.guildId, message.words[2], LogConfigs.memberBanLogChannel, texts)
-            "memberunban" -> process(bot, guild.guildId, message.words[2], LogConfigs.memberUnbanLogChannel, texts)
-            "membermute" -> process(bot, guild.guildId, message.words[2], LogConfigs.memberMuteLogChannel, texts)
-            "memberunmute" -> process(bot, guild.guildId, message.words[2], LogConfigs.memberUnmuteLogChannel, texts)
-//            "messagedelete" -> process(bot, guild.guildId, message.words[2], LogConfigs.messageDeleteLogChannel, texts)
-//            "messagebulkdelete" -> process(bot, guild.guildId, message.words[2], LogConfigs.messageBulkDeleteLogChannel, texts)
-//            "messagechange" -> process(bot, guild.guildId, message.words[2], LogConfigs.messageChangedLogChannel, texts)
-            "messagedelete" -> TODO("No messages cache")
-            "messagebulkdelete" -> TODO("No messages cache")
-            "messagechange" -> TODO("No messages cache")
+            "all" -> when(action) {
+                "enable" -> {
+                    transaction {
+                        config.enable(Features.LOG_JOIN)
+                        config.enable(Features.LOG_LEAVE)
+                        config.enable(Features.LOG_BAN)
+                        config.enable(Features.LOG_UNBAN)
+                        config.enable(Features.LOG_MUTE)
+                        config.enable(Features.LOG_UNMUTE)
+                    }
+                    return texts.getString("enable.all").toMessage()
+                }
+                "disable" -> {
+                    transaction {
+                        config.disable(Features.LOG_JOIN)
+                        config.disable(Features.LOG_LEAVE)
+                        config.disable(Features.LOG_BAN)
+                        config.disable(Features.LOG_UNBAN)
+                        config.disable(Features.LOG_MUTE)
+                        config.disable(Features.LOG_UNMUTE)
+                    }
+                    return texts.getString("disable.all").toMessage()
+                }
+                else -> {
+                    transaction {
+                        config.memberJoinLogChannel = action
+                        config.memberLeaveLogChannel = action
+                        config.memberBanLogChannel = action
+                        config.memberUnbanLogChannel = action
+                        config.memberMuteLogChannel = action
+                        config.memberUnmuteLogChannel = action
+                    }
+                    return texts.formatString("channel.all", action.toChannelMention()).toMessage()
+                }
+            }
+            "join" -> process(action, "join", config, texts, Features.LOG_JOIN) {
+                memberJoinLogChannel = action
+            }
+            "leave" -> process(action, "leave", config, texts, Features.LOG_LEAVE) {
+                memberLeaveLogChannel = action
+            }
+            "ban" -> process(action, "ban", config, texts, Features.LOG_BAN) {
+                memberBanLogChannel = action
+            }
+            "unban" -> process(action, "unban", config, texts, Features.LOG_UNBAN) {
+                memberUnbanLogChannel = action
+            }
+            "mute" -> process(action, "mute", config, texts, Features.LOG_MUTE) {
+                memberMuteLogChannel = action
+            }
+            "unmute" -> process(action, "unmute", config, texts, Features.LOG_UNMUTE) {
+                memberUnmuteLogChannel = action
+            }
 
             else -> texts.getErrorString().toMessage()
         }
     }
 
-    private fun extractChannelId(string: String): String {
-        if (string.startsWith('#')) return string.drop(1)
-        if (string.startsWith('<')) return string.drop(2).dropLast(1)
-        throw IllegalArgumentException()
-    }
-
-    private fun process(bot: Bot, gid: String, channelId: String, column: Column<String>, texts: CommandLocaleBundle): CombinedMessageEmbed {
-        val channel = channelId.takeUnless { it.equals("disable", true) }?.run { bot.clientStore.channels[extractChannelId(this)] }
-
-        Db.updateLogConfig(gid) {
-            it[column] = channel?.channelId ?: ""
+    private fun process(action: String, name: String, config: LogConfig, texts: CommandLocaleBundle, feature: Features, block: LogConfig.() -> Unit): CombinedMessageEmbed {
+        when(action) {
+            "enable" -> {
+                transaction {
+                    config.enable(feature)
+                }
+                return texts.getString("enable.$name").toMessage()
+            }
+            "disable" -> {
+                transaction {
+                    config.disable(feature)
+                }
+                return texts.getString("disable.$name").toMessage()
+            }
+            else -> {
+                transaction {
+                    config.block()
+                }
+                return texts.formatString("channel.$name", action.toChannelMention()).toMessage()
+            }
         }
-        if (channel == null) return texts.getString("${column.name}.disabled").toMessage()
-        return texts.formatString(column.name, "<#${channel.channelId}>").toMessage()
     }
 }
