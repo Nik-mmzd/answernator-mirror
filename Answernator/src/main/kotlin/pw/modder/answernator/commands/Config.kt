@@ -37,14 +37,13 @@ class Config: LocalizedCommand {
             return texts.getErrorString().toMessage()
 
         return when(message.words[1].toLowerCase()) {
-            "get", "show" -> {
-                dslmessage {
+            "get", "show" -> dslmessage {
                     title = guild.name
                     description = texts.getString("description")
 
                     field(texts.getString("lang"), config.lang, true)
                     field(texts.getString("prefix"), config.cmdPrefix.toString(), true)
-                    field(texts.getString("lang.available"), Globals.config.langs.joinToString(separator = ", ") { "`$it`" }, true)
+                    field(texts.getString("lang.available"), Globals.config.langs.joinToString(separator = ", ") { "`$it`" }.ifEmpty { texts.getString("lang.none") }, true)
 
                     field(texts.getString("greeter"), texts.formatString("greeter.text",
                         texts.getString("greeter.${config.isEnabled(Features.GREETING)}"),
@@ -59,7 +58,7 @@ class Config: LocalizedCommand {
                         config.defaultRole?.toRoleMention() ?: texts.getString("role.notset")
                     ), false)
 
-                    field(texts.getString("blacklist"), transaction { config.blacklistedCommands.joinToString(separator = ", ") { "`${it.command}`" } }, false)
+                    field(texts.getString("blacklist"), transaction { config.blacklistedCommands.joinToString(separator = ", ") { "`${it.command}`" } }.ifEmpty { texts.getString("blacklist.none") }, false)
 
                     field(texts.getString("antispam"), texts.formatString("antispam.text",
                         texts.getString("antispam.${config.isEnabled(Features.ANTI_SPAM)}"),
@@ -67,8 +66,6 @@ class Config: LocalizedCommand {
                         config.antiSpamWarn,
                         config.antiSpamBan
                     ), false)
-
-                }
             }
             "lang" -> {
                 if (message.words.getOrNull(2) !in Globals.config.langs)

@@ -92,12 +92,6 @@ object Db {
         }
     }
 
-    fun updateConfig(guildId: String, block: Config.() -> Unit) {
-        transaction {
-            Config.find { Configs.guildId eq guildId }.first().block()
-        }
-    }
-
     fun createDefaultConfig(guild: String): Config {
         val conf = Globals.config
         val texts = LocaleBundle("botGlobal", Locale(conf.lang))

@@ -45,7 +45,7 @@ open class BaseConfig(id: EntityID<Int>): IntEntity(id) {
     var blacklistedCommands by BlacklistedCommand via BlacklistedCommandsRef
 
     fun isEnabled(feature: Features): Boolean {
-        return (features and(1 ushr feature.ordinal)) > 0
+        return (features and(1 shl feature.ordinal)) > 0
     }
 
     fun getEnabled(): List<Features> {
@@ -53,11 +53,11 @@ open class BaseConfig(id: EntityID<Int>): IntEntity(id) {
     }
 
     fun enable(feature: Features) {
-        features = features or(1 ushr feature.ordinal)
+        features = features or(1 shl feature.ordinal)
     }
 
     fun disable(feature: Features) {
-        features = features and((1 ushr feature.ordinal).inv())
+        features = features and((1 shl feature.ordinal).inv())
     }
 }
 
