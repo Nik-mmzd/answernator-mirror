@@ -1,11 +1,8 @@
 package pw.modder.answernator.db
 
-import mu.KotlinLogging
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import pw.modder.answernator.db.guild.*
-import pw.modder.answernator.db.guild.GuildConfig as NewGuildConfig
-import pw.modder.answernator.db.guild.LogConfig as NewLogConfig
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.locale.LocaleBundle
 import java.util.*
@@ -52,28 +49,33 @@ object Db {
     fun getConfig(guildId: String): Config {
         return transaction {
             Config.find { Configs.guildId eq guildId }.firstOrNull()
-                ?: createDefaultConfig(guildId)
+        } ?: createDefaultConfig(guildId)
+    }
+
+    fun getGuildConfig(guildId: String): GuildConfig {
+        return transaction {
+            GuildConfig.find { Configs.guildId eq guildId }.firstOrNull()
+        } ?: run {
+            createDefaultConfig(guildId)
+            getGuildConfig(guildId)
         }
     }
 
-    fun getGuildConfig(guildId: String): NewGuildConfig {
+    fun getLogConfig(guildId: String): LogConfig {
         return transaction {
-            NewGuildConfig.find { Configs.guildId eq guildId }.firstOrNull()
-                ?: run { createDefaultConfig(guildId); getGuildConfig(guildId) }
-        }
-    }
-
-    fun getLogConfig(guildId: String): NewLogConfig {
-        return transaction {
-            NewLogConfig.find { Configs.guildId eq guildId }.firstOrNull()
-                ?: run { createDefaultConfig(guildId); getLogConfig(guildId) }
+            LogConfig.find { Configs.guildId eq guildId }.firstOrNull()
+        } ?: run {
+            createDefaultConfig(guildId)
+            getLogConfig(guildId)
         }
     }
 
     fun getAntiSpamConfig(guildId: String): AntiSpamConfig {
         return transaction {
             AntiSpamConfig.find { Configs.guildId eq guildId }.firstOrNull()
-                ?: run { createDefaultConfig(guildId); getAntiSpamConfig(guildId) }
+        } ?: run {
+            createDefaultConfig(guildId)
+            getAntiSpamConfig(guildId)
         }
     }
 
