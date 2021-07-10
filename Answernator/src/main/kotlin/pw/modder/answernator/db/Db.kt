@@ -51,25 +51,29 @@ object Db {
 
     fun getConfig(guildId: String): Config {
         return transaction {
-            Config.find { Configs.guildId eq guildId }.first()
+            Config.find { Configs.guildId eq guildId }.firstOrNull()
+                ?: createDefaultConfig(guildId)
         }
     }
 
     fun getGuildConfig(guildId: String): NewGuildConfig {
         return transaction {
-            NewGuildConfig.find { Configs.guildId eq guildId }.first()
+            NewGuildConfig.find { Configs.guildId eq guildId }.firstOrNull()
+                ?: run { createDefaultConfig(guildId); getGuildConfig(guildId) }
         }
     }
 
     fun getLogConfig(guildId: String): NewLogConfig {
         return transaction {
-            NewLogConfig.find { Configs.guildId eq guildId }.first()
+            NewLogConfig.find { Configs.guildId eq guildId }.firstOrNull()
+                ?: run { createDefaultConfig(guildId); getLogConfig(guildId) }
         }
     }
 
     fun getAntiSpamConfig(guildId: String): AntiSpamConfig {
         return transaction {
-            AntiSpamConfig.find { Configs.guildId eq guildId }.first()
+            AntiSpamConfig.find { Configs.guildId eq guildId }.firstOrNull()
+                ?: run { createDefaultConfig(guildId); getAntiSpamConfig(guildId) }
         }
     }
 

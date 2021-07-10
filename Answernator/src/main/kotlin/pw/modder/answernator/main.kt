@@ -12,7 +12,6 @@ suspend fun main() {
     CommandList.load()
 
     bot(Globals.config.token) {
-        configService()
         enableGuildCache()
         commandService()
         greetingService()
