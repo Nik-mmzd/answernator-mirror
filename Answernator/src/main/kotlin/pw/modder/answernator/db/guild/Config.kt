@@ -6,7 +6,7 @@ import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 
 object Configs: IntIdTable() {
-    val guildId = varchar("guild_id", 18)
+    val guildId = varchar("guild_id", 18).uniqueIndex("guild_index")
     val features = integer("features")
     val lang = varchar("lang", 2)
     val commandPrefix = char("command_prefix")
