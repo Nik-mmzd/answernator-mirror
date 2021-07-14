@@ -5,11 +5,10 @@ import com.jessecorbett.diskord.dsl.DiskordDsl
 import com.jessecorbett.diskord.util.mention
 import com.jessecorbett.diskord.util.sendMessage
 import mu.KotlinLogging
-import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.transaction
 import pw.modder.answernator.db.Db
+import pw.modder.answernator.db.guild.Features
 import pw.modder.answernator.db.guild.Mute
-import pw.modder.answernator.db.guild.Mutes
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
 import java.util.*
 
@@ -34,55 +33,47 @@ fun Bot.muteService() {
         val config = Db.getConfig(update.guildId)
         val roleId = config.muteRole ?: return@guildMemberUpdated
 
-        val mute = Db.getMute(update.guildId, update.user.id)
-
         val client = clientStore.guilds[update.guildId]
         val texts = CommandLocaleBundle("mute", Locale(config.lang))
 
-        if (update.roles.any { it == roleId } && mute == null) {
-            try {
-                config.memberMuteLogChannel?.run {
-                    if (update.user.id == getMe().id) {
-                        clientStore.channels[this].sendMessage(
-                            texts.formatString("muted.self", update.user.mention)
-                        )
-                        return@guildMemberUpdated
-                    }
+        val mute = Db.getMute(update.guildId, update.user.id)
 
-                    clientStore.channels[this].sendMessage(
-                        texts.formatString(
-                            "muted",
-                            update.user.mention,
-                            texts.getRandomString("reason")
-                        )
+        if (update.roles.any { it == roleId } && mute == null) {
+            if (config.isEnabled(Features.LOG_MUTE) && config.memberMuteLogChannel != null) {
+                if (isMe(update.user)) {
+                    clientStore.channels[config.memberMuteLogChannel!!].sendMessage(
+                        texts.formatString("muted.self", update.user.mention)
                     )
+                    return@guildMemberUpdated
                 }
-            } catch (e: Exception) {
-                logger.warn(e) { "Logger: Error while auto-muting by role update" }
             }
+
             client.addMemberRole(update.user.id, roleId)
             Mute.new {
                 guild = update.guildId
                 memberId = update.user.id
             }
+            clientStore.channels[config.memberMuteLogChannel!!].sendMessage(
+                texts.formatString(
+                    "muted",
+                    update.user.mention,
+                    texts.getRandomString("reason")
+                )
+            )
 
             return@guildMemberUpdated
         }
 
         if (update.roles.none { it == roleId } && mute != null) {
-            try {
-                config.memberUnmuteLogChannel?.run {
-                    clientStore.channels[this].sendMessage(
-                        String.format(
-                            texts.getString("unmuted"),
-                            update.user.mention
-                        ))
-                }
-            } catch (e: Exception) {
-                logger.warn(e) { "Logger: Error while auto-unmuting by role update" }
-            }
             client.removeMemberRole(update.user.id, roleId)
             transaction { mute.delete() }
+            if (config.isEnabled(Features.LOG_UNMUTE) && config.memberUnmuteLogChannel != null) {
+                clientStore.channels[config.memberUnmuteLogChannel!!].sendMessage(
+                    String.format(
+                        texts.getString("unmuted"),
+                        update.user.mention
+                    ))
+            }
         }
     }
 }
