@@ -1,5 +1,6 @@
 package pw.modder.answernator.db
 
+import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import pw.modder.answernator.db.guild.*

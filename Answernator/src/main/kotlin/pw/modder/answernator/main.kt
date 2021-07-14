@@ -1,6 +1,6 @@
 package pw.modder.answernator
 
-import com.jessecorbett.diskord.dsl.bot
+import dev.kord.core.Kord
 import pw.modder.answernator.cache.GuildCache.enableGuildCache
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.utils.CommandList
@@ -11,8 +11,13 @@ suspend fun main() {
     Db.initDb()
     CommandList.load()
 
+    val bot = Kord(Globals.config.token)
+
+    with(bot) {
+        
+    }
+
     bot(Globals.config.token) {
-        enableGuildCache()
         commandService()
         greetingService()
         defaultStatusService()

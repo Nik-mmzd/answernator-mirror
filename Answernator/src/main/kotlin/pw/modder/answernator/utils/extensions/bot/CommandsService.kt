@@ -1,13 +1,8 @@
 package pw.modder.answernator.utils.extensions.bot
 
-import com.jessecorbett.diskord.api.exception.DiscordBadPermissionsException
-import com.jessecorbett.diskord.api.model.Message
-import com.jessecorbett.diskord.api.model.Permission
-import com.jessecorbett.diskord.dsl.Bot
-import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
-import com.jessecorbett.diskord.dsl.DiskordDsl
-import com.jessecorbett.diskord.util.authorId
-import com.jessecorbett.diskord.util.words
+import dev.kord.core.Kord
+import dev.kord.core.event.message.MessageCreateEvent
+import dev.kord.core.on
 import mu.KotlinLogging
 import org.jetbrains.exposed.sql.transactions.transaction
 import pw.modder.answernator.cache.GuildCache.getCached
@@ -20,22 +15,25 @@ import pw.modder.answernator.utils.locale.LocaleBundle
 
 private fun String.asMessage() = CombinedMessageEmbed(text = this)
 
+
 private val logger = KotlinLogging.logger {}
-@DiskordDsl
-fun Bot.commandService() {
+
+fun Kord.commandService() {
     val config = Globals.config
 
-    messageCreated { message: Message ->
+    on<MessageCreateEvent> {
         if (message.content.isEmpty())
-            return@messageCreated
-        if (message.author.isBot)
-            return@messageCreated
+            return@on
+        if (message.author?.isBot == true)
+            return@on
 
         logger.debug { "received message, message text: ${message.content}" }
-        val guildConfig = message.guildId.takeUnless { it == null }?.run { Db.getGuildConfig(this) }
+        message.data.guildId.value
+
+        val guildConfig = message.data.guildId.value.takeUnless { it == null }?.run { Db.getGuildConfig(asString) }
 
         if (message.content.first() != guildConfig?.cmdPrefix ?: config.prefix)
-            return@messageCreated
+            return@on
 
         val texts = LocaleBundle("botGlobal", guildConfig?.lang ?: config.lang)
 
