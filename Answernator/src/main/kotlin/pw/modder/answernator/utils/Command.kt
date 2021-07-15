@@ -1,15 +1,10 @@
 package pw.modder.answernator.utils
 
-import com.jessecorbett.diskord.api.model.Message
-import com.jessecorbett.diskord.api.model.Permission
-import com.jessecorbett.diskord.api.model.Permissions
-import com.jessecorbett.diskord.dsl.Bot
-import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
-import com.jessecorbett.diskord.util.GuildClients
-import com.jessecorbett.diskord.util.authorId
+import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Permissions
+import dev.kord.core.entity.Message
 import mu.KLogger
 import mu.KotlinLogging
-import pw.modder.answernator.utils.extensions.computePermissions
 import java.util.*
 
 private val logger: KLogger = KotlinLogging.logger {}
@@ -22,52 +17,29 @@ interface Command {
     val cmdType: CommandGroup get() = CommandGroup.OTHER
     val requiredPermission: Permission? get() = null
 
-    suspend fun action(bot: Bot, message: Message, locale: Locale): CombinedMessageEmbed
+    suspend fun action(message: Message)
 
-    private fun check(message: Message): Boolean? {
+    suspend fun check(message: Message): Boolean {
         logger.debug { "checking command $name" }
         logger.debug { "checking command is owner only" }
-        if (userGroup == UserGroup.OWNER && message.authorId != Globals.config.author) return false
+        if (userGroup == UserGroup.OWNER && message.data.author.id.asString != Globals.config.author) return false
         if (userGroup == UserGroup.OWNER || userGroup == UserGroup.ALL) {
             logger.debug { "early exit because no permission checks is needed" }
             return true
         }
 
-        if (message.authorId == Globals.config.author
+        if (message.author!!.id.asString == Globals.config.author
             && userGroup == UserGroup.ADMIN
             && channels.contains(ChannelTypes.DIRECT)) return true
 
-        return null
-    }
+        logger.debug { "getting permissions" }
+        val perms = (message.getAuthorAsMember()?.getPermissions() ?: Permissions())
 
-    private fun check(permissions: Permissions): Boolean {
-        logger.debug { "checking permissions" }
-        if (userGroup == UserGroup.ADMIN && !permissions.contains(Permission.ADMINISTRATOR)) return false
-        if (userGroup == UserGroup.PERMISSION && !permissions.contains(permission ?: return false)) return false
+        if (userGroup == UserGroup.ADMIN && !perms.contains(Permission.Administrator)) return false
+        if (userGroup == UserGroup.PERMISSION && !perms.contains(permission ?: return false)) return false
 
         return true
     }
-
-    suspend fun check(message: Message, guildClients: GuildClients): Boolean {
-        check(message)?.run { return this }
-
-        logger.debug { "getting permissions" }
-        val permissions = when (val gid = message.guildId) {
-            null -> Permissions.NONE
-            else -> message.partialMember?.computePermissions(guildClients[gid], message.authorId) ?: Permissions.NONE
-        }
-
-        return check(permissions)
-    }
-
-    fun check(message: Message, permissions: Permissions): Boolean {
-        check(message)?.run { return this }
-
-        return check(permissions)
-    }
-
-    fun textMessage(message: String): CombinedMessageEmbed = CombinedMessageEmbed(message)
-    fun String.toMessage(): CombinedMessageEmbed = CombinedMessageEmbed(this)
 
     fun getHelp(locale: Locale): String? {
         return null

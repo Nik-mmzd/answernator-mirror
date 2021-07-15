@@ -1,21 +1,18 @@
 package pw.modder.answernator.utils.extensions.bot
 
+import dev.kord.common.entity.Permission
 import dev.kord.core.Kord
+import dev.kord.core.behavior.reply
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
 import mu.KotlinLogging
-import org.jetbrains.exposed.sql.transactions.transaction
-import pw.modder.answernator.cache.GuildCache.getCached
+
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.utils.CommandList
 import pw.modder.answernator.utils.Globals
-import pw.modder.answernator.utils.extensions.channelType
-import pw.modder.answernator.utils.extensions.computePermissions
+import pw.modder.answernator.utils.extensions.kord.channelType
+import pw.modder.answernator.utils.extensions.kord.words
 import pw.modder.answernator.utils.locale.LocaleBundle
-
-private fun String.asMessage() = CombinedMessageEmbed(text = this)
-
-
 private val logger = KotlinLogging.logger {}
 
 fun Kord.commandService() {
@@ -24,7 +21,9 @@ fun Kord.commandService() {
     on<MessageCreateEvent> {
         if (message.content.isEmpty())
             return@on
-        if (message.author?.isBot == true)
+        if (message.author == null)
+            return@on
+        if (message.author!!.isBot)
             return@on
 
         logger.debug { "received message, message text: ${message.content}" }
@@ -38,26 +37,25 @@ fun Kord.commandService() {
         val texts = LocaleBundle("botGlobal", guildConfig?.lang ?: config.lang)
 
         val command = CommandList.findCommand(name = message.words.first().drop(1), channelType = message.channelType)
-            ?: return@messageCreated // if command not found: do nothing
+            ?: return@on // if command not found: do nothing
 
         if (guildConfig != null && Db.isBlackListed(guildConfig.guildId, command.name)) {
-            val guild = clientStore.guilds[guildConfig.guildId].getCached()
-
-            // if not author and not admin => blacklist
-            if (message.authorId != guild.ownerId &&
-                message.partialMember?.computePermissions(guild, message.authorId)?.contains(Permission.ADMINISTRATOR) != true)
-                    return@messageCreated
+            if (message.author?.id != message.getGuild().owner.id
+                && message.getAuthorAsMember()?.getPermissions()?.contains(Permission.Administrator) != true)
+                    return@on
         }
 
         logger.debug { "found command ${command.name}, checking" }
-        if (!command.check(message, clientStore.guilds)) {
-            message.reply(texts.getString("bot.noPerms"))
-            return@messageCreated
+        if (!command.check(message)) {
+            message.reply {
+                content = texts.getString("bot.noPerms")
+            }
+            return@on
         }
 
         logger.debug { "found command ${command.name}, running" }
         val reply = try {
-            command.action(this, message, texts.locale)
+            command.action(message)
 
         } catch (e: DiscordBadPermissionsException) { // Bot is missing permissions to run this command
             with(command.requiredPermission) {
