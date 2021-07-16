@@ -15,7 +15,7 @@ import pw.modder.answernator.utils.extensions.kord.words
 import pw.modder.answernator.utils.locale.LocaleBundle
 private val logger = KotlinLogging.logger {}
 
-fun Kord.commandService() {
+suspend fun Kord.commandService() {
     val config = Globals.config
 
     on<MessageCreateEvent> {
@@ -56,7 +56,7 @@ fun Kord.commandService() {
 
         logger.debug { "found command ${command.name}, running" }
         try {
-            command.action(message, words.drop(1))
+            command.action(message, words.drop(1), texts.locale)
 
         } catch (e: Exception) { // and any other exception
             logger.error(e) { "got error while running command" }

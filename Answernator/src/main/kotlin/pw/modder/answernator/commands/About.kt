@@ -1,17 +1,13 @@
 package pw.modder.answernator.commands
 
-import com.jessecorbett.diskord.api.model.Message
-import com.jessecorbett.diskord.dsl.Bot
-import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
-import com.jessecorbett.diskord.dsl.field
+import dev.kord.core.behavior.reply
+import dev.kord.core.entity.Message
 import org.apache.commons.io.FileUtils
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.CommandList
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.Utils
-import pw.modder.answernator.utils.extensions.bot.getMe
 import java.util.*
-import com.jessecorbett.diskord.dsl.message as dslmessage
 
 class About: Command {
     override val name: String = "about"
@@ -27,27 +23,29 @@ class About: Command {
 
     override val cmdType = Command.CommandGroup.OWNER
 
-    override suspend fun action(bot: Bot, message: Message, locale: Locale): CombinedMessageEmbed {
-        val me = bot.getMe()
-        return dslmessage {
-            title = me.username
-            description = "Third iteration of Answernator. Now in Kotlin!"
-            System.getProperty("java.vendor")?.also { field("Java Vendor", it, true) }
-            field("Java Version", System.getProperty("java.version", "Unknown"), true)
-            field("Kotlin", KotlinVersion.CURRENT.toString(), true)
-            field("Diskord", Globals.getDependencyVersion("com.jessecorbett", "diskord-jvm"), true)
-            field("Bot version", Globals.getDependencyVersion("pw.modder", "Answernator"), true)
-            field("Commands", CommandList.commands.size.toString(), true)
-            field("Modules", CommandList.modules.joinToString("\n") { "${it.name}@${it.version}".trim('\n') }, true)
-            field("Commands prefix", Globals.config.prefix.toString(), true)
-            field("Owner", "<@${Globals.config.author}>", true)
-            field("Creator", "<@135017849604276224>", true)
-            field("Max heap size", FileUtils.byteCountToDisplaySize(Runtime.getRuntime().maxMemory()), true)
-            field("Current heap size", FileUtils.byteCountToDisplaySize(Runtime.getRuntime().totalMemory()), true)
-            field("Heap used", FileUtils.byteCountToDisplaySize(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()), true)
-            field("Heap free", FileUtils.byteCountToDisplaySize(Runtime.getRuntime().freeMemory()), true)
-            field("OS", System.getProperty("os.name", "Unknown") + ' ' + System.getProperty("os.arch", "Unknown"), true)
-            field("Uptime", Utils.getReadableUptime(), true)
+    override suspend fun action(message: Message, args: List<String>, locale: Locale) {
+        message.reply {
+            embed {
+                title = message.kord.getSelf().tag
+                description = "Third iteration of Answernator. Now in Kotlin!"
+
+                System.getProperty("java.vendor")?.also { field("Java Vendor", true) { it } }
+                field("Java Version",true) { System.getProperty("java.version", "Unknown") }
+                field("Kotlin", true) { KotlinVersion.CURRENT.toString() }
+                field("Diskord", true) { Globals.getDependencyVersion("dev.kord", "kord-core") }
+                field("Bot version", true) { Globals.getDependencyVersion("pw.modder", "Answernator") }
+                field("Commands", true) { CommandList.commands.size.toString() }
+                field("Modules", true) { CommandList.modules.joinToString("\n") { "${it.name}@${it.version}".trim('\n') } }
+                field("Commands prefix", true) { Globals.config.prefix.toString() }
+                field("Owner", true) { "<@${Globals.config.author}>" }
+                field("Creator", true) { "<@135017849604276224>" }
+                field("Max heap size", true) { FileUtils.byteCountToDisplaySize(Runtime.getRuntime().maxMemory()) }
+                field("Current heap size", true) { FileUtils.byteCountToDisplaySize(Runtime.getRuntime().totalMemory()) }
+                field("Heap used", true) { FileUtils.byteCountToDisplaySize(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) }
+                field("Heap free", true) { FileUtils.byteCountToDisplaySize(Runtime.getRuntime().freeMemory()) }
+                field("OS", true) { System.getProperty("os.name", "Unknown") + ' ' + System.getProperty("os.arch", "Unknown") }
+                field("Uptime", true) { Utils.getReadableUptime() }
+            }
         }
     }
 }

@@ -47,7 +47,7 @@ interface Command {
         return null
     }
 
-    suspend fun action(message: Message, args: List<String>)
+    suspend fun action(message: Message, args: List<String>, locale: Locale)
 
     enum class UserGroup {
         OWNER, ADMIN, ALL, PERMISSION

@@ -1,7 +1,6 @@
 package pw.modder.answernator
 
 import dev.kord.core.Kord
-import pw.modder.answernator.cache.GuildCache.enableGuildCache
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.utils.CommandList
 import pw.modder.answernator.utils.Globals
@@ -14,10 +13,6 @@ suspend fun main() {
     val bot = Kord(Globals.config.token)
 
     with(bot) {
-        
-    }
-
-    bot(Globals.config.token) {
         commandService()
         greetingService()
         defaultStatusService()
@@ -26,4 +21,6 @@ suspend fun main() {
         logService()
         antiSpam()
     }
+
+    bot.login()
 }

@@ -1,8 +1,6 @@
 package pw.modder.answernator.utils
 
-import com.jessecorbett.diskord.api.model.Message
-import com.jessecorbett.diskord.dsl.Bot
-import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
+import dev.kord.core.entity.Message
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
 import java.util.Locale
 
@@ -20,9 +18,11 @@ interface LocalizedCommand: Command {
         return getTexts(locale).getDescription()
     }
 
-    override suspend fun action(bot: Bot, message: Message, locale: Locale): CombinedMessageEmbed {
-        return action(bot, message, getTexts(locale))
+    override suspend fun action(message: Message, args: List<String>, locale: Locale) {
+        action(message, args, getTexts(locale))
     }
 
-    suspend fun action(bot: Bot, message: Message, texts: CommandLocaleBundle): CombinedMessageEmbed
+    suspend fun action(message: Message, args: List<String>, texts: CommandLocaleBundle) {
+
+    }
 }

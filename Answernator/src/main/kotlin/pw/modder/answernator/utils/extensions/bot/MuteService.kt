@@ -1,78 +1,74 @@
 package pw.modder.answernator.utils.extensions.bot
 
-import com.jessecorbett.diskord.dsl.Bot
-import com.jessecorbett.diskord.dsl.DiskordDsl
-import com.jessecorbett.diskord.util.mention
-import com.jessecorbett.diskord.util.sendMessage
+import dev.kord.common.entity.Snowflake
+import dev.kord.core.Kord
+import dev.kord.core.event.guild.MemberJoinEvent
+import dev.kord.core.event.guild.MemberLeaveEvent
+import dev.kord.core.event.guild.MemberUpdateEvent
+import dev.kord.core.on
 import mu.KotlinLogging
 import org.jetbrains.exposed.sql.transactions.transaction
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.db.guild.Features
 import pw.modder.answernator.db.guild.Mute
+import pw.modder.answernator.db.guild.Mutes
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
 import java.util.*
 
 private val logger = KotlinLogging.logger {}
-@DiskordDsl
-fun Bot.muteService() {
-    userJoinedGuild {
-        val memberId = it.user?.id ?: run {
-            logger.error { "Mute Checker: ${it.guildId}, no user object, can't apply mute role!" }
-            return@userJoinedGuild
-        }
-        val config = Db.getGuildConfig(it.guildId)
-        if (config.muteRole == null) return@userJoinedGuild
+suspend fun Kord.muteService() {
+    on<MemberJoinEvent> {
+        val config = Db.getGuildConfig(guildId)
+        val role = Snowflake(config.muteRole ?: return@on)
 
-        if (!Db.isMuted(it.guildId, memberId)) return@userJoinedGuild
-
-        clientStore.guilds[it.guildId].addMemberRole(userId = memberId, roleId = config.muteRole!!)
-        logger.debug { "Member muted automatically: Guild ${it.guildId}, User ${it.user?.username} ID ${it.user?.id}" }
+        if (!Db.isMuted(guildId, member.id)) return@on
+        member.addRole(role)
+        logger.debug { "Member muted automatically: Guild ${guildId}, User ${member.username} ID ${member.id}" }
     }
 
-    guildMemberUpdated { update ->
-        val config = Db.getConfig(update.guildId)
-        val roleId = config.muteRole ?: return@guildMemberUpdated
-
-        val client = clientStore.guilds[update.guildId]
+    on<MemberUpdateEvent> {
+        val config = Db.getConfig(guildId)
+        val role = Snowflake(config.muteRole ?: return@on)
         val texts = CommandLocaleBundle("mute", Locale(config.lang))
+        val hasRole = member.roleIds.any { it == role }
 
-        val mute = Db.getMute(update.guildId, update.user.id)
-
-        if (update.roles.any { it == roleId } && mute == null) {
-            if (config.isEnabled(Features.LOG_MUTE) && config.memberMuteLogChannel != null) {
-                if (isMe(update.user)) {
-                    clientStore.channels[config.memberMuteLogChannel!!].sendMessage(
-                        texts.formatString("muted.self", update.user.mention)
-                    )
-                    return@guildMemberUpdated
-                }
+        if (hasRole && member.id == kord.selfId) {
+            rest.channel.createMessage(Snowflake(config.memberMuteLogChannel ?: return@on)) {
+                content = texts.formatString("muted.self", member.mention)
             }
-
-            client.addMemberRole(update.user.id, roleId)
-            Mute.new {
-                guild = update.guildId
-                memberId = update.user.id
-            }
-            clientStore.channels[config.memberMuteLogChannel!!].sendMessage(
-                texts.formatString(
-                    "muted",
-                    update.user.mention,
-                    texts.getRandomString("reason")
-                )
-            )
-
-            return@guildMemberUpdated
+            return@on
         }
 
-        if (update.roles.none { it == roleId } && mute != null) {
-            client.removeMemberRole(update.user.id, roleId)
-            transaction { mute.delete() }
-            if (config.isEnabled(Features.LOG_UNMUTE) && config.memberUnmuteLogChannel != null) {
-                clientStore.channels[config.memberUnmuteLogChannel!!].sendMessage(
-                    String.format(
-                        texts.getString("unmuted"),
-                        update.user.mention
-                    ))
+        val mute = Db.getMute(guildId, member.id)
+        // if isMuted and hasRole OR !isMuted and !hasRole
+        if ((mute != null) == hasRole)
+            return@on
+
+        if (mute == null) {
+            transaction {
+                Mute.new {
+                    guild = guildId.asString
+                    memberId = member.id.asString
+                }
+            }
+            if (config.isEnabled(Features.LOG_MUTE))
+                rest.channel.createMessage(Snowflake(config.memberMuteLogChannel ?: return@on)) {
+                    content = texts.formatString(
+                        "muted",
+                        member.mention,
+                        texts.getRandomString("reason")
+                    )
+                }
+            return@on
+        }
+
+        transaction { mute.delete() }
+        if (config.isEnabled(Features.LOG_UNMUTE)) {
+            rest.channel.createMessage(Snowflake(config.memberUnmuteLogChannel ?: return@on)) {
+                content = String.format(
+                    texts.getString("unmuted"),
+                    member.mention
+                )
             }
         }
     }

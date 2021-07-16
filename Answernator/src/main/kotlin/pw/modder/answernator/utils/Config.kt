@@ -4,9 +4,10 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonConfiguration
 import java.io.File
 import java.util.*
+
+private val JSON = Json
 
 @Serializable
 open class Config(
@@ -25,7 +26,7 @@ open class Config(
         val DEFAULT = Config()
 
         fun loadFrom(file: File): Config {
-            return Json(JsonConfiguration.Stable).parse(serializer(), file.readText(Charsets.UTF_8))
+            return JSON.parse(serializer(), file.readText(Charsets.UTF_8))
         }
     }
 }

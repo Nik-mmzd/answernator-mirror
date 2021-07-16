@@ -9,7 +9,7 @@ import dev.kord.core.on
 import dev.kord.gateway.UpdateStatus
 import pw.modder.answernator.utils.Globals
 
-fun Kord.defaultStatusService() {
+suspend fun Kord.defaultStatusService() {
     on<ReadyEvent> {
         gateway.send(UpdateStatus(
             status = PresenceStatus.Online,

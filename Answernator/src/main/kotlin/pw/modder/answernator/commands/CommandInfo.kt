@@ -1,18 +1,13 @@
 package pw.modder.answernator.commands
 
-import com.jessecorbett.diskord.api.model.Message
-import com.jessecorbett.diskord.dsl.Bot
-import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
-import com.jessecorbett.diskord.dsl.field
-import com.jessecorbett.diskord.util.authorId
-import com.jessecorbett.diskord.util.words
+import dev.kord.core.behavior.reply
+import dev.kord.core.entity.Message
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.CommandList
-import pw.modder.answernator.utils.extensions.bot.getMe
-import pw.modder.answernator.utils.extensions.computePermissions
+import pw.modder.answernator.utils.extensions.kord.guildId
+import pw.modder.answernator.utils.extensions.kord.reply
 import java.util.*
-import com.jessecorbett.diskord.dsl.message as dslmessage
 
 class CommandInfo: Command {
     private fun getCommandTypeString(command: Command): String {
@@ -44,30 +39,38 @@ class CommandInfo: Command {
     override fun getDescription(locale: Locale): String? {
         return "command debug info"
     }
-    override suspend fun action(bot: Bot, message: Message, locale: Locale): CombinedMessageEmbed {
-        if (message.words.size == 1) return textMessage("No command specified")
-        val cmd = CommandList.commands.singleOrNull { it.name == message.words[1] }
-            ?: return textMessage("Command `${message.words[1]}` not found")
 
-        val client = message.guildId?.run { bot.clientStore.guilds[this] }
-        val botPerms = client?.getMember(bot.getMe().id)?.computePermissions(client, bot.getMe().id)
-        val memberPerms = client?.run { message.partialMember?.computePermissions(this, message.authorId) }
-        return dslmessage {
+    override suspend fun action(message: Message, args: List<String>, locale: Locale) {
+        if (args.isEmpty()) {
+            message.reply("No command specified")
+            return
+        }
+        val cmd = CommandList.commands.singleOrNull { it.name == args.first() }
+        if (cmd == null) {
+            message.reply("Command `${args.first()}` not found")
+            return
+        }
+
+        message.reply { embed {
             title = "Command information"
 
-            field("Command name", cmd.name, true)
-            field("Command publicity", getCommandTypeString(cmd), true)
-            field("Command channel types", getCommandChannelTypeString(cmd), true)
-            cmd.requiredPermission?.run {
-                field("Required bot permission", name, true)
-                if (botPerms != null) field("Bot can run", botPerms.contains(this).toBoolString(), true)
+            field("Command name", true) { getCommandTypeString(cmd) }
+            field("Command publicity", true) { getCommandTypeString(cmd) }
+            field("Command channel types", true) { getCommandChannelTypeString(cmd) }
+
+            cmd.requiredPermission?.run cmd@{
+                field("Required bot permission", true) { this.toString() }
+                message.getGuildOrNull()?.getMemberOrNull(message.kord.selfId)?.getPermissions()?.run {
+                    field("Bot can run", true) { contains(this@cmd).toBoolString() }
+                }
             }
-            memberPerms?.run {
-                field("Member can use", cmd.check(message, this).toBoolString(), true)
+            message.getAuthorAsMember()?.getPermissions()?.run {
+                field("Member can use", true) { cmd.check(message).toBoolString() }
             }
-            if (message.guildId != null) {
-                field("Is blacklisted", Db.isBlackListed(message.guildId!!, cmd.name).toBoolString(), true)
+
+            message.guildId?.run {
+                field("Is blacklisted", true) { Db.isBlackListed(this, cmd.name).toBoolString() }
             }
-        }
+        } }
     }
 }

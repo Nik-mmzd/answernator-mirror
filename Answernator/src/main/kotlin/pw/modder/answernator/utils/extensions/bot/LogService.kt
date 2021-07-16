@@ -1,90 +1,102 @@
 package pw.modder.answernator.utils.extensions.bot
 
-import com.jessecorbett.diskord.api.model.AuditLogActionType
-import com.jessecorbett.diskord.dsl.Bot
-import com.jessecorbett.diskord.dsl.DiskordDsl
-import com.jessecorbett.diskord.util.mention
-import com.jessecorbett.diskord.util.sendMessage
+import dev.kord.common.entity.AuditLogEvent
+import dev.kord.common.entity.Snowflake
+import dev.kord.core.Kord
+import dev.kord.core.behavior.getAuditLogEntries
+import dev.kord.core.event.guild.BanAddEvent
+import dev.kord.core.event.guild.BanRemoveEvent
+import dev.kord.core.event.guild.MemberJoinEvent
+import dev.kord.core.event.guild.MemberLeaveEvent
+import dev.kord.core.on
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.firstOrNull
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.db.guild.Features
-import pw.modder.answernator.utils.extensions.getAuditLog
 import pw.modder.answernator.utils.extensions.toUserMention
 import pw.modder.answernator.utils.locale.LocaleBundle
 import java.util.*
 
-@DiskordDsl
-fun Bot.logService() {
-    userBanned { ban ->
-
-        val config = Db.getLogConfig(ban.guildId)
-        if (!config.isEnabled(Features.LOG_BAN)) return@userBanned
-        if (config.memberBanLogChannel == null) return@userBanned
-
-        val client = clientStore.channels[config.memberBanLogChannel!!]
-        val auditLog = clientStore.guilds[ban.guildId].getAuditLog(true).entries
-            .firstOrNull { it.targetId == ban.user.id && it.actionType == AuditLogActionType.MEMBER_BAN_ADD.code }
-            ?: run {
-                delay(5000L)
-                clientStore.guilds[ban.guildId].getAuditLog(true).entries
-                    .firstOrNull { it.targetId == ban.user.id && it.actionType == AuditLogActionType.MEMBER_BAN_ADD.code }
-            }
-
+suspend fun Kord.logService() {
+    on<BanAddEvent> {
+        val config = Db.getLogConfig(guildId)
+        if (!config.isEnabled(Features.LOG_BAN)) return@on
+        val banChannel = Snowflake(config.memberBanLogChannel ?: return@on)
         val texts = LocaleBundle("botGlobal", Locale(config.lang))
+        val reasonParts = getBanOrNull()?.reason?.split('|', limit = 2)
 
-        val reasonParts = auditLog?.reason?.split('|', limit = 2)
+        if (reasonParts?.size == 2 && reasonParts.last().isNotEmpty()) {
+            rest.channel.createMessage(banChannel) {
+                content = texts.formatString("bot.log.ban.reason", user.mention, reasonParts[0].toUserMention(), reasonParts[1])
+            }
+            return@on
+        }
+
+        delay(1000L)
+        val auditLog = guild.getAuditLogEntries {
+            this.action = AuditLogEvent.MemberBanAdd
+        }.firstOrNull { it.targetId == user.id }
+
         when {
             // if no audit log we do not know who banned the user. "User AA was banned"
-            auditLog == null -> client.sendMessage(texts.formatString("bot.log.ban.unknown", ban.user.mention))
+            auditLog == null -> rest.channel.createMessage(banChannel) {
+                content = texts.formatString("bot.log.ban.unknown", user.mention)
+            }
             // we have audit log and know who banned a user but have no reason
-            reasonParts == null || reasonParts.isEmpty() -> client.sendMessage(texts.formatString("bot.log.ban.noreason", ban.user.mention, auditLog.userId.toUserMention()))
+            reasonParts == null || reasonParts.isEmpty() -> rest.channel.createMessage(banChannel) {
+                content = texts.formatString("bot.log.ban.noreason", user.mention, auditLog.userId.asString.toUserMention())
+            }
             // seems like it's not a bot format but a reason itself
-            reasonParts.size == 1 -> client.sendMessage(texts.formatString("bot.log.ban.reason", ban.user.mention, auditLog.userId.toUserMention(), auditLog.reason))
+            reasonParts.size == 1 -> rest.channel.createMessage(banChannel) {
+                content = texts.formatString("bot.log.ban.reason", user.mention, auditLog.userId.asString.toUserMention(), auditLog.reason!!)
+            }
             // wtf? We have a reason in bot format, but reason is empty.
-            reasonParts[1].isEmpty() -> client.sendMessage(texts.formatString("bot.log.ban.noreason", ban.user.mention, reasonParts[0].toUserMention()))
-            // bot format, we know all data
-            else -> client.sendMessage(texts.formatString("bot.log.ban.reason", ban.user.mention, reasonParts[0].toUserMention(), reasonParts[1]))
+            else -> rest.channel.createMessage(banChannel) {
+                content = texts.formatString("bot.log.ban.noreason", user.mention, reasonParts[0].toUserMention())
+            }
         }
     }
-    userUnbanned { unBan ->
-        val config = Db.getLogConfig(unBan.guildId)
-        if (!config.isEnabled(Features.LOG_UNBAN)) return@userUnbanned
-        if (config.memberUnbanLogChannel == null) return@userUnbanned
 
-        val auditLog = clientStore.guilds[unBan.guildId].getAuditLog(true).entries
-            .firstOrNull { it.targetId == unBan.user.id && it.actionType == AuditLogActionType.MEMBER_BAN_REMOVE.code }
-            ?: run {
-                delay(5000L)
-                clientStore.guilds[unBan.guildId].getAuditLog(true).entries
-                    .firstOrNull { it.targetId == unBan.user.id && it.actionType == AuditLogActionType.MEMBER_BAN_REMOVE.code }
+    on<BanRemoveEvent> {
+        val config = Db.getLogConfig(guildId)
+        if (!config.isEnabled(Features.LOG_UNBAN)) return@on
+        val channel = Snowflake(config.memberUnbanLogChannel ?: return@on)
+
+        delay(1000L)
+        val auditLog = guild.getAuditLogEntries {
+            action = AuditLogEvent.MemberBanRemove
+        }.firstOrNull { it.targetId == user.id }
+        val texts = LocaleBundle("botGlobal", Locale(config.lang))
+
+        when(auditLog) {
+            null -> rest.channel.createMessage(channel) {
+                content = texts.formatString("bot.log.unban", user.mention)
             }
-
-        val texts = LocaleBundle("botGlobal", Locale(config.lang))
-        clientStore.channels[config.memberUnbanLogChannel!!].sendMessage(
-            if (auditLog == null)
-                texts.formatString("bot.log.unban", unBan.user.mention)
-            else
-                texts.formatString("bot.log.unban.full", unBan.user.mention, auditLog.userId.toUserMention())
-        )
+            else -> rest.channel.createMessage(channel) {
+                content = texts.formatString("bot.log.unban.full", user.mention, auditLog.userId.asString.toUserMention())
+            }
+        }
     }
-    userJoinedGuild { memberJoin ->
-        val config = Db.getLogConfig(memberJoin.guildId)
-        if (!config.isEnabled(Features.LOG_JOIN)) return@userJoinedGuild
-        if (config.memberJoinLogChannel == null) return@userJoinedGuild
 
+    on<MemberJoinEvent> {
+        val config = Db.getLogConfig(guildId)
+        if (!config.isEnabled(Features.LOG_JOIN)) return@on
+        val channel = Snowflake(config.memberJoinLogChannel ?: return@on)
         val texts = LocaleBundle("botGlobal", Locale(config.lang))
-        clientStore.channels[config.memberJoinLogChannel!!].sendMessage(
-            texts.formatString("bot.log.member.join", memberJoin.user?.mention ?: "??!? O_o")
-        )
+
+        rest.channel.createMessage(channel) {
+            content = texts.formatString("bot.log.member.join", member.mention)
+        }
     }
-    userLeftGuild { memberLeave ->
-        val config = Db.getLogConfig(memberLeave.guildId)
-        if (!config.isEnabled(Features.LOG_LEAVE)) return@userLeftGuild
-        if (config.memberLeaveLogChannel == null) return@userLeftGuild
 
+    on<MemberLeaveEvent> {
+        val config = Db.getLogConfig(guildId)
+        if (!config.isEnabled(Features.LOG_LEAVE)) return@on
+        val channel = Snowflake(config.memberJoinLogChannel ?: return@on)
         val texts = LocaleBundle("botGlobal", Locale(config.lang))
-        clientStore.channels[config.memberLeaveLogChannel!!].sendMessage(
-            texts.formatString("bot.log.member.leave", memberLeave.user.mention)
-        )
+
+        rest.channel.createMessage(channel) {
+            content = texts.formatString("bot.log.member.leave", user.mention)
+        }
     }
 }

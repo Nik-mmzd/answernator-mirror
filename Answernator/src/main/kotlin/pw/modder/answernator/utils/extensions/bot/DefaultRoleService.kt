@@ -7,7 +7,7 @@ import dev.kord.core.on
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.db.guild.Features
 
-fun Kord.defaultRoleService() {
+suspend fun Kord.defaultRoleService() {
     on<MemberJoinEvent> {
         val config = Db.getGuildConfig(guildId.asString)
         if (!config.isEnabled(Features.DEFAULT_ROLE)) return@on

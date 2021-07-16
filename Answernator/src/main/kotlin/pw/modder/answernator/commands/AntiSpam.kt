@@ -1,17 +1,15 @@
 package pw.modder.answernator.commands
 
-import com.jessecorbett.diskord.api.model.Message
-import com.jessecorbett.diskord.dsl.Bot
-import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
-import com.jessecorbett.diskord.dsl.field
-import com.jessecorbett.diskord.util.words
+import dev.kord.core.behavior.reply
+import dev.kord.core.entity.Guild
+import dev.kord.core.entity.Message
 import org.jetbrains.exposed.sql.transactions.transaction
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.db.guild.Features
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedGuildCommand
+import pw.modder.answernator.utils.extensions.kord.reply
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
-import com.jessecorbett.diskord.dsl.message as dslmessage
 
 class AntiSpam: LocalizedGuildCommand {
     override val name = "antispam"
@@ -19,19 +17,16 @@ class AntiSpam: LocalizedGuildCommand {
     override val userGroup = Command.UserGroup.ADMIN
     override val cmdType = Command.CommandGroup.ADMIN
 
-    override suspend fun action(
-        bot: Bot,
-        message: Message,
-        texts: CommandLocaleBundle,
-        guildId: String
-    ): CombinedMessageEmbed {
-        val config = Db.getAntiSpamConfig(guildId)
+    override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle) {
+        val config = Db.getAntiSpamConfig(guild.id)
 
-        if (message.words.size < 2)
-            return texts.getErrorString().toMessage()
+        if (args.isEmpty()) {
+            message.reply { content = texts.getErrorString() }
+            return
+        }
 
-        return when(message.words[1].toLowerCase()) {
-            "get", "show" -> dslmessage {
+        when(args[0].toLowerCase()) {
+            "get", "show" -> message.reply { embed {
                 title = texts.getString("title")
                 description = texts.formatString("description",
                     texts.getString("enabled.${config.isEnabled(Features.ANTI_SPAM)}"),
@@ -40,60 +35,72 @@ class AntiSpam: LocalizedGuildCommand {
                     config.antiSpamBan
                 )
 
-                field(texts.getString("warn.title"), config.antiSpamWarnText.replace("%1\$s", "%user%"), false)
-                field(texts.getString("ban.title"), config.antiSpamBanText, false)
-            }
+                field(texts.getString("warn.title"), false) { config.antiSpamWarnText.replace("%1\$s", "%user%") }
+                field(texts.getString("ban.title"), false) { config.antiSpamBanText }
+            } }
             "enable" -> {
                 transaction { config.enable(Features.ANTI_SPAM) }
-                texts.getString("enabled").toMessage()
+                message.reply(texts.getString("enabled"))
             }
             "disable" -> {
                 transaction { config.disable(Features.ANTI_SPAM) }
-                texts.getString("disabled").toMessage()
+                message.reply(texts.getString("disabled"))
             }
             "silent" -> {
-                when(message.words.getOrNull(2)) {
+                when(args.getOrNull(1)) {
                     "enable" -> {
                         transaction { config.enable(Features.ANTI_SPAM_SILENT) }
-                        texts.getString("enabled.silent").toMessage()
+                        message.reply(texts.getString("enabled.silent"))
                     }
                     "disable" -> {
                         transaction { config.disable(Features.ANTI_SPAM_SILENT) }
-                        texts.getString("disabled.silent").toMessage()
+                        message.reply(texts.getString("disabled.silent"))
                     }
-                    else -> texts.getErrorString().toMessage()
+                    else -> message.reply(texts.getErrorString())
                 }
             }
             "warning", "warn" -> {
-                val warn = message.words.drop(2).joinToString(separator = " ").replace("%user%", "%1\$s")
-                if (warn.isEmpty()) return texts.getString("warn.empty").toMessage()
+                val warn = args.drop(1).joinToString(separator = " ").replace("%user%", "%1\$s")
+                if (warn.isEmpty()) {
+                    message.reply(texts.getString("warn.empty"))
+                    return
+                }
                 transaction { config.antiSpamWarnText = warn }
-                texts.getString("warn.set").toMessage()
+                message.reply(texts.getString("warn.set"))
             }
             "reason", "ban" -> {
-                val ban = message.words.drop(2).joinToString(separator = " ")
-                if (ban.isEmpty()) return texts.getString("ban.empty").toMessage()
+                val ban = args.drop(1).joinToString(separator = " ")
+                if (ban.isEmpty()) {
+                    message.reply(texts.getString("ban.empty"))
+                    return
+                }
                 transaction { config.antiSpamBanText = ban }
-                texts.getString("ban.set").toMessage()
+                message.reply(texts.getString("ban.set"))
             }
             "limit" -> {
-                when(message.words.getOrNull(2)) {
+                when(args.getOrNull(1)) {
                     "ban" -> {
-                        val limit = message.words.getOrNull(3)?.toInt()?.takeIf { it > 1 }
-                            ?: return texts.getString("limit.invalid").toMessage()
+                        val limit = args.getOrNull(2)?.toInt()?.takeIf { it > 1 }
+                        if (limit == null) {
+                            message.reply(texts.getString("limit.invalid"))
+                            return
+                        }
                         transaction { config.antiSpamBan = limit }
-                        texts.formatString("limit.ban", limit).toMessage()
+                        message.reply(texts.formatString("limit.ban", limit))
                     }
                     "warn", "warning" -> {
-                        val limit = message.words.getOrNull(3)?.toInt()?.takeIf { it > 1 }
-                            ?: return texts.getString("limit.invalid").toMessage()
+                        val limit = args.getOrNull(2)?.toInt()?.takeIf { it > 1 }
+                        if (limit == null) {
+                            message.reply(texts.getString("limit.invalid"))
+                            return
+                        }
                         transaction { config.antiSpamWarn = limit }
-                        texts.formatString("limit.warn", limit).toMessage()
+                        message.reply(texts.formatString("limit.warn", limit))
                     }
-                    else -> texts.getErrorString().toMessage()
+                    else -> message.reply(texts.getErrorString())
                 }
             }
-            else -> texts.getErrorString().toMessage()
+            else -> message.reply(texts.getErrorString())
         }
     }
 }

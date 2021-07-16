@@ -1,6 +1,5 @@
 package pw.modder.answernator.utils.locale
 
-import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.UTF8Control
 import java.util.*
@@ -49,10 +48,6 @@ class LocaleBundle private constructor(override val name: String, override val l
 
     override fun formatNullableString(key: String, vararg args: Any): String? {
         return getNullableString(key)?.format(*args)
-    }
-
-    fun String.toMessage(): CombinedMessageEmbed {
-        return CombinedMessageEmbed(text = this)
     }
 }
 

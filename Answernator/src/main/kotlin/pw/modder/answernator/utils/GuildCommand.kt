@@ -1,20 +1,19 @@
 package pw.modder.answernator.utils
 
-import com.jessecorbett.diskord.api.model.Message
-import com.jessecorbett.diskord.dsl.Bot
-import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
+import dev.kord.core.entity.Guild
+import dev.kord.core.entity.Message
 import java.util.*
 
 interface GuildCommand: Command {
     override val channels: EnumSet<Command.ChannelTypes>
         get() = EnumSet.of(Command.ChannelTypes.GUILD)
 
-    override suspend fun action(bot: Bot, message: Message, locale: Locale): CombinedMessageEmbed {
-        when (val gid = message.guildId) {
+    override suspend fun action(message: Message, args: List<String>, locale: Locale) {
+        when (val guild = message.getGuildOrNull()) {
             null -> throw Exception("Guild not found, but command is guild only")
-            else -> return action(bot, message, locale, gid)
+            else -> action(message, args, guild, locale)
         }
     }
 
-    suspend fun action(bot: Bot, message: Message, locale: Locale, guildId: String): CombinedMessageEmbed
+    suspend fun action(message: Message, args: List<String>, guild: Guild, locale: Locale)
 }

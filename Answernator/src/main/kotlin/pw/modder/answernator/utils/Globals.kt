@@ -2,7 +2,6 @@ package pw.modder.answernator.utils
 
 import io.ktor.client.HttpClient
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonConfiguration
 import java.io.File
 import kotlin.random.Random
 
@@ -13,7 +12,7 @@ object Globals {
     init {
         val configFile = File(configFileName)
         if (!configFile.exists()) {
-            configFile.writeText(Json(JsonConfiguration.Stable.copy(prettyPrint = true)).stringify(Config.serializer(), Config.DEFAULT))
+            configFile.writeText(Json { prettyPrint = true }.stringify(Config.serializer(), Config.DEFAULT))
             throw Exception("Missing config")
         }
         config = Config.loadFrom(configFile)
