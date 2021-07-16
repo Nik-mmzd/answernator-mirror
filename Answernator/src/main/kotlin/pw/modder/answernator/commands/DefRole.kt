@@ -1,52 +1,49 @@
 package pw.modder.answernator.commands
 
-import com.jessecorbett.diskord.api.model.Message
-import com.jessecorbett.diskord.api.model.Permission
-import com.jessecorbett.diskord.api.model.Permissions
-import com.jessecorbett.diskord.dsl.Bot
-import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
-import com.jessecorbett.diskord.util.GuildClients
-import com.jessecorbett.diskord.util.mention
-import com.jessecorbett.diskord.util.words
-import pw.modder.answernator.cache.GuildCache.getCached
+import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Snowflake
+import dev.kord.core.entity.Guild
+import dev.kord.core.entity.Member
+import dev.kord.core.entity.Message
+import kotlinx.coroutines.flow.collect
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.utils.Command
-import pw.modder.answernator.utils.LocalizedCommand
-import pw.modder.answernator.utils.extensions.isAdmin
+import pw.modder.answernator.utils.LocalizedGuildCommand
+import pw.modder.answernator.utils.extensions.kord.reply
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
-import java.util.*
 
-class DefRole: LocalizedCommand {
+class DefRole: LocalizedGuildCommand {
     override val name = "defrole"
-    override val channels = EnumSet.of(Command.ChannelTypes.GUILD)
     override val userGroup = Command.UserGroup.PERMISSION
-    override val permission = Permission.MANAGE_MESSAGES
+    override val permission = Permission.ManageMessages
     override val cmdType = Command.CommandGroup.MODER
-    override val requiredPermission: Permission? = Permission.MANAGE_ROLES
+    override val requiredPermission: Permission? = Permission.ManageRoles
 
-    override suspend fun action(bot: Bot, message: Message, texts: CommandLocaleBundle): CombinedMessageEmbed {
-        val gid = message.guildId ?: return texts.getErrorString().toMessage()
-        val guild = bot.clientStore.guilds[gid]
-        val config = Db.getGuildConfig(gid)
+    override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle) {
+        val config = Db.getGuildConfig(guild.id)
 
-        if (config.defaultRole == null)
-            return texts.getString("not.configured").toMessage()
-
-        val add = when(message.words.getOrNull(1)) {
-            "add" -> true
-            "remove" -> false
-            else -> return texts.getErrorString().toMessage()
+        if (config.defaultRole == null) {
+            message.reply(texts.getString("not.configured"))
+            return
         }
 
-        val guildObject = guild.getCached()
-        val mentionedUsers = message.usersMentioned.filterNot { guild.getMember(it.id).isAdmin(guildObject, it.id) }
-
-        mentionedUsers.forEach {
-            when(add) {
-                true -> guild.addMemberRole(it.id, config.defaultRole!!)
-                false -> guild.removeMemberRole(it.id, config.defaultRole!!)
+        val add = when(args.firstOrNull()) {
+            "add", "a", "set", "give" -> true
+            "remove", "rm", "r", "delete", "del", "take" -> false
+            else -> {
+                message.reply(texts.getErrorString())
+                return
             }
         }
-        return textMessage(texts.formatString("done.$add", mentionedUsers.joinToString(" ") { it.mention }))
+
+        val members = mutableListOf<Member>()
+        message.mentionedUsers.collect {
+            when(add) {
+                true -> it.asMemberOrNull(guild.id)?.also { members.add(it) }?.addRole(Snowflake(config.defaultRole!!), "Given with defrole by ${message.data.author.username}")
+                false -> it.asMemberOrNull(guild.id)?.also { members.add(it) }?.removeRole(Snowflake(config.defaultRole!!), "Took with defrole by ${message.data.author.username}")
+            }
+        }
+
+        message.reply(texts.formatString("done.$add", members.joinToString(" ") { it.mention }))
     }
 }

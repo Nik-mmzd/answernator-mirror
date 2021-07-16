@@ -1,48 +1,38 @@
 package pw.modder.answernator.commands
 
-import com.jessecorbett.diskord.api.model.Message
-import com.jessecorbett.diskord.api.model.Permission
-import com.jessecorbett.diskord.api.model.Permissions
-import com.jessecorbett.diskord.dsl.Bot
-import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
-import com.jessecorbett.diskord.dsl.field
-import com.jessecorbett.diskord.util.authorId
-import com.jessecorbett.diskord.util.words
-import org.jetbrains.exposed.sql.transactions.transaction
+import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Permissions
+import dev.kord.core.behavior.reply
+import dev.kord.core.entity.Message
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.CommandList
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.LocalizedCommand
-import pw.modder.answernator.utils.extensions.computePermissions
 import pw.modder.answernator.utils.extensions.joinToStrings
+import pw.modder.answernator.utils.extensions.kord.guildId
 import pw.modder.answernator.utils.extensions.removeGraves
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
-import java.util.*
-import com.jessecorbett.diskord.dsl.message as dslmessage
 
 class Help: LocalizedCommand {
     override val name: String = "help"
     override val cmdType = Command.CommandGroup.USER
 
-    override suspend fun action(bot: Bot, message: Message, texts: CommandLocaleBundle): CombinedMessageEmbed {
-        val guildClient = message.guildId?.run { bot.clientStore.guilds[this] }
-        if (message.words.size == 1) {
-            val permissions = when (guildClient) {
-                null -> Permissions.NONE
-                else -> message.partialMember?.computePermissions(guildClient, message.authorId) ?: Permissions.NONE
-            }
-            val blacklist = when(guildClient) {
+    override suspend fun action(message: Message, args: List<String>, texts: CommandLocaleBundle) {
+        if (args.isEmpty()) {
+            val permissions = message.getGuildOrNull()?.permissions ?: Permissions()
+
+            val blacklist = when(message.guildId) {
                 null -> listOf()
-                else -> Db.getBlackListed(guildClient.guildId)
+                else -> Db.getBlacklisted(message.guildId!!)
             }
 
-            val cmds = when(permissions.contains(Permission.ADMINISTRATOR)) {
-                true -> CommandList.commands.filter { it.check(message, permissions) }.groupBy { it.cmdType }
-                false -> CommandList.commands.filterNot { it.name in blacklist }.filter { it.check(message, permissions) }.groupBy { it.cmdType }
+            val cmds = when(permissions.contains(Permission.Administrator)) {
+                true -> CommandList.commands.filter { it.check(message) }.groupBy { it.cmdType }
+                false -> CommandList.commands.filterNot { it.name in blacklist }.filter { it.check(message) }.groupBy { it.cmdType }
             }
 
-            return dslmessage {
+            message.reply { embed {
                 title = texts.getString("title_cmdlist")
                 description = texts.getString("cmdlist.usage")
 
@@ -50,32 +40,35 @@ class Help: LocalizedCommand {
                     if (cmds.isEmpty()) return@forEach
                     cmds.map { it.getDescription(texts.locale)?.run { "`${Globals.config.prefix}${it.name}`: $this" }
                         ?: "`${Globals.config.prefix}${it.name}`" }.joinToStrings(1024, "\n").forEach {
-                        field(
-                            texts.getString("cmdlist.${cmdType.name}"),
-                            it,
-                            inline = false
-                        )
+                        field( texts.getString("cmdlist.${cmdType.name}"), false) { it }
                     }
                 }
-            }
+            } }
+            return
         }
 
-        val cmd = CommandList.commands.singleOrNull { it.name == message.words[1].toLowerCase() }
-            ?: return dslmessage {
-                title = texts.formatString("title", message.words[1].removeGraves())
-                description = texts.formatString("not_found", message.words[1].removeGraves())
-            }
+        val cmd = CommandList.commands.singleOrNull { it.name == args.first().toLowerCase() }
+        if (cmd == null) {
+            message.reply { embed {
+                title = texts.formatString("title", args.first().removeGraves())
+                description = texts.formatString("not_found", args.first().removeGraves())
+            } }
+            return
+        }
 
-        if (message.authorId != Globals.config.author && !cmd.check(message, bot.clientStore.guilds)) return dslmessage {
-            title = texts.formatString("title", message.words[1])
-            description = texts.getString("no_permissions")
+        if (message.data.author.id.asString != Globals.config.author && !cmd.check(message)) {
+            message.reply { embed {
+                title = texts.formatString("title", args.first())
+                description = texts.getString("no_permissions")
+            } }
+            return
         }
 
         val help = cmd.getHelp(texts.locale)
         val desc = cmd.getDescription(texts.locale)
-        return dslmessage {
-            title = texts.formatString("title", message.words[1])
+        message.reply { embed {
+            title = texts.formatString("title", args.first())
             description = if (help.isNullOrEmpty() || desc.isNullOrEmpty()) texts.getString("not_available") else "$desc\n$help"
-        }
+        } }
     }
 }

@@ -1,10 +1,9 @@
 package pw.modder.answernator.commands
 
-import com.jessecorbett.diskord.api.model.Message
-import com.jessecorbett.diskord.dsl.Bot
-import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
+import dev.kord.core.entity.Message
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.CommandList
+import pw.modder.answernator.utils.extensions.kord.reply
 import java.util.*
 
 class Reload: Command {
@@ -20,8 +19,8 @@ class Reload: Command {
         return "reload bot"
     }
 
-    override suspend fun action(bot: Bot, message: Message, locale: Locale): CombinedMessageEmbed {
+    override suspend fun action(message: Message, args: List<String>, locale: Locale) {
         CommandList.load()
-        return textMessage("Reloaded. Loaded ${CommandList.commands.size} commands.")
+        message.reply("Reloaded. Loaded ${CommandList.commands.size} commands.")
     }
 }

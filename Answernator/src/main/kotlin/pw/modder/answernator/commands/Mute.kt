@@ -1,12 +1,8 @@
 package pw.modder.answernator.commands
 
-import com.jessecorbett.diskord.api.model.Message
-import com.jessecorbett.diskord.api.model.Permission
-import com.jessecorbett.diskord.dsl.Bot
-import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
-import com.jessecorbett.diskord.util.mention
-import com.jessecorbett.diskord.util.sendMessage
-import com.jessecorbett.diskord.util.words
+import dev.kord.common.entity.Permission
+import dev.kord.core.entity.Guild
+import dev.kord.core.entity.Message
 import mu.KotlinLogging
 import org.jetbrains.exposed.sql.SizedCollection
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -15,9 +11,7 @@ import pw.modder.answernator.db.Db
 import pw.modder.answernator.db.guild.Mute as MuteDb
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedGuildCommand
-import pw.modder.answernator.utils.extensions.bot.isMe
 import pw.modder.answernator.utils.extensions.extractMentionedId
-import pw.modder.answernator.utils.extensions.isAdmin
 import pw.modder.answernator.utils.extensions.isUserMention
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
 import java.util.*
@@ -26,10 +20,15 @@ private val logger = KotlinLogging.logger {  }
 class Mute: LocalizedGuildCommand {
     override val name = "mute"
     override val userGroup = Command.UserGroup.PERMISSION
-    override val permission = Permission.MANAGE_MESSAGES
+    override val permission = Permission.ManageMessages
     override val cmdType = Command.CommandGroup.MODER
     override val channels = EnumSet.of(Command.ChannelTypes.GUILD)
-    override val requiredPermission: Permission? = Permission.MANAGE_ROLES
+
+    override val requiredPermission: Permission? = Permission.ManageRoles
+
+    override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle) {
+        TODO("Not yet implemented")
+    }
 
     override suspend fun action(
         bot: Bot,

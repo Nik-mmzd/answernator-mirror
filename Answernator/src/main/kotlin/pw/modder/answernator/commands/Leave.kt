@@ -1,10 +1,10 @@
 package pw.modder.answernator.commands
 
-import com.jessecorbett.diskord.api.model.Message
-import com.jessecorbett.diskord.dsl.Bot
-import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
-import com.jessecorbett.diskord.util.words
+import dev.kord.core.entity.Message
+import dev.kord.core.firstOrNull
+import kotlinx.coroutines.flow.toList
 import pw.modder.answernator.utils.Command
+import pw.modder.answernator.utils.extensions.kord.reply
 import java.util.*
 
 class Leave: Command {
@@ -19,16 +19,20 @@ class Leave: Command {
         return "leave any server"
     }
 
-    override suspend fun action(bot: Bot, message: Message, locale: Locale): CombinedMessageEmbed {
-        return try {
-            bot.clientStore.guilds[message.words[1]].leave()
-            textMessage("Done.")
-        } catch (e: Exception) {
-            textMessage(bot.clientStore.discord.getGuilds()
-                .joinToString("\n", prefix = "${getHelp(locale)}\nAvailable guilds:\n") {
-                    "${it.name}: `${it.id}`"
-                }
-            )
+    override suspend fun action(message: Message, args: List<String>, locale: Locale) {
+        if (args.isEmpty()) {
+            message.reply(message.kord.guilds.toList().joinToString("\n", prefix = "${getHelp(locale)}\nAvailable guilds:\n") {
+                "${it.name}: `${it.id}`"
+            })
+            return
         }
+        val guild = message.kord.guilds.firstOrNull { it.id.asString == args.first() }
+        if (guild == null) {
+            message.reply("Guild not found")
+            return
+        }
+
+        guild.leave()
+        message.reply("Done. Left guild ${guild.name}")
     }
 }

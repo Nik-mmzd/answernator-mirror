@@ -1,58 +1,64 @@
 package pw.modder.answernator.commands
 
-import com.jessecorbett.diskord.api.model.Message
-import com.jessecorbett.diskord.dsl.Bot
-import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
-import com.jessecorbett.diskord.dsl.field
-import com.jessecorbett.diskord.util.words
+import dev.kord.core.behavior.reply
+import dev.kord.core.entity.Guild
+import dev.kord.core.entity.Message
 import org.jetbrains.exposed.sql.transactions.transaction
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.db.guild.Features
 import pw.modder.answernator.db.guild.LogConfig
 import pw.modder.answernator.utils.Command
-import pw.modder.answernator.utils.LocalizedCommand
-import pw.modder.answernator.utils.extensions.channelsIdsMentioned
+import pw.modder.answernator.utils.LocalizedGuildCommand
 import pw.modder.answernator.utils.extensions.isChannelMention
+import pw.modder.answernator.utils.extensions.kord.reply
 import pw.modder.answernator.utils.extensions.toChannelMention
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
 import java.util.*
-import com.jessecorbett.diskord.dsl.message as dslmessage
 
-class Log: LocalizedCommand {
+class Log: LocalizedGuildCommand {
     override val name = "log"
     override val userGroup = Command.UserGroup.ADMIN
     override val cmdType = Command.CommandGroup.ADMIN
     override val channels: EnumSet<Command.ChannelTypes> = EnumSet.of(Command.ChannelTypes.GUILD)
 
-    override suspend fun action(bot: Bot, message: Message, texts: CommandLocaleBundle): CombinedMessageEmbed {
-        val guild = message.guildId?.run { bot.clientStore.guilds[this] }
-            ?: return texts.getErrorString().toMessage()
-        val config = Db.getLogConfig(guild.guildId)
-
-        if (message.words.size == 1) return texts.getErrorString().toMessage()
-
-        if (message.words[1].equals("get", true))
-            return dslmessage {
-                title = texts.getString("get.title")
-
-                field(texts.getString("get.memberjoin"), formatField(texts, config, Features.LOG_JOIN, config.memberJoinLogChannel), true)
-                field(texts.getString("get.memberleave"), formatField(texts, config, Features.LOG_LEAVE, config.memberLeaveLogChannel), true)
-                field(texts.getString("get.memberban"), formatField(texts, config, Features.LOG_BAN, config.memberBanLogChannel), true)
-                field(texts.getString("get.memeberunban"), formatField(texts, config, Features.LOG_UNBAN, config.memberUnbanLogChannel), true)
-                field(texts.getString("get.membermute"), formatField(texts, config, Features.LOG_MUTE, config.memberMuteLogChannel), true)
-                field(texts.getString("get.memberunmute"), formatField(texts, config, Features.LOG_UNMUTE, config.memberUnmuteLogChannel), true)
-            }
-
-        if (message.words.size < 3) return texts.getErrorString().toMessage()
-
-        val action = when {
-            message.words[2].equals("enable", true) -> "enable"
-            message.words[2].equals("disable", true) -> "disable"
-            message.channelsIdsMentioned.size == 1 && message.words[2].isChannelMention() -> message.channelsIdsMentioned.single()
-            else -> return texts.getErrorString().toMessage()
+    override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle) {
+        if (args.isEmpty()) {
+            message.reply(texts.getErrorString())
+            return
         }
 
-        return when(message.words[1].toLowerCase()) {
+        val config = Db.getLogConfig(guild.id)
+
+        if (args.first().equals("get", true)) {
+            message.reply { embed {
+                title = texts.getString("get.title")
+
+                field(texts.getString("get.memberjoin"), true) { formatField(texts, config, Features.LOG_JOIN, config.memberJoinLogChannel) }
+                field(texts.getString("get.memberleave"), true) { formatField(texts, config, Features.LOG_LEAVE, config.memberLeaveLogChannel) }
+                field(texts.getString("get.memberban"), true) { formatField(texts, config, Features.LOG_LEAVE, config.memberLeaveLogChannel) }
+                field(texts.getString("get.memeberunban"), true) { formatField(texts, config, Features.LOG_UNBAN, config.memberUnbanLogChannel) }
+                field(texts.getString("get.membermute"), true) { formatField(texts, config, Features.LOG_MUTE, config.memberMuteLogChannel) }
+                field(texts.getString("get.memberunmute"), true) { formatField(texts, config, Features.LOG_UNMUTE, config.memberUnmuteLogChannel) }
+            } }
+            return
+        }
+
+        if (args.size == 1) {
+            message.reply(texts.getErrorString())
+            return
+        }
+
+        val action = when {
+            args[1].equals("enable", true) -> "enable"
+            args[1].equals("disable", true) -> "disable"
+            message.mentionedChannelIds.size == 1 && args[1].isChannelMention() -> message.mentionedChannelIds.single().asString
+            else -> {
+                message.reply(texts.getErrorString())
+                return
+            }
+        }
+
+        message.reply(when(args.first().toLowerCase()) {
             "all" -> when(action) {
                 "enable" -> {
                     transaction {
@@ -63,7 +69,7 @@ class Log: LocalizedCommand {
                         config.enable(Features.LOG_MUTE)
                         config.enable(Features.LOG_UNMUTE)
                     }
-                    return texts.getString("enable.all").toMessage()
+                    texts.getString("enable.all")
                 }
                 "disable" -> {
                     transaction {
@@ -74,7 +80,7 @@ class Log: LocalizedCommand {
                         config.disable(Features.LOG_MUTE)
                         config.disable(Features.LOG_UNMUTE)
                     }
-                    return texts.getString("disable.all").toMessage()
+                    texts.getString("disable.all")
                 }
                 else -> {
                     transaction {
@@ -85,7 +91,7 @@ class Log: LocalizedCommand {
                         config.memberMuteLogChannel = action
                         config.memberUnmuteLogChannel = action
                     }
-                    return texts.formatString("channel.all", action.toChannelMention()).toMessage()
+                    texts.formatString("channel.all", action.toChannelMention())
                 }
             }
             "join" -> process(action, "join", config, texts, Features.LOG_JOIN) {
@@ -107,33 +113,33 @@ class Log: LocalizedCommand {
                 memberUnmuteLogChannel = action
             }
 
-            else -> texts.getErrorString().toMessage()
-        }
+            else -> texts.getErrorString()
+        })
     }
 
     private fun formatField(texts: CommandLocaleBundle, config: LogConfig, feature: Features, channel: String?): String {
         return texts.formatString("get.status", texts.getString("get.status.${config.isEnabled(feature)}"), channel?.toChannelMention() ?: texts.getString("get.not.set"))
     }
 
-    private fun process(action: String, name: String, config: LogConfig, texts: CommandLocaleBundle, feature: Features, block: LogConfig.() -> Unit): CombinedMessageEmbed {
+    private fun process(action: String, name: String, config: LogConfig, texts: CommandLocaleBundle, feature: Features, block: LogConfig.() -> Unit): String {
         when(action) {
             "enable" -> {
                 transaction {
                     config.enable(feature)
                 }
-                return texts.getString("enable.$name").toMessage()
+                return texts.getString("enable.$name")
             }
             "disable" -> {
                 transaction {
                     config.disable(feature)
                 }
-                return texts.getString("disable.$name").toMessage()
+                return texts.getString("disable.$name")
             }
             else -> {
                 transaction {
                     config.block()
                 }
-                return texts.formatString("channel.$name", action.toChannelMention()).toMessage()
+                return texts.formatString("channel.$name", action.toChannelMention())
             }
         }
     }

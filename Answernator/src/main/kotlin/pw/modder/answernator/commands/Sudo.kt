@@ -1,12 +1,11 @@
 package pw.modder.answernator.commands
 
-import com.jessecorbett.diskord.api.model.Message
-import com.jessecorbett.diskord.dsl.Bot
-import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
-import com.jessecorbett.diskord.util.words
+import dev.kord.core.entity.Guild
+import dev.kord.core.entity.Message
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.CommandList
 import pw.modder.answernator.utils.GuildCommand
+import pw.modder.answernator.utils.extensions.kord.reply
 import pw.modder.answernator.utils.extensions.removeGraves
 import java.util.*
 
@@ -23,12 +22,18 @@ class Sudo: GuildCommand {
         return "Usage: `sudo [command] [command params]`"
     }
 
-    override suspend fun action(bot: Bot, message: Message, locale: Locale, guildId: String): CombinedMessageEmbed {
-        if (message.words.size < 2) return textMessage("No command specified.\n" + getHelp(locale))
-        if (message.words[1].equals(name, true)) return textMessage("No recursion allowed")
+    override suspend fun action(message: Message, args: List<String>, guild: Guild, locale: Locale) {
+        if (args.isEmpty()) {
+            message.reply("No command specified.\n" + getHelp(locale))
+            return
+        }
 
-        return CommandList.findCommand(message.words[1], true, Command.ChannelTypes.GUILD)
-            ?.action(bot, message.copy(content = message.words.drop(1).joinToString(" ")), locale)
-            ?: textMessage("Command `${message.words[1].removeGraves()}` not found")
+        if (args.first().equals(name, true)) {
+            message.reply("No recursion allowed")
+            return
+        }
+
+        CommandList.findCommand(args.first(), true, Command.ChannelTypes.GUILD)?.action(message, args.drop(1), locale)
+            ?: message.reply("Command `${args.first().removeGraves()}` not found")
     }
 }
