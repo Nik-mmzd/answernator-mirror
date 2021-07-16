@@ -1,22 +1,31 @@
 package pw.modder.answernator.commands
 
 import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Snowflake
 import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Message
 import mu.KotlinLogging
-import org.jetbrains.exposed.sql.SizedCollection
 import org.jetbrains.exposed.sql.transactions.transaction
-import pw.modder.answernator.cache.GuildCache.getCached
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.db.guild.Mute as MuteDb
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedGuildCommand
 import pw.modder.answernator.utils.extensions.extractMentionedId
-import pw.modder.answernator.utils.extensions.isUserMention
+import pw.modder.answernator.utils.extensions.kord.reply
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
 import java.util.*
 
 private val logger = KotlinLogging.logger {  }
+private val admin_permissions = listOf(
+    Permission.Administrator,
+    Permission.ManageMessages,
+    Permission.BanMembers,
+    Permission.KickMembers,
+    Permission.ManageGuild,
+    Permission.ManageChannels,
+    Permission.ManageRoles
+)
+
 class Mute: LocalizedGuildCommand {
     override val name = "mute"
     override val userGroup = Command.UserGroup.PERMISSION
@@ -27,50 +36,59 @@ class Mute: LocalizedGuildCommand {
     override val requiredPermission: Permission? = Permission.ManageRoles
 
     override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun action(
-        bot: Bot,
-        message: Message,
-        texts: CommandLocaleBundle,
-        guildId: String
-    ): CombinedMessageEmbed {
         logger.debug { "Getting guild..." }
-        val guildClient = bot.clientStore.guilds[guildId]
-        val guild = guildClient.getCached()
-        val config = Db.getConfig(guildId)
+        val config = Db.getConfig(guild.id)
         val muteRole = config.muteRole
 
         logger.debug { "Checking configs" }
-        if (muteRole == null) return texts.getString("not.configured").toMessage()
-        if (message.words.size < 2) return texts.getErrorString().toMessage()
+        if (muteRole == null) {
+            message.reply(texts.getString("not.configured"))
+            return
+        }
+        if (args.isEmpty()) {
+            message.reply(texts.getErrorString())
+            return
+        }
 
-        val mentionedUserId = message.words[1].extractMentionedId()
-            ?: return texts.getErrorString().toMessage()
-        val mentionedUser = message.usersMentioned.find { it.id == mentionedUserId }
-            ?: return texts.getErrorString().toMessage()
+        val mentionedUserId = args.first().extractMentionedId()
+        if (mentionedUserId == null) {
+            message.reply(texts.getErrorString())
+            return
+        }
+
+        val mentionedUser = message.mentionedUserBehaviors.find { it.id.asString == mentionedUserId }?.asMemberOrNull(guild.id)
+        if (mentionedUser == null) {
+            message.reply(texts.getErrorString())
+            return
+        }
 
         with(mentionedUser) {
-            if (bot.isMe(id)) return texts.formatString("muted.self", mention).toMessage() // easter egg
-            val member = guildClient.getMember(id)
-            if (member.isAdmin(guild, id)) return texts.formatString("error.whitelisted", mention).toMessage()
-            logger.debug { "Got mentioned user" }
+            if (message.kord.selfId == mentionedUser.id) {
+                message.reply(texts.formatString("muted.self", mention)) // easter egg
+                return
+            }
+            val permissions = getPermissions()
+            if (admin_permissions.any(permissions::contains)) {
+                message.reply(texts.formatString("error.whitelisted", mention))
+                return
+            }
 
             if (Db.isMuted(guildId, id)) {
                 logger.debug { "Member is muted" }
-                return texts.formatString("muted.already", mention).toMessage()
+                message.reply(texts.formatString("muted.already", mention))
+                return
             }
 
             logger.debug { "Member is not muted" }
-            val reason = message.words.drop(2).joinToString(" ").ifEmpty {
+            val reason = args.drop(1).joinToString(" ").ifEmpty {
                 texts.getRandomString("reason")
             }
             logger.debug { "Got mute reason" }
 
-            if (config.memberUnmuteLogChannel != null) try {
-                bot.clientStore.channels[config.memberUnmuteLogChannel!!]
-                    .sendMessage(texts.formatString("log.muted", mention, message.author.mention, reason))
+            if (config.memberMuteLogChannel != null) try {
+                message.kord.rest.channel.createMessage(Snowflake(config.memberMuteLogChannel!!)) {
+                    content = texts.formatString("log.muted", mention, message.author!!.mention, reason)
+                }
                 logger.debug { "LOG message sent" }
             } catch (e: Exception) {
                 logger.warn(e) { "${guild.name} (${guild.id}): Log error" }
@@ -78,14 +96,14 @@ class Mute: LocalizedGuildCommand {
 
             val mute = transaction {
                 MuteDb.new {
-                    this.guild = guildId
-                    this.memberId = mentionedUser.id
+                    this.guild = guildId.asString
+                    this.memberId = mentionedUser.id.asString
                 }
             }
             logger.debug { "Member muted in DB" }
 
             try {
-                guildClient.addMemberRole(userId = id, roleId = muteRole)
+                addRole(Snowflake(muteRole), reason)
                 logger.debug { "Added mute role" }
             } catch (e: Exception) {
                 logger.error(e) { "Error adding mute role for user $username at ${guild.name}, role id $muteRole. Member is UNMUTED in DB" }
@@ -93,7 +111,7 @@ class Mute: LocalizedGuildCommand {
                 throw e
             }
 
-            return texts.formatString("muted", mention, reason).toMessage()
+            message.reply(texts.formatString("muted", mention, reason))
         }
     }
 }
@@ -101,69 +119,69 @@ class Mute: LocalizedGuildCommand {
 class Unmute: LocalizedGuildCommand {
     override val name = "unmute"
     override val userGroup = Command.UserGroup.PERMISSION
-    override val permission = Permission.MANAGE_MESSAGES
+    override val permission = Permission.ManageMessages
     override val cmdType = Command.CommandGroup.MODER
     override val channels = EnumSet.of(Command.ChannelTypes.GUILD)
-    override val requiredPermission: Permission? = Permission.MANAGE_ROLES
+    override val requiredPermission: Permission? = Permission.ManageRoles
 
     override fun getTexts(locale: Locale): CommandLocaleBundle {
         return CommandLocaleBundle("mute", locale, javaClass.classLoader)
     }
 
-    override suspend fun action(
-        bot: Bot,
-        message: Message,
-        texts: CommandLocaleBundle,
-        guildId: String
-    ): CombinedMessageEmbed {
+    override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle) {
         logger.debug { "Getting guild..." }
-        val guildClient = bot.clientStore.guilds[guildId]
-        val guild = guildClient.getCached()
-        val config = Db.getConfig(guildId)
+        val config = Db.getConfig(guild.id)
         val muteRole = config.muteRole
 
         logger.debug { "Checking configs" }
-        if (muteRole == null) return texts.getString("not.configured").toMessage()
-        if (message.words.size < 2) return texts.getErrorString().toMessage()
-        if (!message.words[1].isUserMention()) return texts.getErrorString().toMessage()
-
-        if (message.usersMentioned.size != 1) {
-            return texts.getErrorString().toMessage()
+        if (muteRole == null) {
+            message.reply(texts.getString("not.configured"))
+            return
+        }
+        if (args.isEmpty()) {
+            message.reply(texts.getErrorString())
+            return
         }
 
-        with(message.usersMentioned.single()) {
-            val member = guildClient.getMember(id)
-            if (member.isAdmin(guild, id) || bot.isMe(id)) return texts.formatString("error.whitelisted", mention).toMessage()
-            logger.debug { "Got mentioned user" }
+        val mentionedUserId = args.first().extractMentionedId()
+        if (mentionedUserId == null) {
+            message.reply(texts.getErrorString())
+            return
+        }
 
-            val mute = Db.getMute(guildId, id)
+        val mentionedUser = message.mentionedUserBehaviors.find { it.id.asString == mentionedUserId }?.asMemberOrNull(guild.id)
+        if (mentionedUser == null) {
+            message.reply(texts.getErrorString())
+            return
+        }
+
+        with(mentionedUser) {
+            val mute = Db.getMute(guild.id, id)
 
             if (mute == null) {
                 logger.debug { "Member is not muted" }
-                return texts.formatString("unmuted.already", mention).toMessage()
+                message.reply(texts.formatString("unmuted.already", mention))
+                return
             }
 
             logger.debug { "Member is muted" }
             transaction { mute.delete() }
             logger.debug { "Unmuted user in DB" }
 
+            val reason = args.drop(1).joinToString(" ").ifEmpty { null }
+
             if (config.memberUnmuteLogChannel != null) try {
-                bot.clientStore.channels[config.memberUnmuteLogChannel!!]
-                    .sendMessage(texts.formatString("log.unmuted", mention, message.author.mention))
+                message.kord.rest.channel.createMessage(Snowflake(config.memberUnmuteLogChannel!!)) {
+                    content = texts.formatString("log.unmuted", mention, message.author!!.mention)
+                }
                 logger.debug { "LOG message sent" }
             } catch (e: Exception) {
                 logger.warn(e) { "${guild.name} (${guild.id}): Log error" }
             }
 
-            try {
-                guildClient.removeMemberRole(userId = id, roleId = muteRole)
-                logger.debug { "Removed mute role" }
-            } catch (e: Exception) {
-                logger.error(e) { "Error removing mute role for user $username at ${guild.name}, role id $muteRole. Member is UNMUTED in DB" }
-                throw e
-            }
+            removeRole(Snowflake(muteRole), reason)
 
-            return texts.formatString("unmuted", mention).toMessage()
+            message.reply(texts.formatString("unmuted", mention))
         }
     }
 }
