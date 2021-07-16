@@ -54,7 +54,7 @@ class CommandInfo: Command {
         message.reply { embed {
             title = "Command information"
 
-            field("Command name", true) { getCommandTypeString(cmd) }
+            field("Command name", true) { cmd.name }
             field("Command publicity", true) { getCommandTypeString(cmd) }
             field("Command channel types", true) { getCommandChannelTypeString(cmd) }
 

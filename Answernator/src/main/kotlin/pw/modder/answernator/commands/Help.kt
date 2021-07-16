@@ -38,7 +38,8 @@ class Help: LocalizedCommand {
 
                 cmds.forEach { (cmdType: Command.CommandGroup, cmds: List<Command>) ->
                     if (cmds.isEmpty()) return@forEach
-                    cmds.map { it.getDescription(texts.locale)?.run { "`${Globals.config.prefix}${it.name}`: $this" }
+                    val prefix = if (message.guildId == null) Globals.config.prefix else Db.getGuildConfig(message.guildId!!).cmdPrefix
+                    cmds.map { it.getDescription(texts.locale)?.run { "`${prefix}${it.name}`: $this" }
                         ?: "`${Globals.config.prefix}${it.name}`" }.joinToStrings(1024, "\n").forEach {
                         field( texts.getString("cmdlist.${cmdType.name}"), false) { it }
                     }
