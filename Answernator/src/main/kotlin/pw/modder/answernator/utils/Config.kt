@@ -26,7 +26,7 @@ open class Config(
         val DEFAULT = Config()
 
         fun loadFrom(file: File): Config {
-            return JSON.parse(serializer(), file.readText(Charsets.UTF_8))
+            return JSON.decodeFromString(serializer(), file.readText(Charsets.UTF_8))
         }
     }
 }

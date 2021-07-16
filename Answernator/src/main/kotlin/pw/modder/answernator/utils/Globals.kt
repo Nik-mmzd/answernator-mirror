@@ -12,7 +12,7 @@ object Globals {
     init {
         val configFile = File(configFileName)
         if (!configFile.exists()) {
-            configFile.writeText(Json { prettyPrint = true }.stringify(Config.serializer(), Config.DEFAULT))
+            configFile.writeText(Json { prettyPrint = true; encodeDefaults = true }.encodeToString(Config.serializer(), Config.DEFAULT))
             throw Exception("Missing config")
         }
         config = Config.loadFrom(configFile)
