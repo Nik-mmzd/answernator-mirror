@@ -22,7 +22,7 @@ class Leave: Command {
     override suspend fun action(message: Message, args: List<String>, locale: Locale) {
         if (args.isEmpty()) {
             message.reply(message.kord.guilds.toList().joinToString("\n", prefix = "${getHelp(locale)}\nAvailable guilds:\n") {
-                "${it.name}: `${it.id}`"
+                "${it.name}: `${it.id.asString}`"
             })
             return
         }
