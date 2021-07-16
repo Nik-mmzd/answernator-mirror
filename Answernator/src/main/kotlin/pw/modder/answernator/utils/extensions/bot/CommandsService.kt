@@ -36,7 +36,8 @@ fun Kord.commandService() {
 
         val texts = LocaleBundle("botGlobal", guildConfig?.lang ?: config.lang)
 
-        val command = CommandList.findCommand(name = message.words.first().drop(1), channelType = message.channelType)
+        val words = message.words
+        val command = CommandList.findCommand(name = words.first().drop(1), channelType = message.channelType)
             ?: return@on // if command not found: do nothing
 
         if (guildConfig != null && Db.isBlackListed(guildConfig.guildId, command.name)) {
@@ -54,35 +55,12 @@ fun Kord.commandService() {
         }
 
         logger.debug { "found command ${command.name}, running" }
-        val reply = try {
-            command.action(message)
-
-        } catch (e: DiscordBadPermissionsException) { // Bot is missing permissions to run this command
-            with(command.requiredPermission) {
-                if (this == null) {
-                    texts.getString("bot.badPermissions")
-                } else {
-                    texts.formatString(
-                        "bot.badPermissions.perm",
-                        texts.getNullableString("bot.badPermissions.${name}") ?: name
-                    )
-                }
-            }.asMessage()
-
-        } catch (e: NotImplementedError) { // if feature is not implemented
-            with(e.message) {
-                if (this == null) {
-                    texts.formatString("bot.notImplemented", "${config.prefix}${command.name}")
-                } else {
-                    texts.formatString("bot.notImplemented.message", "${config.prefix}${command.name}", this)
-                }
-            }.asMessage()
+        try {
+            command.action(message, words.drop(1))
 
         } catch (e: Exception) { // and any other exception
             logger.error(e) { "got error while running command" }
-            texts.formatString("bot.error", "${config.prefix}${command.name}").asMessage()
+            message.reply { content = texts.formatString("bot.error", "${config.prefix}${command.name}") }
         }
-
-        message.reply(reply.text, reply.embed())
     }
 }

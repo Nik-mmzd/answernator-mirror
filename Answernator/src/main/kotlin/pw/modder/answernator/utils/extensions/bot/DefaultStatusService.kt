@@ -1,21 +1,21 @@
 package pw.modder.answernator.utils.extensions.bot
 
-import com.jessecorbett.diskord.api.model.UserStatus
-import com.jessecorbett.diskord.api.websocket.model.ActivityType
-import com.jessecorbett.diskord.api.websocket.model.UserStatusActivity
-import com.jessecorbett.diskord.dsl.Bot
-import com.jessecorbett.diskord.dsl.DiskordDsl
+import dev.kord.common.entity.ActivityType
+import dev.kord.common.entity.DiscordBotActivity
+import dev.kord.common.entity.PresenceStatus
+import dev.kord.core.Kord
+import dev.kord.core.event.gateway.ReadyEvent
+import dev.kord.core.on
+import dev.kord.gateway.UpdateStatus
 import pw.modder.answernator.utils.Globals
 
-@DiskordDsl
-fun Bot.defaultStatusService() {
-    started {
-        setStatus(
-            status = UserStatus.ONLINE,
-            activity = UserStatusActivity(
-                name = Globals.config.defaultStatus,
-                type = ActivityType.GAME
-            )
-        )
+fun Kord.defaultStatusService() {
+    on<ReadyEvent> {
+        gateway.send(UpdateStatus(
+            status = PresenceStatus.Online,
+            activities = listOf(DiscordBotActivity(name = Globals.config.defaultStatus, type = ActivityType.Game)),
+            since = null,
+            afk = false
+        ))
     }
 }

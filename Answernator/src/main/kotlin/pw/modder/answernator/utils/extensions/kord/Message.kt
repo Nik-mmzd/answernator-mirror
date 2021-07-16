@@ -16,3 +16,5 @@ val Message.channelType: Command.ChannelTypes get() {
     if (data.guildId.value == null) return Command.ChannelTypes.DIRECT
     return Command.ChannelTypes.GUILD
 }
+
+val Message.authorId: String get() = data.author.id.asString

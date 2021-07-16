@@ -1,14 +1,18 @@
 package pw.modder.answernator.utils.extensions.bot
 
-import com.jessecorbett.diskord.dsl.Bot
-import com.jessecorbett.diskord.dsl.DiskordDsl
-import com.jessecorbett.diskord.util.mention
-import com.jessecorbett.diskord.util.sendMessage
+import dev.kord.core.Kord
+import dev.kord.core.event.guild.MemberJoinEvent
+import dev.kord.core.on
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.db.guild.Features
 
-@DiskordDsl
-fun Bot.greetingService() {
+fun Kord.greetingService() {
+    on<MemberJoinEvent> {
+        val config = Db.getGuildConfig(guildId.asString)
+        if (config.isEnabled(Features.GREETING) && config.greetingChannel != null) {
+            TODO()
+        }
+    }
     userJoinedGuild {
         val config = Db.getGuildConfig(it.guildId)
         if (config.isEnabled(Features.GREETING) && config.greetingChannel != null) {

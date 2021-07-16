@@ -5,6 +5,7 @@ import dev.kord.common.entity.Permissions
 import dev.kord.core.entity.Message
 import mu.KLogger
 import mu.KotlinLogging
+import pw.modder.answernator.utils.extensions.kord.authorId
 import java.util.*
 
 private val logger: KLogger = KotlinLogging.logger {}
@@ -17,18 +18,16 @@ interface Command {
     val cmdType: CommandGroup get() = CommandGroup.OTHER
     val requiredPermission: Permission? get() = null
 
-    suspend fun action(message: Message)
-
     suspend fun check(message: Message): Boolean {
         logger.debug { "checking command $name" }
         logger.debug { "checking command is owner only" }
-        if (userGroup == UserGroup.OWNER && message.data.author.id.asString != Globals.config.author) return false
+        if (userGroup == UserGroup.OWNER && message.authorId != Globals.config.author) return false
         if (userGroup == UserGroup.OWNER || userGroup == UserGroup.ALL) {
             logger.debug { "early exit because no permission checks is needed" }
             return true
         }
 
-        if (message.author!!.id.asString == Globals.config.author
+        if (message.authorId == Globals.config.author
             && userGroup == UserGroup.ADMIN
             && channels.contains(ChannelTypes.DIRECT)) return true
 
@@ -47,6 +46,8 @@ interface Command {
     fun getDescription(locale: Locale): String? {
         return null
     }
+
+    suspend fun action(message: Message, args: List<String>)
 
     enum class UserGroup {
         OWNER, ADMIN, ALL, PERMISSION

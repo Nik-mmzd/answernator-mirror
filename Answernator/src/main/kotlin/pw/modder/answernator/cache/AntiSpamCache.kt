@@ -2,8 +2,9 @@ package pw.modder.answernator.cache
 
 import com.google.common.cache.Cache
 import com.google.common.cache.CacheBuilder
-import com.jessecorbett.diskord.api.model.Message
-import com.jessecorbett.diskord.util.authorId
+import dev.kord.core.entity.Message
+import pw.modder.answernator.utils.extensions.kord.authorId
+import pw.modder.answernator.utils.extensions.kord.guildId
 import java.util.concurrent.TimeUnit
 
 object AntiSpamCache {
@@ -19,8 +20,9 @@ object AntiSpamCache {
     }
 
     fun increment(message: Message): Int {
-        val count = (cache.getIfPresent(Triple(message.guildId!!, message.authorId, hashCode(message))) ?: 0)+1
-        cache.put(Triple(message.guildId!!, message.authorId, hashCode(message)), count)
+        val triple = Triple(message.guildId!!.asString, message.authorId, hashCode(message))
+        val count = (cache.getIfPresent(triple) ?: 0)+1
+        cache.put(triple, count)
         return count
     }
 }
