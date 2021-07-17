@@ -4,12 +4,15 @@ import dev.kord.common.entity.Permission
 import dev.kord.core.Kord
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.utils.CommandList
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.extensions.kord.channelType
+import pw.modder.answernator.utils.extensions.kord.guildId
 import pw.modder.answernator.utils.extensions.kord.reply
 import pw.modder.answernator.utils.extensions.kord.words
 import pw.modder.answernator.utils.locale.LocaleBundle
@@ -22,9 +25,7 @@ suspend fun Kord.commandService() {
     on<MessageCreateEvent> {
         if (message.content.isEmpty())
             return@on
-        if (message.author == null)
-            return@on
-        if (message.author!!.isBot)
+        if (message.author?.isBot != false)
             return@on
 
         logger.debug { "received message, message text: ${message.content}" }
