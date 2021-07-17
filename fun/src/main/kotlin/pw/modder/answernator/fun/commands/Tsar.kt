@@ -1,55 +1,42 @@
 package pw.modder.answernator.`fun`.commands
 
-import com.jessecorbett.diskord.api.model.Message
-import com.jessecorbett.diskord.api.model.Permissions
-import com.jessecorbett.diskord.api.rest.EmbedImage
-import com.jessecorbett.diskord.dsl.Bot
-import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
-import com.jessecorbett.diskord.dsl.field
-import com.jessecorbett.diskord.dsl.footer
-import com.jessecorbett.diskord.util.GuildClients
-import com.jessecorbett.diskord.util.words
-import pw.modder.answernator.db.Db
+import dev.kord.common.Color
+import dev.kord.core.behavior.reply
+import dev.kord.core.entity.Message
+import kotlinx.datetime.Clock
 import pw.modder.answernator.utils.Command
-import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.LocalizedCommand
-import pw.modder.answernator.utils.extensions.setCurrentTimestamp
+import pw.modder.answernator.utils.extensions.kord.reply
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
 import java.util.*
-import kotlin.random.Random
-import com.jessecorbett.diskord.dsl.message as dslmessage
 
 class Tsar: LocalizedCommand {
     override val name = "царь"
     override val cmdType = Command.CommandGroup.FUN
+    override val localesWhitelist: List<Locale> = listOf(Locale("ru"))
 
-    override suspend fun check(message: Message, guildClients: GuildClients): Boolean {
-        val locale = message.guildId?.run { Db.getGuildConfig(this).lang } ?: Globals.config.lang
-        return locale.equals("ru", true) && super.check(message, guildClients)
-    }
+    override suspend fun action(message: Message, args: List<String>, texts: CommandLocaleBundle) {
+        if (!args.first().equals("велит", true)) {
+            message.reply(texts.getString("invalid"))
+            return
+        }
 
-    override fun check(message: Message, permissions: Permissions): Boolean {
-        val locale = message.guildId?.run { Db.getGuildConfig(this).lang } ?: Globals.config.lang
-        return locale.equals("ru", true) && super.check(message, permissions)
-    }
+        message.reply {
+            embed {
+                title = texts.getString("title")
+                field(texts.getString("title.decree"), false) {
+                    texts.getRandomString("decree")
+                }
+                color = Color(16711680)
+                thumbnail { url = texts.getString("thumbnail") }
 
-    override suspend fun action(bot: Bot, message: Message, texts: CommandLocaleBundle): CombinedMessageEmbed {
-        if (message.words.getOrNull(1)?.toLowerCase() != "велит")
-            return texts.getString("invalid").toMessage()
+                footer {
+                    text = texts.getRandomString("sign")
+                    icon = texts.getString("footer.icon")
+                }
 
-        return dslmessage {
-            title = texts.getString("title")
-
-            field(texts.getString("title.decree"), texts.getRandomString("decree"), false)
-
-            color = 16711680
-            thumbnail = EmbedImage(texts.getString("thumbnail"))
-
-            footer(texts.getRandomString("sign")) {
-                iconUrl = texts.getString("footer.icon")
+                timestamp = Clock.System.now()
             }
-
-            setCurrentTimestamp()
         }
     }
 }

@@ -11,20 +11,14 @@ import pw.modder.answernator.db.guild.Mute as MuteDb
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedGuildCommand
 import pw.modder.answernator.utils.extensions.extractMentionedId
+import pw.modder.answernator.utils.extensions.kord.getMute
+import pw.modder.answernator.utils.extensions.kord.isAdmin
+import pw.modder.answernator.utils.extensions.kord.mute
 import pw.modder.answernator.utils.extensions.kord.reply
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
 import java.util.*
 
 private val logger = KotlinLogging.logger {  }
-private val admin_permissions = listOf(
-    Permission.Administrator,
-    Permission.ManageMessages,
-    Permission.BanMembers,
-    Permission.KickMembers,
-    Permission.ManageGuild,
-    Permission.ManageChannels,
-    Permission.ManageRoles
-)
 
 class Mute: LocalizedGuildCommand {
     override val name = "mute"
@@ -67,8 +61,7 @@ class Mute: LocalizedGuildCommand {
                 message.reply(texts.formatString("muted.self", mention)) // easter egg
                 return
             }
-            val permissions = getPermissions()
-            if (admin_permissions.any(permissions::contains)) {
+            if (mentionedUser.isAdmin()) {
                 message.reply(texts.formatString("error.whitelisted", mention))
                 return
             }
@@ -94,12 +87,7 @@ class Mute: LocalizedGuildCommand {
                 logger.warn(e) { "${guild.name} (${guild.id}): Log error" }
             }
 
-            val mute = transaction {
-                MuteDb.new {
-                    this.guild = guildId.asString
-                    this.memberId = mentionedUser.id.asString
-                }
-            }
+            val mute = mentionedUser.mute()
             logger.debug { "Member muted in DB" }
 
             try {
@@ -156,7 +144,7 @@ class Unmute: LocalizedGuildCommand {
         }
 
         with(mentionedUser) {
-            val mute = Db.getMute(guild.id, id)
+            val mute = getMute()
 
             if (mute == null) {
                 logger.debug { "Member is not muted" }

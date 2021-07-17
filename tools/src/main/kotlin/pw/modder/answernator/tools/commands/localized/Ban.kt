@@ -1,46 +1,60 @@
 package pw.modder.answernator.tools.commands.localized
 
-import com.jessecorbett.diskord.api.model.Message
-import com.jessecorbett.diskord.api.model.Permission
-import com.jessecorbett.diskord.dsl.Bot
-import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
-import com.jessecorbett.diskord.util.authorId
-import com.jessecorbett.diskord.util.mention
-import com.jessecorbett.diskord.util.words
-import pw.modder.answernator.cache.GuildCache.getCached
-import pw.modder.answernator.tools.commandTypes.LocalizedGuildOnlyCommand
+import dev.kord.common.entity.Permission
+import dev.kord.core.behavior.ban
+import dev.kord.core.entity.Guild
+import dev.kord.core.entity.Message
 import pw.modder.answernator.utils.Command
-import pw.modder.answernator.utils.extensions.bot.isMe
+import pw.modder.answernator.utils.LocalizedGuildCommand
 import pw.modder.answernator.utils.extensions.extractMentionedId
-import pw.modder.answernator.utils.extensions.isAdmin
+import pw.modder.answernator.utils.extensions.kord.isAdmin
+import pw.modder.answernator.utils.extensions.kord.reply
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
 
-class Ban: LocalizedGuildOnlyCommand {
+class Ban: LocalizedGuildCommand {
     override val name = "ban"
     override val userGroup = Command.UserGroup.PERMISSION
-    override val permission = Permission.BAN_MEMBERS
+    override val permission = Permission.BanMembers
     override val cmdType = Command.CommandGroup.MODER
-    override val requiredPermission: Permission? = Permission.BAN_MEMBERS
+    override val requiredPermission: Permission? = Permission.BanMembers
 
-    override suspend fun action(bot: Bot, message: Message, texts: CommandLocaleBundle): CombinedMessageEmbed {
-        if (message.words.size < 2) return texts.getErrorString().toMessage()
-        val mentionedUserId = message.words[1].extractMentionedId()
-            ?: return texts.getErrorString().toMessage()
+    override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle) {
+        if (args.isEmpty()) {
+            message.reply(texts.getErrorString())
+            return
+        }
 
-        val mentionedUser = message.usersMentioned.find { it.id == mentionedUserId }
-            ?: return texts.getErrorString().toMessage()
+        val mentionedUserId = args.first().extractMentionedId()
+        if (mentionedUserId == null) {
+            message.reply(texts.getErrorString())
+            return
+        }
 
-        if (mentionedUser.id == message.authorId)
-            return texts.formatString("whitelisted.author", mentionedUser.mention).toMessage()
-        if (bot.isMe(mentionedUser.id))
-            return texts.formatString("whitelisted.self", mentionedUser.mention).toMessage()
+        val member = message.mentionedUserBehaviors.first { it.id.asString == mentionedUserId }.asMemberOrNull(guild.id)
+        if (member == null) {
+            message.reply(texts.getErrorString())
+            return
+        }
 
-        val client = bot.clientStore.guilds[message.guildId ?: return texts.getErrorString().toMessage()]
+        if (member.id == guild.ownerId) {
+            message.reply(texts.formatString("whitelisted.author", member.mention))
+            return
+        }
 
-        if (client.getMember(mentionedUser.id).isAdmin(client.getCached(), mentionedUser.id))
-            return texts.getString("whitelisted").toMessage()
+        if (member.id == message.kord.selfId) {
+            message.reply(texts.formatString("whitelisted.self", member.mention))
+            return
+        }
+        if (member.isAdmin()) {
+            message.reply(texts.getString("whitelisted"))
+            return
+        }
 
-        client.createBan(mentionedUser.id, 0, message.words.drop(2).joinToString(" ", prefix = "${message.author.id}|"))
-        return texts.formatString("done", mentionedUser.mention).toMessage()
+        member.ban {
+            deleteMessagesDays = 0
+            reason = args.drop(1).joinToString(" ", prefix = "${message.data.author.id}|")
+        }
+
+        message.reply(texts.formatString("done", member.mention))
     }
 }

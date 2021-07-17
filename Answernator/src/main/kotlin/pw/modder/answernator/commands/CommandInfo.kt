@@ -66,11 +66,15 @@ class CommandInfo: Command {
                     }
                 }
                 message.getAuthorAsMember()?.getPermissions()?.run {
-                    field("Member can use", true) { cmd.check(message).toBoolString() }
+                    field("Member can use", true) { cmd.check(message, locale).toBoolString() }
                 }
 
                 message.guildId?.run {
                     field("Is blacklisted", true) { Db.isBlackListed(this, cmd.name).toBoolString() }
+                }
+
+                cmd.localesWhitelist?.run {
+                    field("Allowed locales", true) { joinToString(separator = ", ") { "`$it`" } }
                 }
             }
             allowedMentions { repliedUser = false }

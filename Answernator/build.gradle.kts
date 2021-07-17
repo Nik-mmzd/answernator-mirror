@@ -20,7 +20,6 @@ publishing {
     }
 }
 
-val diskordVersion: String by project
 val exposedVersion: String by project
 val ktorVersion: String by project
 val slf4jVersion: String by project
@@ -46,7 +45,6 @@ val debugImplementation by configurations.creating
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-//    implementation("com.jessecorbett:diskord:$diskordVersion")
     implementation("dev.kord:kord-core:$kordVersion")
     implementation("commons-io:commons-io:$commonsIoVersion")
     implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
@@ -72,11 +70,9 @@ val jar by tasks.getting(Jar::class) {
 tasks {
     compileKotlin {
         kotlinOptions.jvmTarget = "1.8"
-        kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn" // for custom GuildClient.getAuditLog
     }
     compileTestKotlin {
         kotlinOptions.jvmTarget = "1.8"
-        kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn" // for custom GuildClient.getAuditLog
     }
 
     val createDependenciesFile by creating {

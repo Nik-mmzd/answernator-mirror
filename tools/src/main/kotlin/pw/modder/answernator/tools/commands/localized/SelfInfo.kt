@@ -1,21 +1,14 @@
 package pw.modder.answernator.tools.commands.localized
 
-import com.jessecorbett.diskord.api.model.Message
-import com.jessecorbett.diskord.api.model.Permission
-import com.jessecorbett.diskord.api.rest.EmbedImage
-import com.jessecorbett.diskord.dsl.Bot
-import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
-import com.jessecorbett.diskord.dsl.field
-import com.jessecorbett.diskord.dsl.message
-import com.jessecorbett.diskord.util.authorId
-import com.jessecorbett.diskord.util.toRoleMention
-import pw.modder.answernator.cache.GuildCache.getCached
-import pw.modder.answernator.db.Db
-import pw.modder.answernator.tools.helper.computeRealPermissions
+import dev.kord.common.entity.Permission
+import dev.kord.core.behavior.reply
+import dev.kord.core.entity.Guild
+import dev.kord.core.entity.Message
+import kotlinx.datetime.Clock
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.LocalizedGuildCommand
 import pw.modder.answernator.utils.Utils
-import pw.modder.answernator.utils.extensions.*
+import pw.modder.answernator.utils.extensions.kord.*
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
 import java.util.*
 
@@ -25,44 +18,57 @@ class SelfInfo: LocalizedGuildCommand {
     }
 
     private fun CommandLocaleBundle.getPerm(perm: Permission): String {
-        return getNullableString("permission.${perm.name}") ?: perm.name.toUpperCase()
+        return getNullableString("permission.${perm.name}") ?: perm.name
     }
 
-    override suspend fun action(
-        bot: Bot,
-        message: Message,
-        texts: CommandLocaleBundle,
-        guildId: String
-    ): CombinedMessageEmbed {
-        val member = message.partialMember
-            ?: return texts.getString("error.nomember").toMessage()
-        val guild = bot.clientStore.guilds[guildId].getCached()
+    override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle) {
+        val member = message.getAuthorAsMember()
+        if (member == null) {
+            message.reply(texts.getErrorString())
+            return
+        }
 
-        return message {
-            title = texts.formatString(
-                "user.title.user",
-                member.nickname ?: message.author.username
-            )
+        message.reply {
+            embed {
+                title = texts.formatString("user.title.user", member.nickname ?: member.username)
 
-            message.author.avatarHash?.run {
-                thumbnail = EmbedImage("https://cdn.discordapp.com/avatars/${message.authorId}/$this")
+                thumbnail { url = member.avatar.url }
+
+                color = member.getColor()
+
+                field(texts.getString("user.username"), true) { member.tag }
+                field(texts.getString("user.id"), true) { member.id.asString }
+                field(texts.getString("user.owner"), true) { texts.getString("bool.${member.id == guild.ownerId}") }
+                field(texts.getString("user.admin"), true) { texts.getString("bool.${member.isAdmin()}") }
+                field(texts.getString("user.muted"), true) {
+                    texts.getString("bool.${member.isMuted()}")
+                }
+                field(texts.getString("user.superuser"), true) {
+                    texts.getString("bool.${member.id.asString == Globals.config.author}")
+                }
+                field(texts.getString("user.roles"), false) {
+                    member.roleBehaviors.joinToString(" ") { it.mention }
+                        .ifEmpty { texts.getString("empty") }
+                }
+                field(texts.getString("user.rights"), false) {
+                    member.getPermissions().values.joinToString(", ") { texts.getPerm(it) }
+                        .ifEmpty { texts.getString("empty") }
+                }
+                field(texts.getString("user.joinedAt"), false) {
+                    texts.formatString(
+                        "user.joinedAt.value",
+                        Utils.prettyPrintPeriod(texts.locale, member.joinedAt)
+                    )
+                }
+                field(texts.getString("user.createdAt"), false) {
+                    texts.formatString(
+                        "user.createdAt.value",
+                        Utils.prettyPrintPeriodSnowflake(texts.locale, member.id)
+                    )
+                }
+                timestamp = Clock.System.now()
             }
-
-            member.getColor(guild).takeUnless { it == 0 }?.run { color = this }
-
-            field(texts.getString("user.username"), message.author.username, true)
-            field(texts.getString("user.id"), message.author.id, true)
-            field(texts.getString("user.owner"), texts.getString("bool.${message.author.id == guild.ownerId}"), true)
-            field(texts.getString("user.admin"), texts.getString("bool.${member.isAdmin(guild, message.authorId)}"), true)
-            field(texts.getString("user.muted"), texts.getString("bool.${Db.isMuted(guildId, message.authorId)}"), true)
-            field(texts.getString("user.superuser"), texts.getString("bool.${message.author.id == Globals.config.author}"), true)
-
-            field(texts.getString("user.roles"), member.roleIds.joinToString(" ") { it.toRoleMention() }.ifEmpty { texts.getString("empty") }, false)
-            field(texts.getString("user.rights"), member.computeRealPermissions(guild, message.author.id).asList().joinToString(", ") { texts.getPerm(it) }.ifEmpty { texts.getString("empty") }, false)
-            field(texts.getString("user.joinedAt"), texts.formatString("user.joinedAt.value", Utils.prettyPrintPeriod(texts.locale, member.joinedAt)), false)
-            field(texts.getString("user.createdAt"), texts.formatString("user.createdAt.value", Utils.prettyPrintPeriodSnowflake(texts.locale, message.author.id)), false)
-
-            setCurrentTimestamp()
+            allowedMentions { repliedUser = false }
         }
     }
 

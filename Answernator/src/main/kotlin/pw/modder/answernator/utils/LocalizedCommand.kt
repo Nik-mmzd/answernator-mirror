@@ -22,7 +22,5 @@ interface LocalizedCommand: Command {
         action(message, args, getTexts(locale))
     }
 
-    suspend fun action(message: Message, args: List<String>, texts: CommandLocaleBundle) {
-
-    }
+    suspend fun action(message: Message, args: List<String>, texts: CommandLocaleBundle)
 }

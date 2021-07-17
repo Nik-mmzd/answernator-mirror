@@ -1,35 +1,42 @@
 package pw.modder.answernator.tools.commands.localized
 
-import com.jessecorbett.diskord.api.model.Message
-import com.jessecorbett.diskord.dsl.Bot
-import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
-import com.jessecorbett.diskord.dsl.field
-import com.jessecorbett.diskord.util.words
-import pw.modder.answernator.tools.utils.Snowflake
+import dev.kord.common.entity.Snowflake
+import dev.kord.core.behavior.reply
+import dev.kord.core.entity.Message
+import pw.modder.answernator.tools.utils.increment
+import pw.modder.answernator.tools.utils.process
+import pw.modder.answernator.tools.utils.timestamp
+import pw.modder.answernator.tools.utils.worker
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedCommand
+import pw.modder.answernator.utils.extensions.kord.reply
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
-import com.jessecorbett.diskord.dsl.message as dslmessage
 
 class SnowFlake: LocalizedCommand {
     override val name = "snowflake"
     override val cmdType = Command.CommandGroup.OTHER
 
-    override suspend fun action(bot: Bot, message: Message, texts: CommandLocaleBundle): CombinedMessageEmbed {
-        if (message.words.size < 2) return texts.getErrorString().toMessage()
+    override suspend fun action(message: Message, args: List<String>, texts: CommandLocaleBundle) {
+        if (args.isEmpty()) {
+            message.reply(texts.getErrorString())
+            return
+        }
 
-        return dslmessage {
-            title = texts.getString("title")
-            description = texts.getString("description")
+        message.reply {
+            embed {
+                title = texts.getString("title")
+                description = texts.getString("description")
 
-            message.words.drop(1).take(20).map { it.takeIf { it.length == 18 }?.toLongOrNull() }.map { it?.run { Snowflake(this) } }.forEach {
-                if (it == null) {
-                    field(texts.getString("field.invalid"), texts.getString("field.invalid.text"), false)
-                    return@forEach
+                args.take(20).map { it.takeIf { it.length == 18 }?.toLongOrNull() }.map { it?.run { Snowflake(this) } }.forEach {
+                    if (it == null) {
+                        field(texts.getString("field.invalid"), false) { texts.getString("field.invalid.text") }
+                        return@forEach
+                    }
+
+                    field(it.asString, false) { texts.formatString("field.text", it.timestamp, it.worker, it.process, it.increment) }
                 }
-
-                field(it.snowflake.toString(), texts.formatString("field.text", it.timestamp, it.worker, it.process, it.increment), false)
             }
+            allowedMentions { repliedUser = false }
         }
     }
 }

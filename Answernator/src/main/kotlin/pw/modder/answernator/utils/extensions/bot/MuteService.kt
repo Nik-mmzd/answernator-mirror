@@ -12,6 +12,8 @@ import pw.modder.answernator.db.Db
 import pw.modder.answernator.db.guild.Features
 import pw.modder.answernator.db.guild.Mute
 import pw.modder.answernator.db.guild.Mutes
+import pw.modder.answernator.utils.extensions.kord.getMute
+import pw.modder.answernator.utils.extensions.kord.mute
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
 import java.util.*
 
@@ -39,18 +41,13 @@ suspend fun Kord.muteService() {
             return@on
         }
 
-        val mute = Db.getMute(guildId, member.id)
+        val mute = member.getMute()
         // if isMuted and hasRole OR !isMuted and !hasRole
         if ((mute != null) == hasRole)
             return@on
 
         if (mute == null) {
-            transaction {
-                Mute.new {
-                    guild = guildId.asString
-                    memberId = member.id.asString
-                }
-            }
+            member.mute()
             if (config.isEnabled(Features.LOG_MUTE))
                 rest.channel.createMessage(Snowflake(config.memberMuteLogChannel ?: return@on)) {
                     content = texts.formatString(

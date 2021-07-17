@@ -1,85 +1,103 @@
 package pw.modder.answernator.tools.commands.localized
 
-import com.jessecorbett.diskord.api.exception.DiscordNotFoundException
-import com.jessecorbett.diskord.api.model.Message
-import com.jessecorbett.diskord.api.rest.EmbedImage
-import com.jessecorbett.diskord.dsl.Bot
-import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
-import com.jessecorbett.diskord.dsl.field
-import com.jessecorbett.diskord.util.mention
-import com.jessecorbett.diskord.util.words
-import pw.modder.answernator.cache.GuildCache.getCached
-import pw.modder.answernator.tools.commandTypes.LocalizedGuildOnlyCommand
+import dev.kord.core.behavior.reply
+import dev.kord.core.entity.Guild
+import dev.kord.core.entity.Message
+import kotlinx.coroutines.flow.count
+import kotlinx.coroutines.flow.filterNot
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.toList
+import pw.modder.answernator.tools.utils.timestamp
 import pw.modder.answernator.utils.Command
+import pw.modder.answernator.utils.LocalizedGuildCommand
 import pw.modder.answernator.utils.Utils
-import pw.modder.answernator.utils.extensions.toChannelMention
-import pw.modder.answernator.utils.extensions.toUserMention
+import pw.modder.answernator.utils.extensions.kord.reply
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
-import java.util.*
-import com.jessecorbett.diskord.dsl.message as dslmessage
 
-class Guild: LocalizedGuildOnlyCommand {
+class Guild: LocalizedGuildCommand {
     override val name = "guild"
     override val userGroup = Command.UserGroup.ADMIN
     override val cmdType = Command.CommandGroup.ADMIN
-    override suspend fun action(bot: Bot, message: Message, texts: CommandLocaleBundle): CombinedMessageEmbed {
-        if (message.words.getOrNull(1).equals("list", true)) {
-            return textMessage(bot.clientStore.discord.getGuilds()
-                .joinToString("\n", prefix = texts.getString("list.available")) {
-                    "${it.name}: `${it.id}`"
-                }
-            )
+
+    override suspend fun action(message: Message, args: List<String>, msgGuild: Guild, texts: CommandLocaleBundle) {
+        if (args.first().equals("list", true)) {
+            message.reply(message.kord.guilds.toList().joinToString("\n", prefix = texts.getString("list.available")) {
+                "${it.name}: `${it.id.asString}`"
+            })
+            return
         }
 
-        val guild =  try {
-            bot.clientStore.guilds[message.words.getOrNull(1) ?: message.guildId ?: return texts.getErrorString().toMessage()].getCached()
-        } catch (e: DiscordNotFoundException) {
-            return texts.getErrorString().toMessage()
+        val guild = when {
+            args.isNotEmpty() -> message.kord.guilds.firstOrNull { it.id.asString == args.first() }
+                ?: message.kord.guilds.firstOrNull { it.name.contains(args.joinToString(separator = " "), true) }
+            else -> msgGuild
         }
 
-        return dslmessage {
-            title = texts.formatString("title", guild.name)
+        if (guild == null) {
+            message.reply(texts.getErrorString())
+            return
+        }
 
-            field(texts.getString("owner"), guild.ownerId.toUserMention(), true)
-            field(texts.getString("emojis"), guild.emojis.size.toString(), true)
-            if (guild.roles.size < 50 && guild.id == message.guildId) {
-                field(
-                    texts.getString("roles"),
-                    guild.roles.filterNot { it.id == guild.id }.joinToString(" ") { it.mention },
-                    false
-                )
-            } else {
-                field(texts.getString("roles"), (guild.roles.size - 1).toString(), true)
-            }
-            field(texts.getString("created_at"), texts.formatString("created_at.value", Utils.prettyPrintPeriod(texts.locale, Utils.snowflakeCreatedAt(guild.id))), false)
-            field(texts.getString("region"), guild.region.capitalize(), true)
-            field(texts.getString("features"),
-                guild.features.joinToString(", ") {
-                    texts.getString("features.$it")
-                }.ifEmpty { texts.getString("features.empty") },
-                true)
-            field(texts.getString("verificationLevel"), texts.getString("verification.level.${guild.verificationLevel.name}"), true)
-            field(texts.getString("mfaEnabled"), texts.getString("mfa.${guild.mfaLevel.name}"), true)
-            field(texts.getString("explicitContentFilterLevel"), texts.getString("explicitContentFilterLevel.${guild.explicitContentFilterLevel.name}"), true)
-            guild.iconHash?.run {
-                thumbnail = EmbedImage("https://cdn.discordapp.com/icons/${guild.id}/$this")
-            }
-            guild.afkChannelId?.run {
-                field(texts.getString("afkChannel"), this.toChannelMention(), true)
-                field(texts.getString("afkTimeout"), texts.formatString("afkTimeout.value", guild.afkTimeoutSeconds), true)
-            }
+        message.reply {
+            embed {
+                title = texts.formatString("title", guild.name)
 
-            field(texts.getString("notifications"), texts.getString("notifications.level.${guild.defaultMessageNotificationLevel.name}"), true)
-            guild.widgetEnabled?.run {
-                field(texts.getString("widget"), texts.getString("widget.$this"), true)
-                guild.widgetChannelId?.run {
-                    field(texts.getString("widget.channel"), this.toChannelMention(), true)
+                field(texts.getString("owner"), true) { guild.owner.mention }
+                field(texts.getString("emojis"), true) { guild.emojis.count().toString() }
+                if (guild.roles.count() < 50 && guild.id == msgGuild.id) {
+                    field(texts.getString("roles"), false) {
+                        guild.roles.filterNot { it.id == guild.id }.toList().joinToString(" ") { it.mention }
+                    }
+                } else {
+                    field(texts.getString("roles"), true) { (guild.roles.count() - 1).toString() }
+                }
+                field(texts.getString("created_at"), false) {
+                    texts.formatString("created_at.value", Utils.prettyPrintPeriod(texts.locale, guild.id.timestamp))
+                }
+                field(texts.getString("region"), true) {
+                    guild.getRegion().name.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+                }
+                field(texts.getString("features"), true) {
+                    guild.features.joinToString(", ") {
+                        texts.getString("features.${it.value}")
+                    }.ifEmpty { texts.getString("features.empty") }
+                }
+                field(texts.getString("verificationLevel"), true) {
+                    texts.getString("verification.level.${guild.verificationLevel.value}")
+                }
+                field(texts.getString("mfaEnabled"), true) {
+                    texts.getString("mfa.${guild.mfaLevel.value}")
+                }
+                field(texts.getString("explicitContentFilterLevel"), true) {
+                    texts.getString("explicitContentFilterLevel.${guild.contentFilter.value}")
+                }
+                guild.iconHash?.run {
+                    thumbnail { url = "https://cdn.discordapp.com/icons/${guild.id}/$this" }
+                }
+                guild.afkChannel?.run {
+                    field(texts.getString("afkChannel"), true) { mention }
+                    field(texts.getString("afkTimeout"), true) {
+                        texts.formatString("afkTimeout.value", guild.afkTimeout)
+                    }
+                }
+
+                field(texts.getString("notifications"), true) {
+                    texts.getString("notifications.level.${guild.defaultMessageNotificationLevel.value}")
+                }
+                if (guild.isWidgetEnabled) {
+                    field(texts.getString("widget"), true) {
+                        texts.getString("widget.${guild.isWidgetEnabled}")
+                    }
+                    guild.widgetChannel?.run {
+                        field(texts.getString("widget.channel"), true) { mention }
+                    }
+                }
+
+                guild.systemChannel?.run {
+                    field(texts.getString("system.channel"), true) { mention }
                 }
             }
-
-            guild.systemMessageChannelId?.run {
-                field(texts.getString("system.channel"), this.toChannelMention(), true)
-            }
+            allowedMentions { repliedUser = false }
         }
     }
 }

@@ -4,7 +4,7 @@ plugins {
     id("com.palantir.git-version")
 }
 
-val diskordVersion: String by project
+val kordVersion: String by project
 val ktorVersion: String by project
 val exposedVersion: String by project
 val commonsIoVersion: String by project
@@ -25,7 +25,7 @@ repositories {
 dependencies {
     implementation(project(":Answernator"))
     implementation(kotlin("stdlib-jdk8"))
-    implementation("com.jessecorbett:diskord:$diskordVersion")
+    implementation("dev.kord:kord-core:$kordVersion")
     implementation("commons-io:commons-io:$commonsIoVersion")
     implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
     implementation("com.google.guava:guava:$guavaVersion")

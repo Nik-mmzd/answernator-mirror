@@ -28,9 +28,9 @@ class Help: LocalizedCommand {
             }
 
             val cmds = when(permissions.contains(Permission.Administrator)) {
-                true -> CommandList.commands.filter { it.check(message) }.groupBy { it.cmdType }
-                false -> CommandList.commands.filterNot { it.name in blacklist }.filter { it.check(message) }.groupBy { it.cmdType }
-            }
+                true -> CommandList.commands
+                false -> CommandList.commands.filterNot { it.name in blacklist }
+            }.filter { it.check(message) }.filterNot { it.localesWhitelist?.contains(texts.locale) == false }.groupBy { it.cmdType }
 
             message.reply {
                 embed {

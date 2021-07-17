@@ -13,6 +13,8 @@ import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.extensions.kord.channelType
 import pw.modder.answernator.utils.extensions.kord.words
 import pw.modder.answernator.utils.locale.LocaleBundle
+import java.util.*
+
 private val logger = KotlinLogging.logger {}
 
 suspend fun Kord.commandService() {
@@ -47,7 +49,7 @@ suspend fun Kord.commandService() {
         }
 
         logger.debug { "found command ${command.name}, checking" }
-        if (!command.check(message)) {
+        if (!command.check(message, texts.locale)) {
             message.reply {
                 content = texts.getString("bot.noPerms")
             }

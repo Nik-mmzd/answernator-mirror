@@ -1,17 +1,12 @@
 package pw.modder.answernator.tools.commands.localized
 
-import com.jessecorbett.diskord.api.model.Message
-import com.jessecorbett.diskord.api.model.UserStatus
-import com.jessecorbett.diskord.api.websocket.model.ActivityType
-import com.jessecorbett.diskord.api.websocket.model.UserStatusActivity
-import com.jessecorbett.diskord.dsl.Bot
-import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
-import com.jessecorbett.diskord.util.words
+import dev.kord.common.entity.PresenceStatus
+import dev.kord.core.entity.Message
 import kotlinx.coroutines.*
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedCommand
+import pw.modder.answernator.utils.extensions.kord.reply
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
-import java.util.*
 
 private var randomGamesTimer: Job? = null
 class Status: LocalizedCommand {
@@ -20,77 +15,85 @@ class Status: LocalizedCommand {
     override val userGroup = Command.UserGroup.OWNER
     override val cmdType = Command.CommandGroup.OWNER
 
-    override suspend fun action(bot: Bot, message: Message, texts: CommandLocaleBundle): CombinedMessageEmbed {
-        return when(message.words.getOrNull(1)?.toLowerCase()) {
+    override suspend fun action(message: Message, args: List<String>, texts: CommandLocaleBundle) {
+        message.reply(when(args.firstOrNull()?.lowercase()) {
             "online" -> {
-                bot.setActive()
+                message.kord.editPresence {
+                    this.status = PresenceStatus.Online
+                }
                 texts.getString("online")
             }
             "dnd" -> {
-                bot.setDoNotDisturb()
+                message.kord.editPresence {
+                    this.status = PresenceStatus.DoNotDisturb
+                }
                 texts.getString("dnd")
             }
             "idle" -> {
-                bot.setIdle()
+                message.kord.editPresence {
+                    this.status = PresenceStatus.Idle
+                }
                 texts.getString("idle")
             }
             "invisible" -> {
-                bot.setInvisible()
+                message.kord.editPresence {
+                    this.status = PresenceStatus.Invisible
+                }
                 texts.getString("invisible")
             }
             "game" -> {
-                val game = message.words.drop(2).joinToString(" ")
-                bot.setStatus(
-                    status = UserStatus.ONLINE,
-                    activity = UserStatusActivity(
-                        name = game,
-                        type = ActivityType.GAME
-                    )
-                )
+                val game = args.drop(1).joinToString(" ")
+                message.kord.editPresence {
+                    this.status = PresenceStatus.Online
+                    this.playing(game)
+                }
                 texts.formatString("playing", game)
             }
-            "randomgame" -> {
-                if (message.words.size == 2) {
+            "randomgame" -> when(args.getOrNull(1)) {
+                null -> {
                     val game = gamesdb.getRandomGame()
-                    bot.setStatus(
-                        status = UserStatus.ONLINE,
-                        activity = UserStatusActivity(
-                            name = game,
-                            type = ActivityType.GAME
-                        )
-                    )
-                    return texts.formatString("playing", game).toMessage()
-                }
-                if (message.words.getOrNull(2)?.toLowerCase() == "stop") {
-                    randomGamesTimer?.run {
-                        cancel()
-                        randomGamesTimer = null
+                    message.kord.editPresence {
+                        this.status = PresenceStatus.Online
+                        this.playing(game)
                     }
-                    return texts.getString("playing.timed.stopped").toMessage()
+                    texts.formatString("playing", game)
                 }
-
-                if (randomGamesTimer != null) {
-                    return texts.getString("playing.timed.running").toMessage()
+                "stop" -> {
+                    randomGamesTimer?.cancel()
+                    randomGamesTimer = null
+                    texts.getString("playing.timed.stopped")
                 }
-
-                val timeout = message.words[2].toLongOrNull()
-                    ?: return texts.getString("playing.timed.error").toMessage()
-
-                if (timeout < 30) return texts.getString("playing.timed.error").toMessage()
-
-                randomGamesTimer = GlobalScope.launch {
-                    while (isActive) {
-                        bot.setStatus(
-                            status = UserStatus.ONLINE,
-                            activity = UserStatusActivity(
-                                name = gamesdb.getRandomGame(),
-                                type = ActivityType.GAME
-                            )
-                        )
-                        delay(timeout*60*1000)
+                else -> {
+                    if (randomGamesTimer != null) {
+                        message.reply(texts.getString("playing.timed.running"))
+                        return
                     }
+
+                    val timeout = args[1].toLongOrNull()
+                    if (timeout == null) {
+                        message.reply(texts.getString("playing.timed.error"))
+                        return
+                    }
+
+                    if (timeout < 30) {
+                        message.reply(texts.getString("playing.timed.error"))
+                        return
+                    }
+
+                    randomGamesTimer = coroutineScope {
+                        launch {
+                            while (isActive) {
+                                message.kord.editPresence {
+                                    this.status = PresenceStatus.Online
+                                    this.playing(gamesdb.getRandomGame())
+                                }
+                                delay(timeout * 60 * 1000)
+                            }
+                        }
+                    }
+
+                    texts.formatString("playing.timed.started", timeout)
                 }
-                texts.formatString("playing.timed.started", timeout)
             }
             "custom" -> TODO("See https://github.com/discordapp/discord-api-docs/issues/1160")
             /*"custom" -> bot.setStatus(
@@ -102,16 +105,12 @@ class Status: LocalizedCommand {
                 )
             )*/
             "clear" -> {
-                bot.setStatus(
-                    status = UserStatus.ONLINE,
-                    activity = UserStatusActivity(
-                        name = "",
-                        type = ActivityType.GAME
-                    )
-                )
+                message.kord.editPresence {
+                    this.status = PresenceStatus.Online
+                }
                 texts.getString("clear")
             }
             else -> texts.getErrorString()
-        }.toMessage()
+        })
     }
 }

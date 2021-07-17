@@ -14,11 +14,12 @@ interface Command {
     val userGroup: UserGroup get() = UserGroup.ALL
     val permission: Permission? get() = null
 //    val timeout: Int get() = 0
+    val localesWhitelist: List<Locale>? get() = null
     val channels: EnumSet<ChannelTypes> get() = EnumSet.of(ChannelTypes.DIRECT, ChannelTypes.GUILD)
     val cmdType: CommandGroup get() = CommandGroup.OTHER
     val requiredPermission: Permission? get() = null
 
-    suspend fun check(message: Message): Boolean {
+    suspend fun check(message: Message, locale: Locale): Boolean {
         logger.debug { "checking command $name" }
         logger.debug { "checking command is owner only" }
         if (userGroup == UserGroup.OWNER && message.authorId != Globals.config.author) return false
@@ -35,6 +36,7 @@ interface Command {
         val perms = (message.getAuthorAsMember()?.getPermissions() ?: Permissions())
 
         if (userGroup == UserGroup.ADMIN && !perms.contains(Permission.Administrator)) return false
+        if (localesWhitelist?.contains(locale) == false) return false
         if (userGroup == UserGroup.PERMISSION && !perms.contains(permission ?: return false)) return false
 
         return true

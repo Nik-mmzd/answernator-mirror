@@ -1,5 +1,6 @@
 package pw.modder.answernator.utils
 
+import dev.kord.common.entity.Snowflake
 import org.joda.time.DateTime
 import org.joda.time.Period
 import org.joda.time.PeriodType
@@ -60,10 +61,6 @@ object Utils {
         return formatter.print(Period(DateTime(time), till, PeriodType.yearMonthDayTime()))
     }
 
-    fun prettyPrintPeriodSnowflake(locale: Locale, snowflake: String, till: DateTime = DateTime.now())
-            = prettyPrintPeriod(locale, snowflakeCreatedAt(snowflake), till)
-
-    fun snowflakeCreatedAt(snowflake: String): Long {
-        return (snowflake.toLong() shr 22) + 1420070400000
-    }
+    fun prettyPrintPeriodSnowflake(locale: Locale, snowflake: Snowflake, till: DateTime = DateTime.now())
+            = prettyPrintPeriod(locale, snowflake.timeStamp, till)
 }
