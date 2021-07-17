@@ -15,6 +15,8 @@ import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.LocalizedGuildCommand
 import pw.modder.answernator.utils.Utils
 import pw.modder.answernator.utils.extensions.kord.*
+import pw.modder.answernator.utils.extensions.toChannelMention
+import pw.modder.answernator.utils.extensions.toRoleMention
 import pw.modder.answernator.utils.extensions.toUserMention
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
 
@@ -57,8 +59,8 @@ class Info: LocalizedGuildCommand {
                             texts.formatString("message.mentions.text",
                                 texts.getString("bool.${data.mentionEveryone}"),
                                 data.mentions.takeIf { it.size < 9 }?.joinToString(separator = " ") { it.asString.toUserMention() }?.ifEmpty { texts.getString("empty") } ?: data.mentions.size.toString(),
-                                data.mentionRoles.takeIf { it.size < 9 }?.joinToString(separator = " ") { it.asString.toUserMention() }?.ifEmpty { texts.getString("empty") } ?: data.mentionRoles.size.toString(),
-                                data.mentionedChannels.value?.takeIf { it.size < 9 }?.joinToString(separator = " ") { it.asString.toUserMention() }?.ifEmpty { texts.getString("empty") } ?: data.mentionedChannels.value?.size?.toString() ?: "0"
+                                data.mentionRoles.takeIf { it.size < 9 }?.joinToString(separator = " ") { it.asString.toRoleMention() }?.ifEmpty { texts.getString("empty") } ?: data.mentionRoles.size.toString(),
+                                data.mentionedChannels.value?.takeIf { it.size < 9 }?.joinToString(separator = " ") { it.asString.toChannelMention() }?.ifEmpty { texts.getString("empty") } ?: data.mentionedChannels.value?.size?.toString() ?: "0"
                             )
                         }
                         field(texts.getString("message.attachments"), false) {
