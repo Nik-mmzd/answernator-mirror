@@ -15,7 +15,9 @@ object AntiSpamCache {
 
     private fun hashCode(message: Message): Int {
         var result = message.content.hashCode()
-        result = 31 * result + message.attachments.hashCode()
+        message.attachments.forEach {
+            result = 31 * result + it.size.hashCode()
+        }
         return result
     }
 

@@ -13,6 +13,7 @@ suspend fun main() {
     val bot = Kord(Globals.config.token)
 
     with(bot) {
+        configService()
         commandService()
         greetingService()
         defaultStatusService()
