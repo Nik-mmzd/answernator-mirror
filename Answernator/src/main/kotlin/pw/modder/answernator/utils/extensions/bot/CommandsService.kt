@@ -2,7 +2,6 @@ package pw.modder.answernator.utils.extensions.bot
 
 import dev.kord.common.entity.Permission
 import dev.kord.core.Kord
-import dev.kord.core.behavior.reply
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
 import mu.KotlinLogging
@@ -11,9 +10,9 @@ import pw.modder.answernator.db.Db
 import pw.modder.answernator.utils.CommandList
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.extensions.kord.channelType
+import pw.modder.answernator.utils.extensions.kord.reply
 import pw.modder.answernator.utils.extensions.kord.words
 import pw.modder.answernator.utils.locale.LocaleBundle
-import java.util.*
 
 private val logger = KotlinLogging.logger {}
 
@@ -50,19 +49,17 @@ suspend fun Kord.commandService() {
 
         logger.debug { "found command ${command.name}, checking" }
         if (!command.check(message, texts.locale)) {
-            message.reply {
-                content = texts.getString("bot.noPerms")
-            }
+            message.reply(texts.getString("bot.noPerms"))
             return@on
         }
 
         logger.debug { "found command ${command.name}, running" }
         try {
-            command.action(message, words.drop(1), texts.locale)
+            command.action(message, words.drop(1).filter { it.isNotEmpty() }, texts.locale)
 
         } catch (e: Exception) { // and any other exception
             logger.error(e) { "got error while running command" }
-            message.reply { content = texts.formatString("bot.error", "${config.prefix}${command.name}") }
+            message.reply(texts.formatString("bot.error", "${config.prefix}${command.name}"))
         }
     }
 }

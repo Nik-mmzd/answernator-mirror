@@ -62,5 +62,5 @@ object Utils {
     }
 
     fun prettyPrintPeriodSnowflake(locale: Locale, snowflake: Snowflake, till: DateTime = DateTime.now())
-            = prettyPrintPeriod(locale, snowflake.timeStamp, till)
+            = prettyPrintPeriod(locale, snowflake.timeStamp.epochSeconds, till)
 }
