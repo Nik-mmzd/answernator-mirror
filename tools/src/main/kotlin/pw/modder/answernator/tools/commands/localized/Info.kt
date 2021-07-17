@@ -1,7 +1,6 @@
 package pw.modder.answernator.tools.commands.localized
 
 import dev.kord.common.entity.Permission
-import dev.kord.common.entity.optional.optional
 import dev.kord.core.behavior.reply
 import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Message
@@ -28,10 +27,11 @@ class Info: LocalizedGuildCommand {
     }
 
     override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle) {
-        val msgRef = when (message.referencedMessage) {
+        val msgRef = when (message.referencedMessage ?: message.messageReference) {
             null -> 0
             else -> 1
         }
+        val referencedMessage = message.referencedMessage ?: message.messageReference?.message?.asMessage()
         if (message.mentionedUserIds.size + message.mentionedRoleIds.size + message.mentionedChannelIds.size + msgRef != 1) {
             message.reply(texts.getErrorString())
             return
@@ -75,7 +75,7 @@ class Info: LocalizedGuildCommand {
                         field(texts.getString("user.joinedAt"), false) {
                             texts.formatString(
                                 "user.joinedAt.value",
-                                Utils.prettyPrintPeriod(texts.locale, member.joinedAt)
+                                Utils.prettyPrintPeriod(texts.locale, member.joinedAt.epochSeconds)
                             )
                         }
                         field(texts.getString("user.createdAt"), false) {
@@ -149,7 +149,7 @@ class Info: LocalizedGuildCommand {
                     allowedMentions { repliedUser = false }
                 }
             }
-            message.referencedMessage != null -> with(message.referencedMessage!!) message@{
+            referencedMessage != null -> with(referencedMessage) message@{
                 message.reply {
                     embed {
                         title = texts.formatString("message.title", this@message.author?.tag ?: "Unkwon")

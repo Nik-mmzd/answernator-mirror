@@ -57,7 +57,7 @@ class SelfInfo: LocalizedGuildCommand {
                 field(texts.getString("user.joinedAt"), false) {
                     texts.formatString(
                         "user.joinedAt.value",
-                        Utils.prettyPrintPeriod(texts.locale, member.joinedAt)
+                        Utils.prettyPrintPeriod(texts.locale, member.joinedAt.epochSeconds)
                     )
                 }
                 field(texts.getString("user.createdAt"), false) {
