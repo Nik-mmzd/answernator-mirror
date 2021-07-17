@@ -1,64 +1,59 @@
 package pw.modder.answernator.tools.commands.localized
 
-import com.jessecorbett.diskord.api.model.Message
-import com.jessecorbett.diskord.api.model.Permission
-import com.jessecorbett.diskord.api.rest.BulkMessageDelete
-import com.jessecorbett.diskord.dsl.Bot
-import com.jessecorbett.diskord.dsl.CombinedMessageEmbed
-import com.jessecorbett.diskord.util.authorId
-import com.jessecorbett.diskord.util.words
+import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Snowflake
+import dev.kord.core.behavior.channel.TextChannelBehavior
+import dev.kord.core.entity.Guild
+import dev.kord.core.entity.Message
+import kotlinx.coroutines.flow.toList
 import pw.modder.answernator.utils.Command
-import pw.modder.answernator.utils.LocalizedCommand
+import pw.modder.answernator.utils.LocalizedGuildCommand
+import pw.modder.answernator.utils.extensions.kord.reply
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
-import java.time.OffsetDateTime
-import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoUnit
-import java.util.*
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
 
-class Clear: LocalizedCommand {
+class Clear: LocalizedGuildCommand {
     override val name = "clear"
 
     override val userGroup = Command.UserGroup.PERMISSION
-    override val permission = Permission.MANAGE_MESSAGES
-    override val channels = EnumSet.of(Command.ChannelTypes.GUILD)
+    override val permission = Permission.ManageMessages
     override val cmdType = Command.CommandGroup.MODER
-    override val requiredPermission: Permission? = Permission.MANAGE_MESSAGES
+    override val requiredPermission: Permission? = Permission.ManageMessages
 
-    val Message.sentAtDate
-        get() = OffsetDateTime.parse(sentAt, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-
-    override suspend fun action(bot: Bot, message: Message, texts: CommandLocaleBundle): CombinedMessageEmbed {
-        val channel = bot.clientStore.channels[message.channelId]
-        val messages = mutableListOf<String>()
-        val limit = message.words.getOrNull(1)?.toIntOrNull() ?: return texts.getErrorString().toMessage()
-
-        if (limit > 100 || limit < 1) return texts.getErrorString().toMessage()
-        val mentionedUserIds = message.usersMentioned.map { it.id }
-
-        val timeLimit = message.sentAtDate.minus(2, ChronoUnit.DAYS)
-        val msgLimit = if (mentionedUserIds.isEmpty()) limit else 100
-
-        var lastMessage = message
-        do {
-            channel.getMessagesBefore(limit = msgLimit, messageId = lastMessage.id)
-                .also { lastMessage = it.last() }
-                .filter { mentionedUserIds.isEmpty() || it.authorId in mentionedUserIds }
-                .take(limit - messages.size)
-                .filter { it.sentAtDate.isAfter(timeLimit) }
-                .map { it.id }.takeIf { it.isNotEmpty() }?.run { messages.addAll(this) }
-
-        } while (messages.size < limit && lastMessage.sentAtDate.isAfter(timeLimit))
-
-        if (messages.isEmpty()) return texts.getString("empty").toMessage()
-
-        if (messages.size == 1) {
-            channel.deleteMessage(messages.single())
-        } else {
-            channel.bulkDeleteMessages(BulkMessageDelete(
-                messages.toList()
-            ))
+    @OptIn(ExperimentalTime::class)
+    override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle) {
+        val limit = args.firstOrNull()?.toIntOrNull()
+        if (limit == null || limit !in 1..100) {
+            message.reply(texts.getErrorString())
+            return
         }
 
-        return texts.formatString("done", messages.size).toMessage()
+        val messages = mutableListOf<Snowflake>()
+
+        val timeLimit = message.id.timeStamp.minus(Duration.days(2))
+        var lastMessage = message
+        do {
+            message.channel.getMessagesBefore(lastMessage.id).toList().also { lastMessage = it.last() }
+                .filter { message.mentionedUserIds.isEmpty() || it.author!!.id in message.mentionedUserIds }
+                .take(limit - messages.size)
+                .filter { it.id.timeStamp > timeLimit }
+                .map { it.id }
+                .takeIf { it.isNotEmpty() }
+                ?.run { messages.addAll(this) }
+
+        } while (messages.size < limit && lastMessage.id.timeStamp > timeLimit)
+
+        if (messages.isEmpty()) {
+            message.reply(texts.getString("empty"))
+            return
+        }
+
+        if (messages.size == 1)
+            message.channel.deleteMessage(messages.first())
+        else
+            (guild.channelBehaviors.first { it.id == message.channelId } as TextChannelBehavior).bulkDelete(messages.toSet())
+
+        message.reply(texts.formatString("done", messages.size))
     }
 }

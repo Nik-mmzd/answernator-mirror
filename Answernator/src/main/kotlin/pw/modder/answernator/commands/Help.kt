@@ -30,7 +30,7 @@ class Help: LocalizedCommand {
             val cmds = when(permissions.contains(Permission.Administrator)) {
                 true -> CommandList.commands
                 false -> CommandList.commands.filterNot { it.name in blacklist }
-            }.filter { it.check(message) }.filterNot { it.localesWhitelist?.contains(texts.locale) == false }.groupBy { it.cmdType }
+            }.filter { it.check(message, texts.locale) }.filterNot { it.localesWhitelist?.contains(texts.locale) == false }.groupBy { it.cmdType }
 
             message.reply {
                 embed {
@@ -63,7 +63,7 @@ class Help: LocalizedCommand {
             return
         }
 
-        if (message.data.author.id.asString != Globals.config.author && !cmd.check(message)) {
+        if (message.data.author.id.asString != Globals.config.author && !cmd.check(message, texts.locale)) {
             message.reply {
                 embed {
                     title = texts.formatString("title", args.first())

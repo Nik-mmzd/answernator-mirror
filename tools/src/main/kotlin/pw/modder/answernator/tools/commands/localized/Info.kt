@@ -1,17 +1,20 @@
 package pw.modder.answernator.tools.commands.localized
 
 import dev.kord.common.entity.Permission
+import dev.kord.common.entity.optional.optional
 import dev.kord.core.behavior.reply
 import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Message
 import kotlinx.coroutines.flow.first
 import kotlinx.datetime.Clock
+import org.apache.commons.io.FileUtils
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.LocalizedGuildCommand
 import pw.modder.answernator.utils.Utils
 import pw.modder.answernator.utils.extensions.kord.*
+import pw.modder.answernator.utils.extensions.toUserMention
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
 
 class Info: LocalizedGuildCommand {
@@ -87,10 +90,35 @@ class Info: LocalizedGuildCommand {
                 }
             }
             message.mentionedChannelIds.isNotEmpty() -> with(message.mentionedChannels.first()) {
-                TODO("Channel info")
                 message.reply {
                     embed {
+                        title = data.icon.orElse("") + data.name.orElse { texts.getString("channel.title") }
 
+                        field(texts.getString("channel.id"), true) { data.id.asString }
+                        field(texts.getString("channel.type"), true) { data.type::class.simpleName ?: texts.getString("channel.unknown") }
+                        data.parentId?.asOptional?.ifHasValue { parent ->
+                            guild.channelBehaviors.find { it.id == parent }?.run {
+                                field(texts.getString("channel.parent"), true) { data.icon.orElse("#") + name }
+                            }
+                        }
+                        data.nsfw.asOptional.ifHasValue {
+                            field(texts.getString("channel.nsfw"), true) { texts.getString("bool.$it") }
+                        }
+                        data.position.asOptional.ifHasValue {
+                            field(texts.getString("channel.position"), true) { it.toString() }
+                        }
+                        data.bitrate.asOptional.ifHasValue {
+                            field(texts.getString("channel.bitrate"), true) { texts.formatString("channel.bitrate.value", it) }
+                        }
+                        data.userLimit.asOptional.ifHasValue {
+                            field(texts.getString("channel.limit"), true) { it.toString() }
+                        }
+                        data.rateLimitPerUser.asOptional.ifHasValue {
+                            field(texts.getString("channel.rate"), true) { it.toString() }
+                        }
+                        data.topic.ifHasValue {
+                            field(texts.getString("channel.topic"), false) { it }
+                        }
                     }
                     allowedMentions { repliedUser = false }
                 }
@@ -121,11 +149,46 @@ class Info: LocalizedGuildCommand {
                     allowedMentions { repliedUser = false }
                 }
             }
-            message.referencedMessage != null -> with(message.referencedMessage!!) {
-                TODO("Message info")
+            message.referencedMessage != null -> with(message.referencedMessage!!) message@{
                 message.reply {
                     embed {
+                        title = texts.formatString("message.title", this@message.author?.tag ?: "Unkwon")
+                        description = this@message.content.takeIf { it.length < 501 } ?: (this@message.content.take(499) + "…")
 
+                        field(texts.getString("message.embed"), true) { texts.getString("bool.${data.embeds.isNotEmpty()}") }
+                        field(texts.getString("message.pinned"), true) { texts.getString("bool.${data.pinned}") }
+                        field(texts.getString("message.webhook"), true) { texts.getString("bool.${data.webhookId.asOptional.hasValue()}")}
+                        field(texts.getString("message.type"), true) { texts.getNullableString("message.type.${data.type::class.simpleName}") ?: data.type::class.simpleName ?: "Unkwon" }
+
+                        field(texts.getString("message.mentions"), false) {
+                            texts.formatString("message.mentions.text",
+                                texts.getString("bool.${data.mentionEveryone}"),
+                                data.mentions.takeIf { it.size < 9 }?.joinToString(separator = " ") { it.asString.toUserMention() }?.ifEmpty { texts.getString("empty") } ?: data.mentions.size.toString(),
+                                data.mentionRoles.takeIf { it.size < 9 }?.joinToString(separator = " ") { it.asString.toUserMention() }?.ifEmpty { texts.getString("empty") } ?: data.mentionRoles.size.toString(),
+                                data.mentionedChannels.value?.takeIf { it.size < 9 }?.joinToString(separator = " ") { it.asString.toUserMention() }?.ifEmpty { texts.getString("empty") } ?: data.mentionedChannels.value?.size?.toString() ?: "0"
+                            )
+                        }
+                        field(texts.getString("message.attachments"), false) {
+                            data.attachments.joinToString(separator = "\n") {
+                                "**[${it.filename}](${it.url})** (${FileUtils.byteCountToDisplaySize(it.size.toLong())})"
+                            }.ifEmpty { texts.getString("empty") }
+                        }
+
+                        field(texts.getString("message.reactions"), false) {
+                            (data.reactions.value?.count() ?: 0).toString()
+                        }
+
+                        data.referencedMessage.ifHasValue { ref ->
+                            field(texts.getString("message.reference"), false) {
+                                "[${ref.content.takeIf { it.length < 129 } ?: (ref.content.take(127) + "…")}](https://discord.com/channels/${ref.guildId.value?.asString ?: "@me"}/${ref.channelId.asString}/${ref.id.asString})"
+                            }
+                        }
+
+                        data.flags.ifHasValue { flags ->
+                            field(texts.getString("message.flags"), false) {
+                                flags.flags.joinToString(separator = ", ") { texts.getNullableString("message.flags.${it::class.simpleName}") ?: it::class.simpleName ?: "Unkwon" }.ifEmpty { texts.getString("empty") }
+                            }
+                        }
                     }
                     allowedMentions { repliedUser = false }
                 }
