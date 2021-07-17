@@ -7,10 +7,10 @@ import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
-import pw.modder.answernator.tools.utils.timestamp
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedGuildCommand
 import pw.modder.answernator.utils.Utils
+import pw.modder.answernator.utils.extensions.kord.instant
 import pw.modder.answernator.utils.extensions.kord.reply
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
 
@@ -52,7 +52,7 @@ class Guild: LocalizedGuildCommand {
                     field(texts.getString("roles"), true) { (guild.roles.count() - 1).toString() }
                 }
                 field(texts.getString("created_at"), false) {
-                    texts.formatString("created_at.value", Utils.prettyPrintPeriod(texts.locale, guild.id.timestamp))
+                    texts.formatString("created_at.value", Utils.prettyPrintPeriod(texts.locale, guild.id.instant))
                 }
                 field(texts.getString("region"), true) {
                     guild.getRegion().name.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }

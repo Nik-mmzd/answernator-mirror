@@ -2,6 +2,7 @@ package pw.modder.answernator.utils
 
 import dev.kord.common.entity.Snowflake
 import org.joda.time.DateTime
+import org.joda.time.Instant
 import org.joda.time.Period
 import org.joda.time.PeriodType
 import org.joda.time.format.PeriodFormatterBuilder
@@ -62,5 +63,5 @@ object Utils {
     }
 
     fun prettyPrintPeriodSnowflake(locale: Locale, snowflake: Snowflake, till: DateTime = DateTime.now())
-            = prettyPrintPeriod(locale, snowflake.timeStamp.epochSeconds, till)
+            = prettyPrintPeriod(locale, Instant.ofEpochSecond(snowflake.timeStamp.epochSeconds), till)
 }

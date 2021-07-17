@@ -3,13 +3,9 @@ package pw.modder.answernator.tools.commands.localized
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.reply
 import dev.kord.core.entity.Message
-import pw.modder.answernator.tools.utils.increment
-import pw.modder.answernator.tools.utils.process
-import pw.modder.answernator.tools.utils.timestamp
-import pw.modder.answernator.tools.utils.worker
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedCommand
-import pw.modder.answernator.utils.extensions.kord.reply
+import pw.modder.answernator.utils.extensions.kord.*
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
 
 class SnowFlake: LocalizedCommand {

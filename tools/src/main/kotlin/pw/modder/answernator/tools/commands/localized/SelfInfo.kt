@@ -5,6 +5,7 @@ import dev.kord.core.behavior.reply
 import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Message
 import kotlinx.datetime.Clock
+import org.joda.time.Instant
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.LocalizedGuildCommand
 import pw.modder.answernator.utils.Utils
@@ -57,7 +58,7 @@ class SelfInfo: LocalizedGuildCommand {
                 field(texts.getString("user.joinedAt"), false) {
                     texts.formatString(
                         "user.joinedAt.value",
-                        Utils.prettyPrintPeriod(texts.locale, member.joinedAt.epochSeconds)
+                        Utils.prettyPrintPeriod(texts.locale, Instant.ofEpochSecond(member.joinedAt.epochSeconds))
                     )
                 }
                 field(texts.getString("user.createdAt"), false) {

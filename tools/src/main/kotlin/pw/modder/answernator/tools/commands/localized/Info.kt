@@ -7,6 +7,7 @@ import dev.kord.core.entity.Message
 import kotlinx.coroutines.flow.first
 import kotlinx.datetime.Clock
 import org.apache.commons.io.FileUtils
+import org.joda.time.Instant
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.Globals
@@ -75,7 +76,7 @@ class Info: LocalizedGuildCommand {
                         field(texts.getString("user.joinedAt"), false) {
                             texts.formatString(
                                 "user.joinedAt.value",
-                                Utils.prettyPrintPeriod(texts.locale, member.joinedAt.epochSeconds)
+                                Utils.prettyPrintPeriod(texts.locale, Instant.ofEpochSecond(member.joinedAt.epochSeconds))
                             )
                         }
                         field(texts.getString("user.createdAt"), false) {
