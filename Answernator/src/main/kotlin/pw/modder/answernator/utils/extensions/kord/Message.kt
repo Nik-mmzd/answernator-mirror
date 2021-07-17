@@ -20,4 +20,7 @@ val Message.channelType: Command.ChannelTypes get() {
 
 val Message.authorId: String get() = data.author.id.asString
 
-suspend fun Message.reply(content: String) = reply { this.content = content }
+suspend fun Message.reply(content: String) = reply {
+    this.content = content
+    allowedMentions { repliedUser = false }
+}

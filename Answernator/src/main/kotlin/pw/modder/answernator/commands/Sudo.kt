@@ -13,7 +13,7 @@ class Sudo: GuildCommand {
     override val name = "sudo"
     override val cmdType = Command.CommandGroup.DEBUG
     override val userGroup = Command.UserGroup.OWNER
-    override val channels = EnumSet.of(Command.ChannelTypes.GUILD)
+
     override fun getDescription(locale: Locale): String? {
         return "Run command as guild admin"
     }

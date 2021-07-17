@@ -29,7 +29,8 @@ class Config: LocalizedGuildCommand {
         }
 
         when(args.first()) {
-            "get", "show" -> message.reply { embed {
+            "get", "show" -> message.reply {
+                embed {
                     title = guild.name
                     description = texts.getString("description")
 
@@ -79,7 +80,9 @@ class Config: LocalizedGuildCommand {
                             config.antiSpamBan
                         )
                     }
-            } }
+                }
+                allowedMentions { repliedUser = false }
+            }
             "lang" -> {
                 if (args.getOrNull(1) !in Globals.config.langs) {
                     message.reply(texts.formatString("locale.notfound", args[1]))
@@ -195,10 +198,13 @@ class Config: LocalizedGuildCommand {
             }
             "blacklist" -> {
                 when(args.getOrNull(1)) {
-                    "show", "get" -> message.reply { embed {
-                        title = texts.getString("blacklist.title")
-                        description = Db.getBlacklisted(guild.id).joinToString(separator = ", ") { "`$it`" }
-                    } }
+                    "show", "get" -> message.reply {
+                        embed {
+                            title = texts.getString("blacklist.title")
+                            description = Db.getBlacklisted(guild.id).joinToString(separator = ", ") { "`$it`" }
+                        }
+                        allowedMentions { repliedUser = false }
+                    }
                     "add" -> {
                         val cmd = args.getOrNull(2)
                         if (cmd == null) {

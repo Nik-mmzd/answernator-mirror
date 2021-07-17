@@ -26,18 +26,21 @@ class AntiSpam: LocalizedGuildCommand {
         }
 
         when(args[0].toLowerCase()) {
-            "get", "show" -> message.reply { embed {
-                title = texts.getString("title")
-                description = texts.formatString("description",
-                    texts.getString("enabled.${config.isEnabled(Features.ANTI_SPAM)}"),
-                    texts.getString("enabled.${config.isEnabled(Features.ANTI_SPAM_SILENT)}"),
-                    config.antiSpamWarn,
-                    config.antiSpamBan
-                )
+            "get", "show" -> message.reply {
+                embed {
+                    title = texts.getString("title")
+                    description = texts.formatString("description",
+                        texts.getString("enabled.${config.isEnabled(Features.ANTI_SPAM)}"),
+                        texts.getString("enabled.${config.isEnabled(Features.ANTI_SPAM_SILENT)}"),
+                        config.antiSpamWarn,
+                        config.antiSpamBan
+                    )
 
-                field(texts.getString("warn.title"), false) { config.antiSpamWarnText.replace("%1\$s", "%user%") }
-                field(texts.getString("ban.title"), false) { config.antiSpamBanText }
-            } }
+                    field(texts.getString("warn.title"), false) { config.antiSpamWarnText.replace("%1\$s", "%user%") }
+                    field(texts.getString("ban.title"), false) { config.antiSpamBanText }
+                }
+                allowedMentions { repliedUser = false }
+            }
             "enable" -> {
                 transaction { config.enable(Features.ANTI_SPAM) }
                 message.reply(texts.getString("enabled"))

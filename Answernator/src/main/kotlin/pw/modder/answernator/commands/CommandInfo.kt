@@ -51,26 +51,29 @@ class CommandInfo: Command {
             return
         }
 
-        message.reply { embed {
-            title = "Command information"
+        message.reply {
+            embed {
+                title = "Command information"
 
-            field("Command name", true) { cmd.name }
-            field("Command publicity", true) { getCommandTypeString(cmd) }
-            field("Command channel types", true) { getCommandChannelTypeString(cmd) }
+                field("Command name", true) { cmd.name }
+                field("Command publicity", true) { getCommandTypeString(cmd) }
+                field("Command channel types", true) { getCommandChannelTypeString(cmd) }
 
-            cmd.requiredPermission?.run cmd@{
-                field("Required bot permission", true) { this.toString() }
-                message.getGuildOrNull()?.getMemberOrNull(message.kord.selfId)?.getPermissions()?.run {
-                    field("Bot can run", true) { contains(this@cmd).toBoolString() }
+                cmd.requiredPermission?.run cmd@{
+                    field("Required bot permission", true) { this.toString() }
+                    message.getGuildOrNull()?.getMemberOrNull(message.kord.selfId)?.getPermissions()?.run {
+                        field("Bot can run", true) { contains(this@cmd).toBoolString() }
+                    }
+                }
+                message.getAuthorAsMember()?.getPermissions()?.run {
+                    field("Member can use", true) { cmd.check(message).toBoolString() }
+                }
+
+                message.guildId?.run {
+                    field("Is blacklisted", true) { Db.isBlackListed(this, cmd.name).toBoolString() }
                 }
             }
-            message.getAuthorAsMember()?.getPermissions()?.run {
-                field("Member can use", true) { cmd.check(message).toBoolString() }
-            }
-
-            message.guildId?.run {
-                field("Is blacklisted", true) { Db.isBlackListed(this, cmd.name).toBoolString() }
-            }
-        } }
+            allowedMentions { repliedUser = false }
+        }
     }
 }

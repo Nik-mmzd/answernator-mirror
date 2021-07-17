@@ -32,7 +32,7 @@ class About: Command {
                 System.getProperty("java.vendor")?.also { field("Java Vendor", true) { it } }
                 field("Java Version",true) { System.getProperty("java.version", "Unknown") }
                 field("Kotlin", true) { KotlinVersion.CURRENT.toString() }
-                field("Diskord", true) { Globals.getDependencyVersion("dev.kord", "kord-core") }
+                field("Kord", true) { Globals.getDependencyVersion("dev.kord", "kord-core") }
                 field("Bot version", true) { Globals.getDependencyVersion("pw.modder", "Answernator") }
                 field("Commands", true) { CommandList.commands.size.toString() }
                 field("Modules", true) { CommandList.modules.joinToString("\n") { "${it.name}@${it.version}".trim('\n') } }
@@ -46,6 +46,7 @@ class About: Command {
                 field("OS", true) { System.getProperty("os.name", "Unknown") + ' ' + System.getProperty("os.arch", "Unknown") }
                 field("Uptime", true) { Utils.getReadableUptime() }
             }
+            allowedMentions { repliedUser = false }
         }
     }
 }

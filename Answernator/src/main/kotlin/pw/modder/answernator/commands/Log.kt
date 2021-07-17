@@ -30,16 +30,19 @@ class Log: LocalizedGuildCommand {
         val config = Db.getLogConfig(guild.id)
 
         if (args.first().equals("get", true)) {
-            message.reply { embed {
-                title = texts.getString("get.title")
+            message.reply {
+                embed {
+                    title = texts.getString("get.title")
 
-                field(texts.getString("get.memberjoin"), true) { formatField(texts, config, Features.LOG_JOIN, config.memberJoinLogChannel) }
-                field(texts.getString("get.memberleave"), true) { formatField(texts, config, Features.LOG_LEAVE, config.memberLeaveLogChannel) }
-                field(texts.getString("get.memberban"), true) { formatField(texts, config, Features.LOG_LEAVE, config.memberLeaveLogChannel) }
-                field(texts.getString("get.memeberunban"), true) { formatField(texts, config, Features.LOG_UNBAN, config.memberUnbanLogChannel) }
-                field(texts.getString("get.membermute"), true) { formatField(texts, config, Features.LOG_MUTE, config.memberMuteLogChannel) }
-                field(texts.getString("get.memberunmute"), true) { formatField(texts, config, Features.LOG_UNMUTE, config.memberUnmuteLogChannel) }
-            } }
+                    field(texts.getString("get.memberjoin"), true) { formatField(texts, config, Features.LOG_JOIN, config.memberJoinLogChannel) }
+                    field(texts.getString("get.memberleave"), true) { formatField(texts, config, Features.LOG_LEAVE, config.memberLeaveLogChannel) }
+                    field(texts.getString("get.memberban"), true) { formatField(texts, config, Features.LOG_LEAVE, config.memberLeaveLogChannel) }
+                    field(texts.getString("get.memeberunban"), true) { formatField(texts, config, Features.LOG_UNBAN, config.memberUnbanLogChannel) }
+                    field(texts.getString("get.membermute"), true) { formatField(texts, config, Features.LOG_MUTE, config.memberMuteLogChannel) }
+                    field(texts.getString("get.memberunmute"), true) { formatField(texts, config, Features.LOG_UNMUTE, config.memberUnmuteLogChannel) }
+                }
+                allowedMentions { repliedUser = false }
+            }
             return
         }
 
