@@ -32,7 +32,7 @@ class LocaleBundle private constructor(override val name: String, override val l
     }
 
     override fun formatString(key: String, vararg args: Any): String {
-        return getString(key).format(args = *args)
+        return getString(key).format(args = args)
     }
 
     override fun getNullableString(key: String): String? {
@@ -66,7 +66,7 @@ class CommandLocaleBundle private constructor(override val name: String, overrid
     }
 
     override fun formatString(key: String, vararg args: Any): String {
-        return getString(key).format(args = *args)
+        return getString(key).format(args = args)
     }
 
     override fun getNullableString(key: String): String? {

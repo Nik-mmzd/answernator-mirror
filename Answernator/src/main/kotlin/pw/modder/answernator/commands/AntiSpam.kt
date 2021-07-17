@@ -25,7 +25,7 @@ class AntiSpam: LocalizedGuildCommand {
             return
         }
 
-        when(args[0].toLowerCase()) {
+        when(args[0].lowercase()) {
             "get", "show" -> message.reply {
                 embed {
                     title = texts.getString("title")

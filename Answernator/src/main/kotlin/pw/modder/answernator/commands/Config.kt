@@ -223,7 +223,7 @@ class Config: LocalizedGuildCommand {
                         }
 
                         transaction { BlacklistedCommand.new {
-                            this.command = cmd.toLowerCase()
+                            this.command = cmd.lowercase()
                             this.guild = guild.id.asString
                         } }
 

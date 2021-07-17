@@ -61,7 +61,7 @@ class Log: LocalizedGuildCommand {
             }
         }
 
-        message.reply(when(args.first().toLowerCase()) {
+        message.reply(when(args.first().lowercase()) {
             "all" -> when(action) {
                 "enable" -> {
                     transaction {

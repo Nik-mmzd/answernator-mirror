@@ -20,3 +20,38 @@ tasks {
         kotlinOptions.jvmTarget = "1.8"
     }
 }
+
+val exposedVersion: String by project
+val ktorVersion: String by project
+val commonsIoVersion: String by project
+val kotlinLoggingVersion: String by project
+val guavaVersion: String by project
+val h2Version: String by project
+val jodaTimeVersion: String by project
+val kordVersion: String by project
+
+subprojects {
+    apply(plugin = "org.jetbrains.kotlin.jvm")
+
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+
+    dependencies {
+        implementation(kotlin("stdlib-jdk8"))
+        implementation(kotlin("reflect"))
+        implementation("dev.kord:kord-core:$kordVersion")
+        implementation("commons-io:commons-io:$commonsIoVersion")
+        implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
+        implementation("com.google.guava:guava:$guavaVersion")
+        implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
+        implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
+        implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
+        implementation("io.ktor:ktor-client-core:$ktorVersion")
+        implementation("io.ktor:ktor-client-core-jvm:$ktorVersion")
+        implementation("io.ktor:ktor-client-cio:$ktorVersion")
+        implementation("com.h2database:h2:$h2Version")
+        implementation("joda-time:joda-time:$jodaTimeVersion")
+    }
+}

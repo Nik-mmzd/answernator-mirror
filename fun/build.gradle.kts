@@ -4,37 +4,13 @@ plugins {
     id("com.palantir.git-version")
 }
 
-val kordVersion: String by project
-val ktorVersion: String by project
-val exposedVersion: String by project
-val commonsIoVersion: String by project
-val kotlinLoggingVersion: String by project
-val guavaVersion: String by project
-
-
 val gitVersion: groovy.lang.Closure<String> by extra
 
 group = "pw.modder.answernator"
 version = gitVersion(mapOf ("prefix" to "fun@"))
 
-repositories {
-    mavenCentral()
-    jcenter()
-}
-
 dependencies {
     implementation(project(":Answernator"))
-    implementation(kotlin("stdlib-jdk8"))
-    implementation("dev.kord:kord-core:$kordVersion")
-    implementation("commons-io:commons-io:$commonsIoVersion")
-    implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
-    implementation("com.google.guava:guava:$guavaVersion")
-    implementation("io.ktor:ktor-client-core:$ktorVersion")
-    implementation("io.ktor:ktor-client-core-jvm:$ktorVersion")
-    implementation("io.ktor:ktor-client-cio:$ktorVersion")
-    implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
-    implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
-    implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
 }
 
 tasks {
