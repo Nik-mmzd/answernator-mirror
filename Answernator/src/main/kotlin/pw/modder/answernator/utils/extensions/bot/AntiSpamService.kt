@@ -2,16 +2,15 @@ package pw.modder.answernator.utils.extensions.bot
 
 import dev.kord.core.Kord
 import dev.kord.core.behavior.ban
-import dev.kord.core.behavior.reply
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
 import mu.KotlinLogging
 import pw.modder.answernator.cache.AntiSpamCache
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.db.guild.Features
-import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.extensions.kord.authorId
 import pw.modder.answernator.utils.extensions.kord.guildId
+import pw.modder.answernator.utils.extensions.kord.reply
 
 private val logger = KotlinLogging.logger {}
 suspend fun Kord.antiSpam() {
@@ -35,7 +34,7 @@ suspend fun Kord.antiSpam() {
                 if (config.isEnabled(Features.ANTI_SPAM_SILENT))
                     return@on
 
-                message.reply { content = config.antiSpamWarnText.format(message.author?.mention ?: "\$user") }
+                AntiSpamCache.putMessage(message.reply(config.antiSpamWarnText.format(message.author?.mention ?: "\$user")))
             }
             config.antiSpamBan -> {
                 logger.info { "Creating ban: guild $guild, message ${message.id}, user ${message.authorId}, content = <${message.content}>" }
@@ -44,6 +43,7 @@ suspend fun Kord.antiSpam() {
                     deleteMessagesDays = 1
                     reason = config.antiSpamBanText
                 }
+                AntiSpamCache.getMessage(message.guildId!!, message.author!!.id)?.delete()
             }
         }
     }

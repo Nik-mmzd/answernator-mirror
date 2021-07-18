@@ -9,9 +9,7 @@ import mu.KotlinLogging
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.utils.CommandList
 import pw.modder.answernator.utils.Globals
-import pw.modder.answernator.utils.extensions.kord.channelType
-import pw.modder.answernator.utils.extensions.kord.reply
-import pw.modder.answernator.utils.extensions.kord.words
+import pw.modder.answernator.utils.extensions.kord.*
 import pw.modder.answernator.utils.locale.LocaleBundle
 
 private val logger = KotlinLogging.logger {}
@@ -27,9 +25,8 @@ suspend fun Kord.commandService() {
                 return@on
 
             logger.debug { "received message, message text: ${message.content}" }
-            message.data.guildId.value
 
-            val guildConfig = message.data.guildId.value.takeUnless { it == null }?.run { Db.getGuildConfig(asString) }
+            val guildConfig = message.data.guildId.asOptional.orElse(null)?.let { Db.getGuildConfig(it) }
 
             if (message.content.first() != guildConfig?.cmdPrefix ?: config.prefix)
                 return@on
