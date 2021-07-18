@@ -18,38 +18,38 @@ suspend fun Kord.commandService() {
     val config = Globals.config
 
     on<MessageCreateEvent> {
+        if (message.content.isEmpty())
+            return@on
+        if (message.author?.isBot != false)
+            return@on
+
+        logger.debug { "received message, message text: ${message.content}" }
+
+        val guildConfig = message.data.guildId.asOptional.orElse(null)?.let { Db.getGuildConfig(it) }
+
+        if (message.content.first() != guildConfig?.cmdPrefix ?: config.prefix)
+            return@on
+
+        val texts = LocaleBundle("botGlobal", guildConfig?.lang ?: config.lang)
+
+        val words = message.words
+        val command = CommandList.findCommand(name = words.first().drop(1), channelType = message.channelType)
+            ?: return@on // if command not found: do nothing
+
+        if (guildConfig != null && Db.isBlackListed(guildConfig.guildId, command.name)) {
+            if (message.author?.id != message.getGuild().owner.id
+                && member?.getPermissions()?.contains(Permission.Administrator) != true)
+                return@on
+        }
+
+        logger.debug { "found command ${command.name}, checking" }
+        if (!command.check(message, texts.locale)) {
+            message.reply(texts.getString("bot.noPerms"))
+            return@on
+        }
+
+        logger.debug { "found command ${command.name}, running" }
         message.channel.withTyping {
-            if (message.content.isEmpty())
-                return@on
-            if (message.author?.isBot != false)
-                return@on
-
-            logger.debug { "received message, message text: ${message.content}" }
-
-            val guildConfig = message.data.guildId.asOptional.orElse(null)?.let { Db.getGuildConfig(it) }
-
-            if (message.content.first() != guildConfig?.cmdPrefix ?: config.prefix)
-                return@on
-
-            val texts = LocaleBundle("botGlobal", guildConfig?.lang ?: config.lang)
-
-            val words = message.words
-            val command = CommandList.findCommand(name = words.first().drop(1), channelType = message.channelType)
-                ?: return@on // if command not found: do nothing
-
-            if (guildConfig != null && Db.isBlackListed(guildConfig.guildId, command.name)) {
-                if (message.author?.id != message.getGuild().owner.id
-                    && member?.getPermissions()?.contains(Permission.Administrator) != true)
-                    return@on
-            }
-
-            logger.debug { "found command ${command.name}, checking" }
-            if (!command.check(message, texts.locale)) {
-                message.reply(texts.getString("bot.noPerms"))
-                return@on
-            }
-
-            logger.debug { "found command ${command.name}, running" }
             try {
                 command.action(message, words.drop(1).filter { it.isNotEmpty() }, texts.locale)
 
