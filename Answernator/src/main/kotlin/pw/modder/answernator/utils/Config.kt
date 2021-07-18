@@ -7,7 +7,7 @@ import kotlinx.serialization.json.Json
 import java.io.File
 import java.util.*
 
-private val JSON = Json
+private val JSON = Json { encodeDefaults = true; ignoreUnknownKeys = true }
 
 @Serializable
 open class Config(
