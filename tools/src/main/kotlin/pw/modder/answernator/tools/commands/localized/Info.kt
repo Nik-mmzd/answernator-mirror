@@ -4,7 +4,6 @@ import dev.kord.common.entity.Permission
 import dev.kord.core.behavior.reply
 import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Message
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.datetime.Clock
 import org.apache.commons.io.FileUtils

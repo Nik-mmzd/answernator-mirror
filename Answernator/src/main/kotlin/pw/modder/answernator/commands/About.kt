@@ -5,19 +5,11 @@ import dev.kord.core.entity.Message
 import org.apache.commons.io.FileUtils
 import pw.modder.answernator.utils.*
 import pw.modder.answernator.utils.extensions.kord.authorId
+import pw.modder.answernator.utils.extensions.kord.getColor
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
 
 class About: LocalizedCommand {
     override val name: String = "about"
-
-//    override fun getHelp(locale: Locale): String? {
-//        return "Shows some technical information about the bot. Usage: `$name`. Not localized."
-//    }
-//
-//    override fun getDescription(locale: Locale): String? {
-//        return "technical bot information"
-//    }
-
     override val cmdType = Command.CommandGroup.OTHER
 
     override suspend fun action(message: Message, args: List<String>, texts: CommandLocaleBundle) {
@@ -40,7 +32,6 @@ class About: LocalizedCommand {
                     field(texts.getString("uptime"), true) { Utils.getReadableUptime() }
                 }
 
-
                 field(texts.getString("kotlin"), true) { KotlinVersion.CURRENT.toString() }
                 field(texts.getString("library"), true) { Globals.getDependencyVersion("dev.kord", "kord-core") }
                 field(texts.getString("bot"), true) { Globals.getDependencyVersion("pw.modder", "Answernator") }
@@ -51,6 +42,8 @@ class About: LocalizedCommand {
                 field(texts.getString("source"), false) { texts.getString("source.link") }
                 field(texts.getString("issues"), false) { texts.getString("issues.link") }
                 field(texts.getString("invite"), false) { texts.getString("invite.link") }
+
+                color = message.getGuildOrNull()?.getMemberOrNull(message.kord.selfId)?.getColor()
             }
             allowedMentions { repliedUser = false }
         }
