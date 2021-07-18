@@ -1,6 +1,7 @@
 package pw.modder.answernator.tools.commands.localized
 
 import dev.kord.common.entity.Permission
+import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.reply
 import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Message
@@ -13,10 +14,8 @@ import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.LocalizedGuildCommand
 import pw.modder.answernator.utils.Utils
+import pw.modder.answernator.utils.extensions.*
 import pw.modder.answernator.utils.extensions.kord.*
-import pw.modder.answernator.utils.extensions.toChannelMention
-import pw.modder.answernator.utils.extensions.toRoleMention
-import pw.modder.answernator.utils.extensions.toUserMention
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
 
 class Info: LocalizedGuildCommand {
@@ -37,8 +36,15 @@ class Info: LocalizedGuildCommand {
             else -> 1
         }
 
-        if (message.mentionedUserIds.size + message.mentionedRoleIds.size + message.mentionedChannelIds.size + msgRef != 1) {
+        val mentionedChannels = when {
+            message.mentionedChannelIds.isNotEmpty() -> message.mentionedChannelIds
+            args.first().isChannelMention() -> setOf(Snowflake(args.first().extractMentionedId()!!))
+            else -> setOf()
+        }
+
+        if (message.mentionedUserIds.size + message.mentionedRoleIds.size + mentionedChannels.size + msgRef != 1) {
             message.reply(texts.getErrorString())
+            println("Early return")
             return
         }
 
@@ -138,7 +144,7 @@ class Info: LocalizedGuildCommand {
                     allowedMentions { repliedUser = false }
                 }
             }
-            message.mentionedChannelIds.isNotEmpty() -> with(message.mentionedChannels.firstOrNull() ?: message.getChannel()) {
+            mentionedChannels.isNotEmpty() -> with(message.mentionedChannels.firstOrNull() ?: guild.getChannel(mentionedChannels.first())) {
                 message.reply {
                     embed {
                         title = data.icon.orElse("") + data.name.orElse { texts.getString("channel.title") }
@@ -157,7 +163,7 @@ class Info: LocalizedGuildCommand {
                             field(texts.getString("channel.position"), true) { it.toString() }
                         }
                         data.bitrate.asOptional.ifHasValue {
-                            field(texts.getString("channel.bitrate"), true) { texts.formatString("channel.bitrate.value", it) }
+                            field(texts.getString("channel.bitrate"), true) { texts.formatString("channel.bitrate.value", it/1000) }
                         }
                         data.userLimit.asOptional.ifHasValue {
                             field(texts.getString("channel.limit"), true) { it.toString() }
