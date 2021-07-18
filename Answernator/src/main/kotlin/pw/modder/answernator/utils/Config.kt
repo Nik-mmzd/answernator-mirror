@@ -12,12 +12,12 @@ private val JSON = Json
 @Serializable
 open class Config(
     val token: String = "token-here",
-    @SerialName("bot_id") val botId: String = "180080318135402497",
     val lang: String = "ru",
     val prefix: Char = '!',
     val author: String = "135017849604276224",
     val langs: List<String> = listOf("ru", "en"),
-    @SerialName("status") val defaultStatus: String = "\$help"
+    @SerialName("status") val defaultStatus: String = "\$help",
+    @SerialName("blacklisted_commands") val commandsBlacklist: List<String> = listOf()
 ) {
     @Transient
     val locale = Locale(lang)

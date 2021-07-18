@@ -17,7 +17,7 @@ object CommandList {
             }?.map { it.toURI().toURL() }?.toTypedArray() ?: arrayOf()
         )
 
-        commands = ServiceLoader.load(Command::class.java, classLoader).toList()
+        commands = ServiceLoader.load(Command::class.java, classLoader).filterNot { it.name in Globals.config.commandsBlacklist }
         modules = ServiceLoader.load(ModuleInfoProvider::class.java, classLoader).toList()
         logger.info { "Loaded ${commands.size} commands, ${modules.size} modules" }
     }
