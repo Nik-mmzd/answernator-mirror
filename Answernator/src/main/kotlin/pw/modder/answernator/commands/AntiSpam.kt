@@ -4,7 +4,7 @@ import dev.kord.core.behavior.reply
 import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Message
 import org.jetbrains.exposed.sql.transactions.transaction
-import pw.modder.answernator.db.Db
+import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.db.guild.Features
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedGuildCommand
@@ -17,9 +17,7 @@ class AntiSpam: LocalizedGuildCommand {
     override val userGroup = Command.UserGroup.ADMIN
     override val cmdType = Command.CommandGroup.ADMIN
 
-    override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle) {
-        val config = Db.getAntiSpamConfig(guild.id)
-
+    override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle, config: Config) {
         if (args.isEmpty()) {
             message.reply { content = texts.getErrorString() }
             return

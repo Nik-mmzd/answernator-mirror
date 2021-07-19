@@ -19,7 +19,7 @@ import java.util.*
 
 suspend fun Kord.logService() {
     on<BanAddEvent> {
-        val config = Db.getLogConfig(guildId)
+        val config = Db.getLogConfig(guildId) ?: return@on
         if (!config.isEnabled(Features.LOG_BAN)) return@on
         val banChannel = Snowflake(config.memberBanLogChannel ?: return@on)
         val texts = LocaleBundle("botGlobal", Locale(config.lang))
@@ -58,7 +58,7 @@ suspend fun Kord.logService() {
     }
 
     on<BanRemoveEvent> {
-        val config = Db.getLogConfig(guildId)
+        val config = Db.getLogConfig(guildId) ?: return@on
         if (!config.isEnabled(Features.LOG_UNBAN)) return@on
         val channel = Snowflake(config.memberUnbanLogChannel ?: return@on)
 
@@ -79,7 +79,7 @@ suspend fun Kord.logService() {
     }
 
     on<MemberJoinEvent> {
-        val config = Db.getLogConfig(guildId)
+        val config = Db.getLogConfig(guildId) ?: return@on
         if (!config.isEnabled(Features.LOG_JOIN)) return@on
         val channel = Snowflake(config.memberJoinLogChannel ?: return@on)
         val texts = LocaleBundle("botGlobal", Locale(config.lang))
@@ -90,9 +90,9 @@ suspend fun Kord.logService() {
     }
 
     on<MemberLeaveEvent> {
-        val config = Db.getLogConfig(guildId)
+        val config = Db.getLogConfig(guildId) ?: return@on
         if (!config.isEnabled(Features.LOG_LEAVE)) return@on
-        val channel = Snowflake(config.memberJoinLogChannel ?: return@on)
+        val channel = Snowflake(config.memberLeaveLogChannel ?: return@on)
         val texts = LocaleBundle("botGlobal", Locale(config.lang))
 
         rest.channel.createMessage(channel) {

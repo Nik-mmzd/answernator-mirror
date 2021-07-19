@@ -3,6 +3,7 @@ package pw.modder.answernator.tools.commands.localized
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.reply
 import dev.kord.core.entity.Message
+import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedCommand
 import pw.modder.answernator.utils.extensions.kord.*
@@ -12,7 +13,7 @@ class SnowFlake: LocalizedCommand {
     override val name = "snowflake"
     override val cmdType = Command.CommandGroup.OTHER
 
-    override suspend fun action(message: Message, args: List<String>, texts: CommandLocaleBundle) {
+    override suspend fun action(message: Message, args: List<String>, texts: CommandLocaleBundle, config: Config?) {
         if (args.isEmpty()) {
             message.reply(texts.getErrorString())
             return

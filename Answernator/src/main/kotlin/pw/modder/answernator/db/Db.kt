@@ -48,39 +48,30 @@ object Db {
     }
     fun createDefaultConfig(guild: Snowflake) = createDefaultConfig(guild.asString)
 
-    fun getConfig(guildId: String): Config {
+    fun getConfig(guildId: String): Config? {
         return transaction {
             Config.find { Configs.guildId eq guildId }.firstOrNull()
-        } ?: createDefaultConfig(guildId)
+        }
     }
     fun getConfig(guildId: Snowflake) = getConfig(guildId.asString)
 
-    fun getGuildConfig(guildId: String): GuildConfig {
+    fun getGuildConfig(guildId: String): GuildConfig? {
         return transaction {
             GuildConfig.find { Configs.guildId eq guildId }.firstOrNull()
-        } ?: run {
-            createDefaultConfig(guildId)
-            getGuildConfig(guildId)
         }
     }
     fun getGuildConfig(guildId: Snowflake) = getGuildConfig(guildId.asString)
 
-    fun getLogConfig(guildId: String): LogConfig {
+    fun getLogConfig(guildId: String): LogConfig? {
         return transaction {
             LogConfig.find { Configs.guildId eq guildId }.firstOrNull()
-        } ?: run {
-            createDefaultConfig(guildId)
-            getLogConfig(guildId)
         }
     }
     fun getLogConfig(guildId: Snowflake) = getLogConfig(guildId.asString)
 
-    fun getAntiSpamConfig(guildId: String): AntiSpamConfig {
+    fun getAntiSpamConfig(guildId: String): AntiSpamConfig? {
         return transaction {
             AntiSpamConfig.find { Configs.guildId eq guildId }.firstOrNull()
-        } ?: run {
-            createDefaultConfig(guildId)
-            getAntiSpamConfig(guildId)
         }
     }
     fun getAntiSpamConfig(guildId: Snowflake) = getAntiSpamConfig(guildId.asString)

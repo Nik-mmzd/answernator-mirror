@@ -3,6 +3,7 @@ package pw.modder.answernator.tools.commands.localized
 import dev.kord.common.entity.PresenceStatus
 import dev.kord.core.entity.Message
 import kotlinx.coroutines.*
+import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedCommand
 import pw.modder.answernator.utils.extensions.kord.reply
@@ -15,7 +16,7 @@ class Status: LocalizedCommand {
     override val userGroup = Command.UserGroup.OWNER
     override val cmdType = Command.CommandGroup.OWNER
 
-    override suspend fun action(message: Message, args: List<String>, texts: CommandLocaleBundle) {
+    override suspend fun action(message: Message, args: List<String>, texts: CommandLocaleBundle, config: Config?) {
         message.reply(when(args.firstOrNull()?.lowercase()) {
             "online" -> {
                 message.kord.editPresence {

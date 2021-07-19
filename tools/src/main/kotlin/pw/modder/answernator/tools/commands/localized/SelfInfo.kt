@@ -6,6 +6,7 @@ import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Message
 import kotlinx.datetime.Clock
 import org.joda.time.Instant
+import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.LocalizedGuildCommand
 import pw.modder.answernator.utils.Utils
@@ -22,7 +23,7 @@ class SelfInfo: LocalizedGuildCommand {
         return getNullableString("permission.${perm.name}") ?: perm.name
     }
 
-    override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle) {
+    override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle, config: Config) {
         val member = message.getAuthorAsMember()
         if (member == null) {
             message.reply(texts.getErrorString())

@@ -9,8 +9,7 @@ import pw.modder.answernator.db.guild.Features
 
 suspend fun Kord.greetingService() {
     on<MemberJoinEvent> {
-        this.member.mention
-        val config = Db.getGuildConfig(guildId.asString)
+        val config = Db.getGuildConfig(guildId) ?: return@on
         if (config.isEnabled(Features.GREETING) && config.greetingChannel != null) {
             rest.channel.createMessage(Snowflake(config.greetingChannel!!)) {
                 content = config.greeting.format(member.mention, guild.asGuild().name)

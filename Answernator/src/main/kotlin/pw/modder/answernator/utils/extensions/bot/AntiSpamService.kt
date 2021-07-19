@@ -19,7 +19,7 @@ suspend fun Kord.antiSpam() {
         val guild = message.guildId
             ?: return@on
 
-        val config = Db.getAntiSpamConfig(guild.asString)
+        val config = Db.getAntiSpamConfig(guild) ?: return@on
         if (message.content.startsWith(config.cmdPrefix) && message.content.length <= 48) return@on
 
         logger.debug { "Guild $guild, antispam enabled: ${config.isEnabled(Features.ANTI_SPAM)}" }

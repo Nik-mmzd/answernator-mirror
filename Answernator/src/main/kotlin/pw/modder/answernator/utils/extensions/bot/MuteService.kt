@@ -20,7 +20,7 @@ import java.util.*
 private val logger = KotlinLogging.logger {}
 suspend fun Kord.muteService() {
     on<MemberJoinEvent> {
-        val config = Db.getGuildConfig(guildId)
+        val config = Db.getLogConfig(guildId) ?: return@on
         val role = Snowflake(config.muteRole ?: return@on)
 
         if (!Db.isMuted(guildId, member.id)) return@on
@@ -29,7 +29,7 @@ suspend fun Kord.muteService() {
     }
 
     on<MemberUpdateEvent> {
-        val config = Db.getConfig(guildId)
+        val config = Db.getLogConfig(guildId) ?: return@on
         val role = Snowflake(config.muteRole ?: return@on)
         val texts = CommandLocaleBundle("mute", Locale(config.lang))
         val hasRole = member.roleIds.any { it == role }

@@ -6,13 +6,13 @@ import dev.kord.core.entity.Message
 import org.jetbrains.exposed.sql.transactions.transaction
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.db.guild.BlacklistedCommand
+import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.db.guild.Features
 import pw.modder.answernator.utils.*
 import pw.modder.answernator.utils.extensions.kord.reply
 import pw.modder.answernator.utils.extensions.toChannelMention
 import pw.modder.answernator.utils.extensions.toRoleMention
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
-import java.util.*
 
 class Config: LocalizedGuildCommand {
     override val name = "config"
@@ -20,9 +20,7 @@ class Config: LocalizedGuildCommand {
     override val userGroup = Command.UserGroup.ADMIN
     override val cmdType = Command.CommandGroup.ADMIN
 
-    override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle) {
-        val config = Db.getConfig(guild.id)
-
+    override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle, config: Config) {
         if (args.isEmpty()) {
             message.reply(texts.getErrorString())
             return

@@ -7,7 +7,7 @@ import dev.kord.core.entity.Message
 import mu.KotlinLogging
 import org.jetbrains.exposed.sql.transactions.transaction
 import pw.modder.answernator.db.Db
-import pw.modder.answernator.db.guild.Mute as MuteDb
+import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedGuildCommand
 import pw.modder.answernator.utils.extensions.extractMentionedId
@@ -29,9 +29,7 @@ class Mute: LocalizedGuildCommand {
 
     override val requiredPermission: Permission? = Permission.ManageRoles
 
-    override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle) {
-        logger.debug { "Getting guild..." }
-        val config = Db.getConfig(guild.id)
+    override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle, config: Config) {
         val muteRole = config.muteRole
 
         logger.debug { "Checking configs" }
@@ -116,9 +114,7 @@ class Unmute: LocalizedGuildCommand {
         return CommandLocaleBundle("mute", locale, javaClass.classLoader)
     }
 
-    override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle) {
-        logger.debug { "Getting guild..." }
-        val config = Db.getConfig(guild.id)
+    override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle, config: Config) {
         val muteRole = config.muteRole
 
         logger.debug { "Checking configs" }

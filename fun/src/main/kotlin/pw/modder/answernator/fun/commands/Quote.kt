@@ -6,6 +6,7 @@ import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
+import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.extensions.kord.reply
@@ -27,7 +28,7 @@ class Quote: Command {
         return "цитата из цитатника modder.pw"
     }
 
-    override suspend fun action(message: Message, args: List<String>, locale: Locale) {
+    override suspend fun action(message: Message, args: List<String>, locale: Locale, config: Config?) {
         val request: String = when(val id = args.firstOrNull()?.toIntOrNull()) {
             null -> Globals.httpClient.get("https://modder.pw/api/random.php")
             else -> Globals.httpClient.get("https://modder.pw/api/get.php") { parameter("id", id) }

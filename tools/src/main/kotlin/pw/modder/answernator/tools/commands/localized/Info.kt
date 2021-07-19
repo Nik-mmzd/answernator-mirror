@@ -10,6 +10,7 @@ import kotlinx.datetime.Clock
 import org.apache.commons.io.FileUtils
 import org.joda.time.Instant
 import pw.modder.answernator.db.Db
+import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.LocalizedGuildCommand
@@ -28,7 +29,7 @@ class Info: LocalizedGuildCommand {
         return getNullableString("permission.${perm.name}") ?: perm.name
     }
 
-    override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle) {
+    override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle, config: Config) {
         val referencedMessage = message.referencedMessage ?: message.messageReference?.message?.asMessage()
         val msgRef = when {
             referencedMessage == null -> 0
@@ -181,8 +182,6 @@ class Info: LocalizedGuildCommand {
             message.mentionedRoleIds.isNotEmpty() -> with(message.mentionedRoles.firstOrNull() ?: message.getGuild().getRole(message.mentionedRoleIds.first())) role@{
                 message.reply {
                     embed {
-                        val config = Db.getGuildConfig(guildId)
-
                         title = texts.formatString("role.title", name)
 
                         this.color = this@role.color.takeIf { it.rgb != 0 }

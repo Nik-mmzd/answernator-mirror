@@ -6,7 +6,7 @@ import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Member
 import dev.kord.core.entity.Message
 import kotlinx.coroutines.flow.collect
-import pw.modder.answernator.db.Db
+import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedGuildCommand
 import pw.modder.answernator.utils.extensions.kord.reply
@@ -19,9 +19,7 @@ class DefRole: LocalizedGuildCommand {
     override val cmdType = Command.CommandGroup.MODER
     override val requiredPermission: Permission? = Permission.ManageRoles
 
-    override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle) {
-        val config = Db.getGuildConfig(guild.id)
-
+    override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle, config: Config) {
         if (config.defaultRole == null) {
             message.reply(texts.getString("not.configured"))
             return

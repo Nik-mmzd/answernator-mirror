@@ -1,6 +1,7 @@
 package pw.modder.answernator.`fun`.commands
 
 import dev.kord.core.entity.Message
+import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.extensions.kord.reply
 import java.util.*
@@ -12,7 +13,7 @@ class DChar: Command {
     override val localesWhitelist: List<Locale> = listOf(Locale("ru"))
     override val cmdType = Command.CommandGroup.FUN
 
-    override suspend fun action(message: Message, args: List<String>, locale: Locale) {
+    override suspend fun action(message: Message, args: List<String>, locale: Locale, config: Config?) {
         message.reply(args.joinToString(" ")
             .replace("х", "х̆").replace("x", "х̆")
             .replace("X", "X̆").replace("Х", "X̆")

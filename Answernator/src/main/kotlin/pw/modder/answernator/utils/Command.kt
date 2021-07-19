@@ -5,6 +5,7 @@ import dev.kord.common.entity.Permissions
 import dev.kord.core.entity.Message
 import mu.KLogger
 import mu.KotlinLogging
+import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.utils.extensions.kord.authorId
 import java.util.*
 
@@ -49,7 +50,7 @@ interface Command {
         return null
     }
 
-    suspend fun action(message: Message, args: List<String>, locale: Locale)
+    suspend fun action(message: Message, args: List<String>, locale: Locale, config: Config?)
 
     enum class UserGroup {
         OWNER, ADMIN, ALL, PERMISSION

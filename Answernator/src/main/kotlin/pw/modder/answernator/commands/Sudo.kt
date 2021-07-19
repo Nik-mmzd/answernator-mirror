@@ -2,6 +2,7 @@ package pw.modder.answernator.commands
 
 import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Message
+import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.CommandList
 import pw.modder.answernator.utils.GuildCommand
@@ -22,7 +23,7 @@ class Sudo: GuildCommand {
         return "Usage: `sudo [command] [command params]`"
     }
 
-    override suspend fun action(message: Message, args: List<String>, guild: Guild, locale: Locale) {
+    override suspend fun action(message: Message, args: List<String>, guild: Guild, locale: Locale, config: Config) {
         if (args.isEmpty()) {
             message.reply("No command specified.\n" + getHelp(locale))
             return
@@ -33,7 +34,7 @@ class Sudo: GuildCommand {
             return
         }
 
-        CommandList.findCommand(args.first(), true, Command.ChannelTypes.GUILD)?.action(message, args.drop(1), locale)
+        CommandList.findCommand(args.first(), true, Command.ChannelTypes.GUILD)?.action(message, args.drop(1), locale, config)
             ?: message.reply("Command `${args.first().removeGraves()}` not found")
     }
 }

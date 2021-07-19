@@ -4,9 +4,8 @@ import dev.kord.core.behavior.reply
 import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Message
 import org.jetbrains.exposed.sql.transactions.transaction
-import pw.modder.answernator.db.Db
+import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.db.guild.Features
-import pw.modder.answernator.db.guild.LogConfig
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedGuildCommand
 import pw.modder.answernator.utils.extensions.isChannelMention
@@ -21,13 +20,11 @@ class Log: LocalizedGuildCommand {
     override val cmdType = Command.CommandGroup.ADMIN
     override val channels: EnumSet<Command.ChannelTypes> = EnumSet.of(Command.ChannelTypes.GUILD)
 
-    override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle) {
+    override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle, config: Config) {
         if (args.isEmpty()) {
             message.reply(texts.getErrorString())
             return
         }
-
-        val config = Db.getLogConfig(guild.id)
 
         if (args.first().equals("get", true)) {
             message.reply {
@@ -120,11 +117,11 @@ class Log: LocalizedGuildCommand {
         })
     }
 
-    private fun formatField(texts: CommandLocaleBundle, config: LogConfig, feature: Features, channel: String?): String {
+    private fun formatField(texts: CommandLocaleBundle, config: Config, feature: Features, channel: String?): String {
         return texts.formatString("get.status", texts.getString("get.status.${config.isEnabled(feature)}"), channel?.toChannelMention() ?: texts.getString("get.not.set"))
     }
 
-    private fun process(action: String, name: String, config: LogConfig, texts: CommandLocaleBundle, feature: Features, block: LogConfig.() -> Unit): String {
+    private fun process(action: String, name: String, config: Config, texts: CommandLocaleBundle, feature: Features, block: Config.() -> Unit): String {
         when(action) {
             "enable" -> {
                 transaction {

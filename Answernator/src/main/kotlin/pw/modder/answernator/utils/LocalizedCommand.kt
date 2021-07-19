@@ -1,6 +1,7 @@
 package pw.modder.answernator.utils
 
 import dev.kord.core.entity.Message
+import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
 import java.util.Locale
 
@@ -18,9 +19,9 @@ interface LocalizedCommand: Command {
         return getTexts(locale).getDescription()
     }
 
-    override suspend fun action(message: Message, args: List<String>, locale: Locale) {
-        action(message, args, getTexts(locale))
+    override suspend fun action(message: Message, args: List<String>, locale: Locale, config: Config?) {
+        action(message, args, getTexts(locale), config)
     }
 
-    suspend fun action(message: Message, args: List<String>, texts: CommandLocaleBundle)
+    suspend fun action(message: Message, args: List<String>, texts: CommandLocaleBundle, config: Config?)
 }

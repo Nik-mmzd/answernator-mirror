@@ -3,6 +3,7 @@ package pw.modder.answernator.commands
 import dev.kord.core.behavior.reply
 import dev.kord.core.entity.Message
 import org.apache.commons.io.FileUtils
+import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.utils.*
 import pw.modder.answernator.utils.extensions.kord.authorId
 import pw.modder.answernator.utils.extensions.kord.getColor
@@ -12,7 +13,7 @@ class About: LocalizedCommand {
     override val name: String = "about"
     override val cmdType = Command.CommandGroup.OTHER
 
-    override suspend fun action(message: Message, args: List<String>, texts: CommandLocaleBundle) {
+    override suspend fun action(message: Message, args: List<String>, texts: CommandLocaleBundle, config: Config?) {
         message.reply {
             embed {
                 title = message.kord.getSelf().tag

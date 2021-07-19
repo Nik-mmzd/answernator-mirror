@@ -33,7 +33,7 @@ object Configs: IntIdTable() {
 //    val messageChangedLogChannel = varchar("message_update_channel", 18).default("") // https://discordapp.com/developers/docs/topics/gateway#message-update
 }
 
-open class BaseConfig(id: EntityID<Int>): IntEntity(id) {
+abstract class BaseConfig(id: EntityID<Int>): IntEntity(id) {
     companion object : IntEntityClass<BaseConfig>(Configs)
 
     var guildId by Configs.guildId
@@ -63,7 +63,6 @@ class GuildConfig(id: EntityID<Int>): BaseConfig(id) {
 
     var greeting by Configs.greetingText
     var greetingChannel by Configs.greetingChannel
-    var muteRole by Configs.muteRoleId
     var defaultRole by Configs.defaultRoleId
 }
 
@@ -79,6 +78,7 @@ class AntiSpamConfig(id: EntityID<Int>): BaseConfig(id) {
 class LogConfig(id: EntityID<Int>): BaseConfig(id) {
     companion object : IntEntityClass<LogConfig>(Configs)
 
+    var muteRole by Configs.muteRoleId
     var memberJoinLogChannel by Configs.memberJoinLogChannel
     var memberLeaveLogChannel by Configs.memberLeaveLogChannel
     var memberBanLogChannel by Configs.memberBanLogChannel

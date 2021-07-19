@@ -1,6 +1,7 @@
 package pw.modder.answernator.tools.commands.localized
 
 import dev.kord.core.entity.Message
+import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.tools.utils.RandomGames
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedCommand
@@ -12,7 +13,7 @@ class RandomGame: LocalizedCommand {
     override val name = "randomgame"
     override val cmdType = Command.CommandGroup.FUN
 
-    override suspend fun action(message: Message, args: List<String>, texts: CommandLocaleBundle) {
+    override suspend fun action(message: Message, args: List<String>, texts: CommandLocaleBundle, config: Config?) {
         val num = args.firstOrNull()?.toIntOrNull() ?: 1
         if (num > 64 || num < 1) {
             message.reply(texts.getErrorString())

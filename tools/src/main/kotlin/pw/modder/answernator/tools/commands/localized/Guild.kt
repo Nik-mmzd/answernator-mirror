@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
+import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedGuildCommand
 import pw.modder.answernator.utils.Utils
@@ -19,7 +20,7 @@ class Guild: LocalizedGuildCommand {
     override val userGroup = Command.UserGroup.ADMIN
     override val cmdType = Command.CommandGroup.ADMIN
 
-    override suspend fun action(message: Message, args: List<String>, msgGuild: Guild, texts: CommandLocaleBundle) {
+    override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle, config: Config) {
         if (args.first().equals("list", true)) {
             message.reply(message.kord.guilds.toList().joinToString("\n", prefix = texts.getString("list.available")) {
                 "${it.name}: `${it.id.asString}`"
@@ -27,73 +28,73 @@ class Guild: LocalizedGuildCommand {
             return
         }
 
-        val guild = when {
+        val givenGuild = when {
             args.isNotEmpty() -> message.kord.guilds.firstOrNull { it.id.asString == args.first() }
                 ?: message.kord.guilds.firstOrNull { it.name.contains(args.joinToString(separator = " "), true) }
-            else -> msgGuild
+            else -> guild
         }
 
-        if (guild == null) {
+        if (givenGuild == null) {
             message.reply(texts.getErrorString())
             return
         }
 
         message.reply {
             embed {
-                title = texts.formatString("title", guild.name)
+                title = texts.formatString("title", givenGuild.name)
 
-                field(texts.getString("owner"), true) { guild.owner.mention }
-                field(texts.getString("emojis"), true) { guild.emojis.count().toString() }
-                if (guild.roles.count() < 50 && guild.id == msgGuild.id) {
+                field(texts.getString("owner"), true) { givenGuild.owner.mention }
+                field(texts.getString("emojis"), true) { givenGuild.emojis.count().toString() }
+                if (givenGuild.roles.count() < 50 && givenGuild.id == guild.id) {
                     field(texts.getString("roles"), false) {
-                        guild.roles.filterNot { it.id == guild.id }.toList().joinToString(" ") { it.mention }
+                        givenGuild.roles.filterNot { it.id == givenGuild.id }.toList().joinToString(" ") { it.mention }
                     }
                 } else {
-                    field(texts.getString("roles"), true) { (guild.roles.count() - 1).toString() }
+                    field(texts.getString("roles"), true) { (givenGuild.roles.count() - 1).toString() }
                 }
                 field(texts.getString("created_at"), false) {
-                    texts.formatString("created_at.value", Utils.prettyPrintPeriod(texts.locale, guild.id.instant))
+                    texts.formatString("created_at.value", Utils.prettyPrintPeriod(texts.locale, givenGuild.id.instant))
                 }
                 field(texts.getString("region"), true) {
-                    guild.getRegion().name.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+                    givenGuild.getRegion().name.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
                 }
                 field(texts.getString("features"), true) {
-                    guild.features.joinToString(", ") {
+                    givenGuild.features.joinToString(", ") {
                         texts.getString("features.${it.value}")
                     }.ifEmpty { texts.getString("features.empty") }
                 }
                 field(texts.getString("verificationLevel"), true) {
-                    texts.getString("verification.level.${guild.verificationLevel.value}")
+                    texts.getString("verification.level.${givenGuild.verificationLevel.value}")
                 }
                 field(texts.getString("mfaEnabled"), true) {
-                    texts.getString("mfa.${guild.mfaLevel.value}")
+                    texts.getString("mfa.${givenGuild.mfaLevel.value}")
                 }
                 field(texts.getString("explicitContentFilterLevel"), true) {
-                    texts.getString("explicitContentFilterLevel.${guild.contentFilter.value}")
+                    texts.getString("explicitContentFilterLevel.${givenGuild.contentFilter.value}")
                 }
-                guild.iconHash?.run {
-                    thumbnail { url = "https://cdn.discordapp.com/icons/${guild.id}/$this" }
+                givenGuild.iconHash?.run {
+                    thumbnail { url = "https://cdn.discordapp.com/icons/${givenGuild.id}/$this" }
                 }
-                guild.afkChannel?.run {
+                givenGuild.afkChannel?.run {
                     field(texts.getString("afkChannel"), true) { mention }
                     field(texts.getString("afkTimeout"), true) {
-                        texts.formatString("afkTimeout.value", guild.afkTimeout)
+                        texts.formatString("afkTimeout.value", givenGuild.afkTimeout)
                     }
                 }
 
                 field(texts.getString("notifications"), true) {
-                    texts.getString("notifications.level.${guild.defaultMessageNotificationLevel.value}")
+                    texts.getString("notifications.level.${givenGuild.defaultMessageNotificationLevel.value}")
                 }
-                if (guild.isWidgetEnabled) {
+                if (givenGuild.isWidgetEnabled) {
                     field(texts.getString("widget"), true) {
-                        texts.getString("widget.${guild.isWidgetEnabled}")
+                        texts.getString("widget.${givenGuild.isWidgetEnabled}")
                     }
-                    guild.widgetChannel?.run {
+                    givenGuild.widgetChannel?.run {
                         field(texts.getString("widget.channel"), true) { mention }
                     }
                 }
 
-                guild.systemChannel?.run {
+                givenGuild.systemChannel?.run {
                     field(texts.getString("system.channel"), true) { mention }
                 }
             }

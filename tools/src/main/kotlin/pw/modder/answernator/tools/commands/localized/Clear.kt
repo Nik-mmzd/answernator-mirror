@@ -6,6 +6,7 @@ import dev.kord.core.behavior.channel.TextChannelBehavior
 import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Message
 import kotlinx.coroutines.flow.toList
+import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedGuildCommand
 import pw.modder.answernator.utils.extensions.kord.reply
@@ -22,7 +23,7 @@ class Clear: LocalizedGuildCommand {
     override val requiredPermission: Permission? = Permission.ManageMessages
 
     @OptIn(ExperimentalTime::class)
-    override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle) {
+    override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle, config: Config) {
         val limit = args.firstOrNull()?.toIntOrNull()
         if (limit == null || limit !in 1..100) {
             message.reply(texts.getErrorString())

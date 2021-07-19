@@ -4,6 +4,7 @@ import dev.kord.common.Color
 import dev.kord.core.behavior.reply
 import dev.kord.core.entity.Message
 import mu.KotlinLogging
+import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.tools.diceHelper.*
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.Globals.random
@@ -16,7 +17,7 @@ class Dice: LocalizedCommand {
     override val name: String = "dice"
     override val cmdType = Command.CommandGroup.FUN
 
-    override suspend fun action(message: Message, args: List<String>, texts: CommandLocaleBundle) {
+    override suspend fun action(message: Message, args: List<String>, texts: CommandLocaleBundle, config: Config?) {
         val params = message.content.split(" ", limit = 2).getOrNull(1)?.takeIf { it.isNotEmpty() } ?: "1d6"
 
         val data = try {

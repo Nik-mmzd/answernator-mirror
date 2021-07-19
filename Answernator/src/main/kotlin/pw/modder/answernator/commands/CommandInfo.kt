@@ -3,6 +3,7 @@ package pw.modder.answernator.commands
 import dev.kord.core.behavior.reply
 import dev.kord.core.entity.Message
 import pw.modder.answernator.db.Db
+import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.CommandList
 import pw.modder.answernator.utils.extensions.kord.guildId
@@ -40,7 +41,7 @@ class CommandInfo: Command {
         return "command debug info"
     }
 
-    override suspend fun action(message: Message, args: List<String>, locale: Locale) {
+    override suspend fun action(message: Message, args: List<String>, locale: Locale, config: Config?) {
         if (args.isEmpty()) {
             message.reply("No command specified")
             return

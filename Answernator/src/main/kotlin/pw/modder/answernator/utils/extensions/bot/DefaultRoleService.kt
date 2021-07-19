@@ -9,7 +9,7 @@ import pw.modder.answernator.db.guild.Features
 
 suspend fun Kord.defaultRoleService() {
     on<MemberJoinEvent> {
-        val config = Db.getGuildConfig(guildId.asString)
+        val config = Db.getGuildConfig(guildId) ?: return@on
         if (!config.isEnabled(Features.DEFAULT_ROLE)) return@on
 
         member.addRole(Snowflake(config.defaultRole ?: return@on), "Adding default role")

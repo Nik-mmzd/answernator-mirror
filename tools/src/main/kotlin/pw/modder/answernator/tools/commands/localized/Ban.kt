@@ -4,6 +4,7 @@ import dev.kord.common.entity.Permission
 import dev.kord.core.behavior.ban
 import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Message
+import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedGuildCommand
 import pw.modder.answernator.utils.extensions.extractMentionedId
@@ -18,7 +19,7 @@ class Ban: LocalizedGuildCommand {
     override val cmdType = Command.CommandGroup.MODER
     override val requiredPermission: Permission? = Permission.BanMembers
 
-    override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle) {
+    override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle, config: Config) {
         if (args.isEmpty()) {
             message.reply(texts.getErrorString())
             return

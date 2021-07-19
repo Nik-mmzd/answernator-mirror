@@ -4,6 +4,7 @@ import dev.kord.common.Color
 import dev.kord.core.behavior.reply
 import dev.kord.core.entity.Message
 import kotlinx.datetime.Clock
+import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedCommand
 import pw.modder.answernator.utils.extensions.kord.reply
@@ -15,7 +16,7 @@ class Tsar: LocalizedCommand {
     override val cmdType = Command.CommandGroup.FUN
     override val localesWhitelist: List<Locale> = listOf(Locale("ru"))
 
-    override suspend fun action(message: Message, args: List<String>, texts: CommandLocaleBundle) {
+    override suspend fun action(message: Message, args: List<String>, texts: CommandLocaleBundle, config: Config?) {
         if (!args.first().equals("велит", true)) {
             message.reply(texts.getString("invalid"))
             return

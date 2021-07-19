@@ -5,6 +5,7 @@ import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.reply
 import dev.kord.core.entity.Message
 import pw.modder.answernator.db.Db
+import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.CommandList
 import pw.modder.answernator.utils.Globals
@@ -18,7 +19,7 @@ class Help: LocalizedCommand {
     override val name: String = "help"
     override val cmdType = Command.CommandGroup.USER
 
-    override suspend fun action(message: Message, args: List<String>, texts: CommandLocaleBundle) {
+    override suspend fun action(message: Message, args: List<String>, texts: CommandLocaleBundle, config: Config?) {
         if (args.isEmpty()) {
             val permissions = message.getGuildOrNull()?.permissions ?: Permissions()
 

@@ -3,6 +3,7 @@ package pw.modder.answernator.commands
 import dev.kord.core.entity.Message
 import dev.kord.core.firstOrNull
 import kotlinx.coroutines.flow.toList
+import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.extensions.kord.reply
 import java.util.*
@@ -19,7 +20,7 @@ class Leave: Command {
         return "leave any server"
     }
 
-    override suspend fun action(message: Message, args: List<String>, locale: Locale) {
+    override suspend fun action(message: Message, args: List<String>, locale: Locale, config: Config?) {
         if (args.isEmpty()) {
             message.reply(message.kord.guilds.toList().joinToString("\n", prefix = "${getHelp(locale)}\nAvailable guilds:\n") {
                 "${it.name}: `${it.id.asString}`"

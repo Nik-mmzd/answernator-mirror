@@ -1,6 +1,7 @@
 package pw.modder.answernator.commands
 
 import dev.kord.core.entity.Message
+import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.CommandList
 import pw.modder.answernator.utils.extensions.kord.reply
@@ -19,7 +20,7 @@ class Reload: Command {
         return "reload bot"
     }
 
-    override suspend fun action(message: Message, args: List<String>, locale: Locale) {
+    override suspend fun action(message: Message, args: List<String>, locale: Locale, config: Config?) {
         CommandList.load()
         message.reply("Reloaded. Loaded ${CommandList.commands.size} commands.")
     }
