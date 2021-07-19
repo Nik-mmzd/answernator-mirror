@@ -1,6 +1,5 @@
 package pw.modder.answernator.commands
 
-import dev.kord.core.behavior.reply
 import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Message
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -10,6 +9,7 @@ import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.db.guild.Features
 import pw.modder.answernator.utils.*
 import pw.modder.answernator.utils.extensions.kord.reply
+import pw.modder.answernator.utils.extensions.kord.replyEmbed
 import pw.modder.answernator.utils.extensions.toChannelMention
 import pw.modder.answernator.utils.extensions.toRoleMention
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
@@ -27,59 +27,56 @@ class Config: LocalizedGuildCommand {
         }
 
         when(args.first()) {
-            "get", "show" -> message.reply {
-                embed {
-                    title = guild.name
-                    description = texts.getString("description")
+            "get", "show" -> message.replyEmbed {
+                title = guild.name
+                description = texts.getString("description")
 
-                    field(texts.getString("lang"), true) { "`${config.lang}`" }
-                    field(texts.getString("prefix"), true) { "`${config.cmdPrefix}`" }
-                    field(texts.getString("lang.available"), true) {
-                        Globals.config.langs.joinToString(separator = ", ") { "`$it`" }
-                            .ifEmpty { texts.getString("lang.none") }
-                    }
-
-                    field(texts.getString("greeter"), false) {
-                        texts.formatString(
-                            "greeter.text",
-                            texts.getString("greeter.${config.isEnabled(Features.GREETING)}"),
-                            config.greetingChannel?.toChannelMention()
-                                ?: texts.getString("channel.notset"),
-                            config.greeting.format("%user%", "%guild%")
-                        )
-                    }
-
-                    field(texts.getString("muterole"), false) {
-                        config.muteRole?.toRoleMention()
-                            ?: texts.getString("role.notset")
-                    }
-
-                    field(texts.getString("defrole"), false) {
-                        texts.formatString(
-                            "defrole.text",
-                            texts.getString("defrole.${config.isEnabled(Features.DEFAULT_ROLE)}"),
-                            config.defaultRole?.toRoleMention()
-                                ?: texts.getString("role.notset")
-                        )
-                    }
-
-                    field(texts.getString("blacklist"), false) {
-                        transaction {
-                            Db.getBlacklisted(guild.id).joinToString(separator = ", ") { "`$it`" }
-                        }.ifEmpty { texts.getString("blacklist.none") }
-                    }
-
-                    field(texts.getString("antispam"), false) {
-                        texts.formatString(
-                            "antispam.text",
-                            texts.getString("antispam.${config.isEnabled(Features.ANTI_SPAM)}"),
-                            texts.getString("antispam.${config.isEnabled(Features.ANTI_SPAM_SILENT)}"),
-                            config.antiSpamWarn,
-                            config.antiSpamBan
-                        )
-                    }
+                field(texts.getString("lang"), true) { "`${config.lang}`" }
+                field(texts.getString("prefix"), true) { "`${config.cmdPrefix}`" }
+                field(texts.getString("lang.available"), true) {
+                    Globals.config.langs.joinToString(separator = ", ") { "`$it`" }
+                        .ifEmpty { texts.getString("lang.none") }
                 }
-                allowedMentions { repliedUser = false }
+
+                field(texts.getString("greeter"), false) {
+                    texts.formatString(
+                        "greeter.text",
+                        texts.getString("greeter.${config.isEnabled(Features.GREETING)}"),
+                        config.greetingChannel?.toChannelMention()
+                            ?: texts.getString("channel.notset"),
+                        config.greeting.format("%user%", "%guild%")
+                    )
+                }
+
+                field(texts.getString("muterole"), false) {
+                    config.muteRole?.toRoleMention()
+                        ?: texts.getString("role.notset")
+                }
+
+                field(texts.getString("defrole"), false) {
+                    texts.formatString(
+                        "defrole.text",
+                        texts.getString("defrole.${config.isEnabled(Features.DEFAULT_ROLE)}"),
+                        config.defaultRole?.toRoleMention()
+                            ?: texts.getString("role.notset")
+                    )
+                }
+
+                field(texts.getString("blacklist"), false) {
+                    transaction {
+                        Db.getBlacklisted(guild.id).joinToString(separator = ", ") { "`$it`" }
+                    }.ifEmpty { texts.getString("blacklist.none") }
+                }
+
+                field(texts.getString("antispam"), false) {
+                    texts.formatString(
+                        "antispam.text",
+                        texts.getString("antispam.${config.isEnabled(Features.ANTI_SPAM)}"),
+                        texts.getString("antispam.${config.isEnabled(Features.ANTI_SPAM_SILENT)}"),
+                        config.antiSpamWarn,
+                        config.antiSpamBan
+                    )
+                }
             }
             "lang" -> {
                 if (args.getOrNull(1) !in Globals.config.langs) {
@@ -196,12 +193,9 @@ class Config: LocalizedGuildCommand {
             }
             "blacklist" -> {
                 when(args.getOrNull(1)) {
-                    "show", "get" -> message.reply {
-                        embed {
-                            title = texts.getString("blacklist.title")
-                            description = Db.getBlacklisted(guild.id).joinToString(separator = ", ") { "`$it`" }
-                        }
-                        allowedMentions { repliedUser = false }
+                    "show", "get" -> message.replyEmbed {
+                        title = texts.getString("blacklist.title")
+                        description = Db.getBlacklisted(guild.id).joinToString(separator = ", ") { "`$it`" }
                     }
                     "add" -> {
                         val cmd = args.getOrNull(2)

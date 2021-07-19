@@ -1,6 +1,5 @@
 package pw.modder.answernator.commands
 
-import dev.kord.core.behavior.reply
 import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Message
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -10,6 +9,7 @@ import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedGuildCommand
 import pw.modder.answernator.utils.extensions.isChannelMention
 import pw.modder.answernator.utils.extensions.kord.reply
+import pw.modder.answernator.utils.extensions.kord.replyEmbed
 import pw.modder.answernator.utils.extensions.toChannelMention
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
 import java.util.*
@@ -27,18 +27,16 @@ class Log: LocalizedGuildCommand {
         }
 
         if (args.first().equals("get", true)) {
-            message.reply {
-                embed {
-                    title = texts.getString("get.title")
+            message.replyEmbed {
+                title = texts.getString("get.title")
 
-                    field(texts.getString("get.memberjoin"), true) { formatField(texts, config, Features.LOG_JOIN, config.memberJoinLogChannel) }
-                    field(texts.getString("get.memberleave"), true) { formatField(texts, config, Features.LOG_LEAVE, config.memberLeaveLogChannel) }
-                    field(texts.getString("get.memberban"), true) { formatField(texts, config, Features.LOG_LEAVE, config.memberBanLogChannel) }
-                    field(texts.getString("get.memeberunban"), true) { formatField(texts, config, Features.LOG_UNBAN, config.memberUnbanLogChannel) }
-                    field(texts.getString("get.membermute"), true) { formatField(texts, config, Features.LOG_MUTE, config.memberMuteLogChannel) }
-                    field(texts.getString("get.memberunmute"), true) { formatField(texts, config, Features.LOG_UNMUTE, config.memberUnmuteLogChannel) }
-                }
-                allowedMentions { repliedUser = false }
+                field(texts.getString("get.memberjoin"), true) { formatField(texts, config, Features.LOG_JOIN, config.memberJoinLogChannel) }
+                field(texts.getString("get.memberleave"), true) { formatField(texts, config, Features.LOG_LEAVE, config.memberLeaveLogChannel) }
+                field(texts.getString("get.memberban"), true) { formatField(texts, config, Features.LOG_LEAVE, config.memberBanLogChannel) }
+                field(texts.getString("get.memeberunban"), true) { formatField(texts, config, Features.LOG_UNBAN, config.memberUnbanLogChannel) }
+                field(texts.getString("get.membermute"), true) { formatField(texts, config, Features.LOG_MUTE, config.memberMuteLogChannel) }
+                field(texts.getString("get.memberunmute"), true) { formatField(texts, config, Features.LOG_UNMUTE, config.memberUnmuteLogChannel) }
+
             }
             return
         }

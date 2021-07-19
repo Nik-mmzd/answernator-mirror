@@ -1,6 +1,5 @@
 package pw.modder.answernator.commands
 
-import dev.kord.core.behavior.reply
 import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Message
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -9,6 +8,7 @@ import pw.modder.answernator.db.guild.Features
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedGuildCommand
 import pw.modder.answernator.utils.extensions.kord.reply
+import pw.modder.answernator.utils.extensions.kord.replyEmbed
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
 
 class AntiSpam: LocalizedGuildCommand {
@@ -19,25 +19,22 @@ class AntiSpam: LocalizedGuildCommand {
 
     override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle, config: Config) {
         if (args.isEmpty()) {
-            message.reply { content = texts.getErrorString() }
+            message.reply(texts.getErrorString())
             return
         }
 
         when(args[0].lowercase()) {
-            "get", "show" -> message.reply {
-                embed {
-                    title = texts.getString("title")
-                    description = texts.formatString("description",
-                        texts.getString("enabled.${config.isEnabled(Features.ANTI_SPAM)}"),
-                        texts.getString("enabled.${config.isEnabled(Features.ANTI_SPAM_SILENT)}"),
-                        config.antiSpamWarn,
-                        config.antiSpamBan
-                    )
+            "get", "show" -> message.replyEmbed {
+                title = texts.getString("title")
+                description = texts.formatString("description",
+                    texts.getString("enabled.${config.isEnabled(Features.ANTI_SPAM)}"),
+                    texts.getString("enabled.${config.isEnabled(Features.ANTI_SPAM_SILENT)}"),
+                    config.antiSpamWarn,
+                    config.antiSpamBan
+                )
 
-                    field(texts.getString("warn.title"), false) { config.antiSpamWarnText.replace("%1\$s", "%user%") }
-                    field(texts.getString("ban.title"), false) { config.antiSpamBanText }
-                }
-                allowedMentions { repliedUser = false }
+                field(texts.getString("warn.title"), false) { config.antiSpamWarnText.replace("%1\$s", "%user%") }
+                field(texts.getString("ban.title"), false) { config.antiSpamBanText }
             }
             "enable" -> {
                 transaction { config.enable(Features.ANTI_SPAM) }

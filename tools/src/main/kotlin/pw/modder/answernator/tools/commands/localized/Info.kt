@@ -5,7 +5,6 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Message
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.datetime.Clock
 import org.apache.commons.io.FileUtils
 import org.joda.time.Instant
 import pw.modder.answernator.db.guild.Config
@@ -88,6 +87,8 @@ class Info: LocalizedGuildCommand {
                             flags.flags.joinToString(separator = ", ") { texts.getNullableString("message.flags.${it::class.simpleName}") ?: it::class.simpleName ?: "Unkwon" }.ifEmpty { texts.getString("empty") }
                         }
                     }
+
+                    timestampNow()
                 }
             }
             message.mentionedUserIds.isNotEmpty() -> with(message.mentionedUsers.firstOrNull() ?: message.kord.getUser(message.mentionedUserIds.first())!!) {
@@ -135,7 +136,8 @@ class Info: LocalizedGuildCommand {
                             Utils.prettyPrintPeriodSnowflake(texts.locale, id)
                         )
                     }
-                    timestamp = Clock.System.now()
+
+                    timestampNow()
                 }
             }
             mentionedChannels.isNotEmpty() -> with(message.mentionedChannels.firstOrNull() ?: guild.getChannel(mentionedChannels.first())) {
@@ -167,6 +169,8 @@ class Info: LocalizedGuildCommand {
                     data.topic.ifHasValue {
                         field(texts.getString("channel.topic"), false) { it }
                     }
+
+                    timestampNow()
                 }
             }
             message.mentionedRoleIds.isNotEmpty() -> with(message.mentionedRoles.firstOrNull() ?: message.getGuild().getRole(message.mentionedRoleIds.first())) role@{
@@ -194,6 +198,8 @@ class Info: LocalizedGuildCommand {
                     field(texts.getString("role.rights"), false) {
                         permissions.values.joinToString(", ") { texts.getPerm(it) }.ifEmpty { texts.getString("empty") }
                     }
+
+                    timestampNow()
                 }
             }
             else -> message.reply(texts.getErrorString())

@@ -7,6 +7,7 @@ import mu.KLogger
 import mu.KotlinLogging
 import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.utils.extensions.kord.authorId
+import pw.modder.answernator.utils.extensions.kord.isFromBotAuthor
 import java.util.*
 
 private val logger: KLogger = KotlinLogging.logger {}
@@ -23,13 +24,13 @@ interface Command {
     suspend fun check(message: Message, locale: Locale): Boolean {
         logger.debug { "checking command $name" }
         logger.debug { "checking command is owner only" }
-        if (userGroup == UserGroup.OWNER && message.authorId != Globals.config.author) return false
+        if (userGroup == UserGroup.OWNER && !message.isFromBotAuthor()) return false
         if (userGroup == UserGroup.OWNER || userGroup == UserGroup.ALL) {
             logger.debug { "early exit because no permission checks is needed" }
             return true
         }
 
-        if (message.authorId == Globals.config.author
+        if (message.authorId.asString == Globals.config.author
             && userGroup == UserGroup.ADMIN
             && channels.contains(ChannelTypes.DIRECT)) return true
 

@@ -1,7 +1,6 @@
 package pw.modder.answernator.tools.commands.localized
 
 import dev.kord.common.Color
-import dev.kord.core.behavior.reply
 import dev.kord.core.entity.Message
 import mu.KotlinLogging
 import pw.modder.answernator.db.guild.Config
@@ -10,6 +9,7 @@ import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.Globals.random
 import pw.modder.answernator.utils.LocalizedCommand
 import pw.modder.answernator.utils.extensions.kord.reply
+import pw.modder.answernator.utils.extensions.kord.replyEmbed
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
 
 private val logger = KotlinLogging.logger {}
@@ -31,23 +31,20 @@ class Dice: LocalizedCommand {
             return
         }
 
-        message.reply {
-            embed {
-                title = texts.getString("title")
-                color = Color(random.nextInt(0, 16777215))
-                thumbnail {
-                    url = "https://files.mcmodder.ru/answernator/dice.jpg"
-                }
+        message.replyEmbed {
+            title = texts.getString("title")
+            color = Color(random.nextInt(0, 16777215))
+            thumbnail {
+                url = "https://files.mcmodder.ru/answernator/dice.jpg"
+            }
 
-                data.forEach { set ->
-                    field(texts.formatString("roll", DiceSerializer(set.tokens).stringify()), false) {
-                        set.roll().joinToString(separator = "\n") { singleRoll ->
-                            singleRoll.joinToString(separator = " ", postfix = " (**${singleRoll.sum()}**)")
-                        }
+            data.forEach { set ->
+                field(texts.formatString("roll", DiceSerializer(set.tokens).stringify()), false) {
+                    set.roll().joinToString(separator = "\n") { singleRoll ->
+                        singleRoll.joinToString(separator = " ", postfix = " (**${singleRoll.sum()}**)")
                     }
                 }
             }
-            allowedMentions { repliedUser = false }
         }
     }
 }

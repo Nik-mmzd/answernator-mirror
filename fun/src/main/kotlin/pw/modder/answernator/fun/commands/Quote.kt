@@ -1,6 +1,5 @@
 package pw.modder.answernator.`fun`.commands
 
-import dev.kord.core.behavior.reply
 import dev.kord.core.entity.Message
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
@@ -10,6 +9,7 @@ import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.extensions.kord.reply
+import pw.modder.answernator.utils.extensions.kord.replyEmbed
 import java.util.*
 import pw.modder.answernator.`fun`.utils.Quote as QuoteData
 
@@ -44,17 +44,14 @@ class Quote: Command {
             throw e
         }
 
-        message.reply {
-            embed {
-                title = "Цитата #${data.id}"
-                url = "https://modder.pw/?id=${data.id}"
-                description = data.text.takeIf { it.length < 2000 } ?: data.text.take(1999) + "…"
-                timestamp = Instant.fromEpochMilliseconds(data.createdAt)
-                field("Автор", true) { data.creatorMention }
-                field("Лайков", true) { data.likesCount.toString() }
-                footer { text = "Источник: Цитатник McModder'а | modder.pw" }
-            }
-            allowedMentions { repliedUser = false }
+        message.replyEmbed {
+            title = "Цитата #${data.id}"
+            url = "https://modder.pw/?id=${data.id}"
+            description = data.text.takeIf { it.length < 2000 } ?: data.text.take(1999) + "…"
+            timestamp = Instant.fromEpochMilliseconds(data.createdAt)
+            field("Автор", true) { data.creatorMention }
+            field("Лайков", true) { data.likesCount.toString() }
+            footer { text = "Источник: Цитатник McModder'а | modder.pw" }
         }
     }
 }

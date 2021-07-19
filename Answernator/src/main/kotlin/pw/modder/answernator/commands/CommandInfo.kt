@@ -1,6 +1,5 @@
 package pw.modder.answernator.commands
 
-import dev.kord.core.behavior.reply
 import dev.kord.core.entity.Message
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.db.guild.Config
@@ -8,6 +7,8 @@ import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.CommandList
 import pw.modder.answernator.utils.extensions.kord.guildId
 import pw.modder.answernator.utils.extensions.kord.reply
+import pw.modder.answernator.utils.extensions.kord.replyEmbed
+import pw.modder.answernator.utils.extensions.kord.timestampNow
 import java.util.*
 
 class CommandInfo: Command {
@@ -52,33 +53,32 @@ class CommandInfo: Command {
             return
         }
 
-        message.reply {
-            embed {
-                title = "Command information"
+        message.replyEmbed {
+            title = "Command information"
 
-                field("Command name", true) { cmd.name }
-                field("Command publicity", true) { getCommandTypeString(cmd) }
-                field("Command channel types", true) { getCommandChannelTypeString(cmd) }
+            field("Command name", true) { cmd.name }
+            field("Command publicity", true) { getCommandTypeString(cmd) }
+            field("Command channel types", true) { getCommandChannelTypeString(cmd) }
 
-                cmd.requiredPermission?.run cmd@{
-                    field("Required bot permission", true) { this.toString() }
-                    message.getGuildOrNull()?.getMemberOrNull(message.kord.selfId)?.getPermissions()?.run {
-                        field("Bot can run", true) { contains(this@cmd).toBoolString() }
-                    }
-                }
-                message.getAuthorAsMember()?.getPermissions()?.run {
-                    field("Member can use", true) { cmd.check(message, locale).toBoolString() }
-                }
-
-                message.guildId?.run {
-                    field("Is blacklisted", true) { Db.isBlackListed(this, cmd.name).toBoolString() }
-                }
-
-                cmd.localesWhitelist?.run {
-                    field("Allowed locales", true) { joinToString(separator = ", ") { "`$it`" } }
+            cmd.requiredPermission?.run cmd@{
+                field("Required bot permission", true) { this.toString() }
+                message.getGuildOrNull()?.getMemberOrNull(message.kord.selfId)?.getPermissions()?.run {
+                    field("Bot can run", true) { contains(this@cmd).toBoolString() }
                 }
             }
-            allowedMentions { repliedUser = false }
+            message.getAuthorAsMember()?.getPermissions()?.run {
+                field("Member can use", true) { cmd.check(message, locale).toBoolString() }
+            }
+
+            message.guildId?.run {
+                field("Is blacklisted", true) { Db.isBlackListed(this, cmd.name).toBoolString() }
+            }
+
+            cmd.localesWhitelist?.run {
+                field("Allowed locales", true) { joinToString(separator = ", ") { "`$it`" } }
+            }
+
+            timestampNow()
         }
     }
 }

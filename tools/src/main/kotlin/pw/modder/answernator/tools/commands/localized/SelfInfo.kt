@@ -1,10 +1,8 @@
 package pw.modder.answernator.tools.commands.localized
 
 import dev.kord.common.entity.Permission
-import dev.kord.core.behavior.reply
 import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Message
-import kotlinx.datetime.Clock
 import org.joda.time.Instant
 import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.utils.Globals
@@ -30,47 +28,45 @@ class SelfInfo: LocalizedGuildCommand {
             return
         }
 
-        message.reply {
-            embed {
-                title = texts.formatString("user.title.user", member.nickname ?: member.username)
+        message.replyEmbed {
+            title = texts.formatString("user.title.user", member.nickname ?: member.username)
 
-                thumbnail { url = member.avatar.url }
+            thumbnail { url = member.avatar.url }
 
-                color = member.getColor()
+            color = member.getColor()
 
-                field(texts.getString("user.username"), true) { member.tag }
-                field(texts.getString("user.id"), true) { member.id.asString }
-                field(texts.getString("user.owner"), true) { texts.getString("bool.${member.id == guild.ownerId}") }
-                field(texts.getString("user.admin"), true) { texts.getString("bool.${member.isAdmin()}") }
-                field(texts.getString("user.muted"), true) {
-                    texts.getString("bool.${member.isMuted()}")
-                }
-                field(texts.getString("user.superuser"), true) {
-                    texts.getString("bool.${member.id.asString == Globals.config.author}")
-                }
-                field(texts.getString("user.roles"), false) {
-                    member.roleBehaviors.joinToString(" ") { it.mention }
-                        .ifEmpty { texts.getString("empty") }
-                }
-                field(texts.getString("user.rights"), false) {
-                    member.getPermissions().values.joinToString(", ") { texts.getPerm(it) }
-                        .ifEmpty { texts.getString("empty") }
-                }
-                field(texts.getString("user.joinedAt"), false) {
-                    texts.formatString(
-                        "user.joinedAt.value",
-                        Utils.prettyPrintPeriod(texts.locale, Instant.ofEpochSecond(member.joinedAt.epochSeconds))
-                    )
-                }
-                field(texts.getString("user.createdAt"), false) {
-                    texts.formatString(
-                        "user.createdAt.value",
-                        Utils.prettyPrintPeriodSnowflake(texts.locale, member.id)
-                    )
-                }
-                timestamp = Clock.System.now()
+            field(texts.getString("user.username"), true) { member.tag }
+            field(texts.getString("user.id"), true) { member.id.asString }
+            field(texts.getString("user.owner"), true) { texts.getString("bool.${member.id == guild.ownerId}") }
+            field(texts.getString("user.admin"), true) { texts.getString("bool.${member.isAdmin()}") }
+            field(texts.getString("user.muted"), true) {
+                texts.getString("bool.${member.isMuted()}")
             }
-            allowedMentions { repliedUser = false }
+            field(texts.getString("user.superuser"), true) {
+                texts.getString("bool.${member.id.asString == Globals.config.author}")
+            }
+            field(texts.getString("user.roles"), false) {
+                member.roleBehaviors.joinToString(" ") { it.mention }
+                    .ifEmpty { texts.getString("empty") }
+            }
+            field(texts.getString("user.rights"), false) {
+                member.getPermissions().values.joinToString(", ") { texts.getPerm(it) }
+                    .ifEmpty { texts.getString("empty") }
+            }
+            field(texts.getString("user.joinedAt"), false) {
+                texts.formatString(
+                    "user.joinedAt.value",
+                    Utils.prettyPrintPeriod(texts.locale, Instant.ofEpochSecond(member.joinedAt.epochSeconds))
+                )
+            }
+            field(texts.getString("user.createdAt"), false) {
+                texts.formatString(
+                    "user.createdAt.value",
+                    Utils.prettyPrintPeriodSnowflake(texts.locale, member.id)
+                )
+            }
+
+            timestampNow()
         }
     }
 
