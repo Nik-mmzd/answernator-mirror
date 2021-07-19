@@ -4,6 +4,7 @@ import dev.kord.common.entity.Permission
 import dev.kord.core.Kord
 import dev.kord.core.behavior.channel.withTyping
 import dev.kord.core.event.message.MessageCreateEvent
+import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.core.on
 import mu.KotlinLogging
 import pw.modder.answernator.db.Db
@@ -54,7 +55,11 @@ suspend fun Kord.commandService() {
 
             try {
                 command.action(message, words.drop(1).filter { it.isNotEmpty() }, texts.locale, guildConfig)
-
+            } catch (e: NotImplementedError) {
+                when(val msg = e.message) {
+                    null -> message.reply(texts.getString("bot.notImplemented"))
+                    else -> message.reply(texts.formatString("bot.notImplemented.message", msg))
+                }
             } catch (e: Exception) { // and any other exception
                 logger.error(e) { "got error while running command" }
                 message.reply(texts.formatString("bot.error", "${config.prefix}${command.name}"))
