@@ -35,7 +35,6 @@ subprojects {
 
     repositories {
         mavenCentral()
-        jcenter()
     }
 
     dependencies {
@@ -53,5 +52,14 @@ subprojects {
         implementation("io.ktor:ktor-client-cio:$ktorVersion")
         implementation("com.h2database:h2:$h2Version")
         implementation("joda-time:joda-time:$jodaTimeVersion")
+    }
+
+    tasks {
+        compileKotlin {
+            kotlinOptions.jvmTarget = "1.8"
+        }
+        compileTestKotlin {
+            kotlinOptions.jvmTarget = "1.8"
+        }
     }
 }

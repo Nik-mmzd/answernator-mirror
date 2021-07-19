@@ -4,7 +4,6 @@ import dev.kord.common.entity.Permission
 import dev.kord.core.Kord
 import dev.kord.core.behavior.channel.withTyping
 import dev.kord.core.event.message.MessageCreateEvent
-import dev.kord.core.exception.EntityNotFoundException
 import dev.kord.core.on
 import mu.KotlinLogging
 import pw.modder.answernator.db.Db

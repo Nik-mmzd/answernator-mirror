@@ -1,5 +1,3 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar as ShadowJarTaskType
-
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
@@ -20,15 +18,12 @@ publishing {
     }
 }
 
-val slf4jVersion: String by project
-
 val gitVersion: groovy.lang.Closure<*> by extra
 
 group = "pw.modder"
 version = gitVersion.call()
 
-val debugImplementation by configurations.creating
-
+val slf4jVersion: String by project
 dependencies {
     implementation("org.slf4j:slf4j-simple:$slf4jVersion")
 }
@@ -40,13 +35,6 @@ val jar by tasks.getting(Jar::class) {
 }
 
 tasks {
-    compileKotlin {
-        kotlinOptions.jvmTarget = "1.8"
-    }
-    compileTestKotlin {
-        kotlinOptions.jvmTarget = "1.8"
-    }
-
     val createDependenciesFile by creating {
         doLast {
             file("$buildDir/dependencies.txt").printWriter().use { pw ->

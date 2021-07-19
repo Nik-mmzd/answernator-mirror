@@ -14,18 +14,11 @@ dependencies {
 }
 
 tasks {
-    compileKotlin {
-        kotlinOptions.jvmTarget = "1.8"
-    }
-    compileTestKotlin {
-        kotlinOptions.jvmTarget = "1.8"
-    }
-
     val createModuleVersionFile by creating {
         doLast {
             file("$buildDir/module.fun.txt").printWriter().use { pw ->
                 pw.append(project.version.toString())
-                pw.appendln()
+                pw.appendLine()
             }
         }
     }

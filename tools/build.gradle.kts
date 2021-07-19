@@ -16,11 +16,9 @@ dependencies {
 
 tasks {
     compileKotlin {
-        kotlinOptions.jvmTarget = "1.8"
         kotlinOptions.freeCompilerArgs+="-Xopt-in=kotlin.RequiresOptIn"
     }
     compileTestKotlin {
-        kotlinOptions.jvmTarget = "1.8"
         kotlinOptions.freeCompilerArgs+="-Xopt-in=kotlin.RequiresOptIn"
     }
 
@@ -28,7 +26,7 @@ tasks {
         doLast {
             file("$buildDir/module.tools.txt").printWriter().use { pw ->
                 pw.append(project.version.toString())
-                pw.appendln()
+                pw.appendLine()
             }
         }
     }
