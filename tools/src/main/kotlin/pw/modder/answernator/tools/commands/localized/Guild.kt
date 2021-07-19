@@ -46,7 +46,9 @@ class Guild: LocalizedGuildCommand {
             field(texts.getString("emojis"), true) { givenGuild.emojis.count().toString() }
             if (givenGuild.roles.count() < 50 && givenGuild.id == guild.id) {
                 field(texts.getString("roles"), false) {
-                    givenGuild.roles.filterNot { it.id == givenGuild.id }.toList().joinToString(" ") { it.mention }
+                    givenGuild.roles.toList()
+                        .filterNot { it.id == givenGuild.id }.sortedByDescending { it.rawPosition }
+                        .joinToString(" ") { it.mention }
                 }
             } else {
                 field(texts.getString("roles"), true) { (givenGuild.roles.count() - 1).toString() }
