@@ -28,7 +28,7 @@ fun Member.isOwner(guild: Guild): Boolean {
 }
 
 suspend fun Member.getColor(): Color? {
-    return roles.toList().filter { it.color.rgb != 0 }.minByOrNull { it.rawPosition }?.color
+    return roles.toList().filter { it.color.rgb != 0 }.maxByOrNull { it.rawPosition }?.color
 }
 
 fun Member.isMuted(): Boolean {

@@ -147,7 +147,7 @@ class Info: LocalizedGuildCommand {
                     field(texts.getString("channel.id"), true) { data.id.asString }
                     field(texts.getString("channel.type"), true) { data.type::class.simpleName ?: texts.getString("channel.unknown") }
                     data.parentId?.asOptional?.ifHasValue { parent ->
-                        guild.channelBehaviors.find { it.id == parent }?.run {
+                        guild.channels.firstOrNull { it.id == parent }?.run {
                             field(texts.getString("channel.parent"), true) { data.icon.orElse("#") + name }
                         }
                     }
