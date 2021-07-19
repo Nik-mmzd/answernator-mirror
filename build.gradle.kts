@@ -27,7 +27,6 @@ val commonsIoVersion: String by project
 val kotlinLoggingVersion: String by project
 val guavaVersion: String by project
 val h2Version: String by project
-val jodaTimeVersion: String by project
 val kordVersion: String by project
 
 subprojects {
@@ -51,7 +50,6 @@ subprojects {
         implementation("io.ktor:ktor-client-core-jvm:$ktorVersion")
         implementation("io.ktor:ktor-client-cio:$ktorVersion")
         implementation("com.h2database:h2:$h2Version")
-        implementation("joda-time:joda-time:$jodaTimeVersion")
     }
 
     tasks {

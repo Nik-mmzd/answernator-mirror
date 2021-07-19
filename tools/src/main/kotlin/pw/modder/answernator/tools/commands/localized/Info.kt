@@ -7,7 +7,6 @@ import dev.kord.core.entity.Message
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
 import org.apache.commons.io.FileUtils
-import org.joda.time.Instant
 import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.Globals
@@ -54,6 +53,7 @@ class Info: LocalizedGuildCommand {
                     title = texts.formatString("message.title", this@message.author?.tag ?: "Unkwon")
                     description = this@message.content.takeIf { it.length < 501 } ?: (this@message.content.take(499) + "…")
 
+                    field(texts.getString("message.created"), false) { "${this@message.id.timestampMention} (${this@message.id.relTimestampMention})" }
                     field(texts.getString("message.embed"), true) { texts.getString("bool.${data.embeds.isNotEmpty()}") }
                     field(texts.getString("message.pinned"), true) { texts.getString("bool.${data.pinned}") }
                     field(texts.getString("message.webhook"), true) { texts.getString("bool.${data.webhookId.asOptional.hasValue()}")}
@@ -126,16 +126,10 @@ class Info: LocalizedGuildCommand {
                             .ifEmpty { texts.getString("empty") }
                     }
                     field(texts.getString("user.joinedAt"), false) {
-                        texts.formatString(
-                            "user.joinedAt.value",
-                            Utils.prettyPrintPeriod(texts.locale, Instant.ofEpochSecond(member.joinedAt.epochSeconds))
-                        )
+                        "<t:${member.joinedAt.epochSeconds}:f> (<t:${member.joinedAt.epochSeconds}:R>)"
                     }
                     field(texts.getString("user.createdAt"), false) {
-                        texts.formatString(
-                            "user.createdAt.value",
-                            Utils.prettyPrintPeriodSnowflake(texts.locale, id)
-                        )
+                        "${id.timestampMention} (${id.relTimestampMention})"
                     }
 
                     timestampNow()
@@ -145,6 +139,7 @@ class Info: LocalizedGuildCommand {
                 message.replyEmbed {
                     title = data.icon.orElse("") + data.name.orElse { texts.getString("channel.title") }
 
+                    field(texts.getString("channel.created"), false) { "${data.id.timestampMention} (${data.id.relTimestampMention})" }
                     field(texts.getString("channel.id"), true) { data.id.asString }
                     field(texts.getString("channel.type"), true) { data.type::class.simpleName ?: texts.getString("channel.unknown") }
                     data.parentId?.asOptional?.ifHasValue { parent ->
@@ -181,20 +176,18 @@ class Info: LocalizedGuildCommand {
                     this.color = this@role.color.takeIf { it.rgb != 0 }
 
                     field(texts.getString("role.id"), true) { this@role.id.asString }
-                    field(
-                        texts.getString("role.default"),
-                        true
-                    ) { texts.getString("bool.${config.defaultRole == this@role.id.asString}") }
-                    field(
-                        texts.getString("role.mute"),
-                        true
-                    ) { texts.getString("bool.${config.muteRole == this@role.id.asString}") }
+                    field(texts.getString("role.default"), true) {
+                        texts.getString("bool.${config.defaultRole == this@role.id.asString}")
+                    }
+                    field(texts.getString("role.mute"),true) {
+                        texts.getString("bool.${config.muteRole == this@role.id.asString}")
+                    }
                     field(texts.getString("role.managed"), true) { texts.getString("bool.$managed") }
                     field(texts.getString("role.mentionable"), true) { texts.getString("bool.$mentionable") }
                     field(texts.getString("role.hoist"), true) { texts.getString("bool.$hoisted") }
                     field(texts.getString("role.position"), true) { rawPosition.toString() }
                     field(texts.getString("role.createdAt"), false) {
-                        texts.formatString("role.createdAt.value", Utils.prettyPrintPeriodSnowflake(texts.locale, id))
+                        "${this@role.id.timestampMention} (${this@role.id.relTimestampMention})"
                     }
                     field(texts.getString("role.rights"), false) {
                         permissions.values.joinToString(", ") { texts.getPerm(it) }.ifEmpty { texts.getString("empty") }

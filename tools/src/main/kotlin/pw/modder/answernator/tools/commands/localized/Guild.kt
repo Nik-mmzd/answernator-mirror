@@ -10,9 +10,7 @@ import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedGuildCommand
 import pw.modder.answernator.utils.Utils
-import pw.modder.answernator.utils.extensions.kord.instant
-import pw.modder.answernator.utils.extensions.kord.reply
-import pw.modder.answernator.utils.extensions.kord.replyEmbed
+import pw.modder.answernator.utils.extensions.kord.*
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
 
 class Guild: LocalizedGuildCommand {
@@ -54,7 +52,7 @@ class Guild: LocalizedGuildCommand {
                 field(texts.getString("roles"), true) { (givenGuild.roles.count() - 1).toString() }
             }
             field(texts.getString("created_at"), false) {
-                texts.formatString("created_at.value", Utils.prettyPrintPeriod(texts.locale, givenGuild.id.instant))
+                "${givenGuild.id.timestampMention} (${givenGuild.id.relTimestampMention})"
             }
             field(texts.getString("region"), true) {
                 givenGuild.getRegion().name.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }

@@ -3,11 +3,9 @@ package pw.modder.answernator.tools.commands.localized
 import dev.kord.common.entity.Permission
 import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Message
-import org.joda.time.Instant
 import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.LocalizedGuildCommand
-import pw.modder.answernator.utils.Utils
 import pw.modder.answernator.utils.extensions.kord.*
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
 import java.util.*
@@ -54,16 +52,10 @@ class SelfInfo: LocalizedGuildCommand {
                     .ifEmpty { texts.getString("empty") }
             }
             field(texts.getString("user.joinedAt"), false) {
-                texts.formatString(
-                    "user.joinedAt.value",
-                    Utils.prettyPrintPeriod(texts.locale, Instant.ofEpochSecond(member.joinedAt.epochSeconds))
-                )
+                "<t:${member.joinedAt.epochSeconds}:f> (<t:${member.joinedAt.epochSeconds}:R>)"
             }
             field(texts.getString("user.createdAt"), false) {
-                texts.formatString(
-                    "user.createdAt.value",
-                    Utils.prettyPrintPeriodSnowflake(texts.locale, member.id)
-                )
+                "${member.id.timestampMention} (${member.id.relTimestampMention})"
             }
 
             timestampNow()

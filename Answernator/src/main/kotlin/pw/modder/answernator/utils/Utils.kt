@@ -1,15 +1,7 @@
 package pw.modder.answernator.utils
 
-import dev.kord.common.entity.Snowflake
-import org.joda.time.DateTime
-import org.joda.time.Instant
-import org.joda.time.Period
-import org.joda.time.PeriodType
-import org.joda.time.format.PeriodFormatterBuilder
-import pw.modder.answernator.utils.locale.LocaleBundle
 import java.io.InputStream
 import java.lang.management.ManagementFactory
-import java.util.*
 import java.util.concurrent.TimeUnit
 
 object Utils {
@@ -35,33 +27,4 @@ object Utils {
             TimeUnit.MILLISECONDS.toSeconds(uptime) % TimeUnit.MINUTES.toSeconds(1)
         )
     }
-
-    private val String.s get() = " $this"
-
-    fun prettyPrintPeriod(locale: Locale, time: Any, till: DateTime = DateTime.now()): String {
-        val texts = LocaleBundle("botGlobal", locale)
-        val formatter = PeriodFormatterBuilder()
-            .appendYears()
-            .appendSuffix(texts.getString("bot.date.year").s, texts.getString("bot.date.years").s)
-            .appendSeparatorIfFieldsBefore(" ")
-            .appendMonths()
-            .appendSuffix(texts.getString("bot.date.month").s, texts.getString("bot.date.months").s)
-            .appendSeparatorIfFieldsBefore(" ")
-            .appendDays()
-            .appendSuffix(texts.getString("bot.date.day").s, texts.getString("bot.date.days").s)
-            .appendSeparatorIfFieldsBefore(" ")
-            .appendHours()
-            .appendSuffix(texts.getString("bot.date.hour").s, texts.getString("bot.date.hours").s)
-            .appendSeparatorIfFieldsBefore(" ")
-            .appendMinutes()
-            .appendSuffix(texts.getString("bot.date.minute").s, texts.getString("bot.date.minutes").s)
-            .appendSeparatorIfFieldsBefore(" ")
-            .appendSeconds()
-            .appendSuffix(texts.getString("bot.date.second").s, texts.getString("bot.date.seconds").s)
-            .toFormatter()
-        return formatter.print(Period(DateTime(time), till, PeriodType.yearMonthDayTime()))
-    }
-
-    fun prettyPrintPeriodSnowflake(locale: Locale, snowflake: Snowflake, till: DateTime = DateTime.now())
-            = prettyPrintPeriod(locale, Instant.ofEpochSecond(snowflake.timeStamp.epochSeconds), till)
 }
