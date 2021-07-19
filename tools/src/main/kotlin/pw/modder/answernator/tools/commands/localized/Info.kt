@@ -5,6 +5,7 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Message
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.toList
 import org.apache.commons.io.FileUtils
 import org.joda.time.Instant
 import pw.modder.answernator.db.guild.Config
@@ -117,7 +118,7 @@ class Info: LocalizedGuildCommand {
                         texts.getString("bool.${id.asString == Globals.config.author}")
                     }
                     field(texts.getString("user.roles"), false) {
-                        member.roleBehaviors.joinToString(" ") { it.mention }
+                        member.roles.toList().sortedByDescending { it.rawPosition }.joinToString(" ") { it.mention }
                             .ifEmpty { texts.getString("empty") }
                     }
                     field(texts.getString("user.rights"), false) {
