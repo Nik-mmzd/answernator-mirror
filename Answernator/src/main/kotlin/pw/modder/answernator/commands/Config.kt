@@ -33,7 +33,7 @@ class Config: LocalizedGuildCommand {
                     description = texts.getString("description")
 
                     field(texts.getString("lang"), true) { "`${config.lang}`" }
-                    field(texts.getString("prefix"), true) { "`${config.cmdPrefix.toString()}`" }
+                    field(texts.getString("prefix"), true) { "`${config.cmdPrefix}`" }
                     field(texts.getString("lang.available"), true) {
                         Globals.config.langs.joinToString(separator = ", ") { "`$it`" }
                             .ifEmpty { texts.getString("lang.none") }

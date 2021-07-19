@@ -33,7 +33,7 @@ class Log: LocalizedGuildCommand {
 
                     field(texts.getString("get.memberjoin"), true) { formatField(texts, config, Features.LOG_JOIN, config.memberJoinLogChannel) }
                     field(texts.getString("get.memberleave"), true) { formatField(texts, config, Features.LOG_LEAVE, config.memberLeaveLogChannel) }
-                    field(texts.getString("get.memberban"), true) { formatField(texts, config, Features.LOG_LEAVE, config.memberLeaveLogChannel) }
+                    field(texts.getString("get.memberban"), true) { formatField(texts, config, Features.LOG_LEAVE, config.memberBanLogChannel) }
                     field(texts.getString("get.memeberunban"), true) { formatField(texts, config, Features.LOG_UNBAN, config.memberUnbanLogChannel) }
                     field(texts.getString("get.membermute"), true) { formatField(texts, config, Features.LOG_MUTE, config.memberMuteLogChannel) }
                     field(texts.getString("get.memberunmute"), true) { formatField(texts, config, Features.LOG_UNMUTE, config.memberUnmuteLogChannel) }
