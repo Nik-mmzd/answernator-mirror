@@ -21,7 +21,7 @@ class Guild: LocalizedGuildCommand {
     override val cmdType = Command.CommandGroup.ADMIN
 
     override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle, config: Config) {
-        if (args.first().equals("list", true)) {
+        if (args.firstOrNull().equals("list", true)) {
             message.reply(message.kord.guilds.toList().joinToString("\n", prefix = texts.getString("list.available")) {
                 "${it.name}: `${it.id.asString}`"
             })
