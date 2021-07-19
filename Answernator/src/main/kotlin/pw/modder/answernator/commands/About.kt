@@ -7,6 +7,7 @@ import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.utils.*
 import pw.modder.answernator.utils.extensions.kord.authorId
 import pw.modder.answernator.utils.extensions.kord.getColor
+import pw.modder.answernator.utils.extensions.toUserMention
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
 
 class About: LocalizedCommand {
@@ -37,8 +38,8 @@ class About: LocalizedCommand {
                 field(texts.getString("library"), true) { Globals.getDependencyVersion("dev.kord", "kord-core") }
                 field(texts.getString("bot"), true) { Globals.getDependencyVersion("pw.modder", "Answernator") }
 
-                field(texts.getString("owner"), true) { "<@${Globals.config.author}>" }
-                field(texts.getString("creator"), true) { "<@135017849604276224>" }
+                field(texts.getString("owner"), true) { Globals.config.author.toUserMention() }
+                field(texts.getString("creator"), true) { "135017849604276224".toUserMention() }
 
                 field(texts.getString("source"), false) { texts.getString("source.link") }
                 field(texts.getString("issues"), false) { texts.getString("issues.link") }
