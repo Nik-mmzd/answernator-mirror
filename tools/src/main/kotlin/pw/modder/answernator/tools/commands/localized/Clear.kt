@@ -7,10 +7,11 @@ import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.channel.TextChannel
-import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.flow.*
 import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedGuildCommand
+import pw.modder.answernator.utils.extensions.kord.authorId
 import pw.modder.answernator.utils.extensions.kord.reply
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
 import kotlin.time.Duration
@@ -33,19 +34,18 @@ class Clear: LocalizedGuildCommand {
         }
 
         val messages = mutableListOf<Snowflake>()
-
         val timeLimit = message.id.timeStamp.minus(Duration.days(2))
-        var lastMessage = message
+        var lastMessage = message.id
         do {
-            message.channel.getMessagesBefore(lastMessage.id).toList().also { lastMessage = it.last() }
+            message.channel.getMessagesBefore(lastMessage)
+                .onEach { lastMessage = it.id }
+                .filter { it.id.timeStamp > timeLimit }
                 .filter { message.mentionedUserIds.isEmpty() || it.author!!.id in message.mentionedUserIds }
                 .take(limit - messages.size)
-                .filter { it.id.timeStamp > timeLimit }
-                .map { it.id }
-                .takeIf { it.isNotEmpty() }
-                ?.run { messages.addAll(this) }
-
-        } while (messages.size < limit && lastMessage.id.timeStamp > timeLimit)
+                .collect {
+                    messages.add(it.id)
+                }
+        } while (messages.size < limit && lastMessage.timeStamp > timeLimit)
 
         if (messages.isEmpty()) {
             message.reply(texts.getString("empty"))
