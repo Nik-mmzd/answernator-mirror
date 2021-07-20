@@ -50,11 +50,10 @@ suspend fun Kord.muteService() {
             member.mute()
             if (config.isEnabled(Features.LOG_MUTE))
                 rest.channel.createMessage(Snowflake(config.memberMuteLogChannel ?: return@on)) {
-                    content = texts.formatString(
-                        "muted",
-                        member.mention,
-                        texts.getRandomString("reason")
-                    )
+                    content = when(config.isEnabled(Features.MUTE_RANDOM_REASON)) {
+                        true -> texts.formatString("muted.reason", member.mention, texts.getRandomString("reason"))
+                        false -> texts.formatString("muted", member.mention)
+                    }
                 }
             return@on
         }

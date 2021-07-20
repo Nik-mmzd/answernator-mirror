@@ -8,6 +8,7 @@ import mu.KotlinLogging
 import org.jetbrains.exposed.sql.transactions.transaction
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.db.guild.Config
+import pw.modder.answernator.db.guild.Features
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedGuildCommand
 import pw.modder.answernator.utils.extensions.extractMentionedId
@@ -72,13 +73,19 @@ class Mute: LocalizedGuildCommand {
 
             logger.debug { "Member is not muted" }
             val reason = args.drop(1).joinToString(" ").ifEmpty {
-                texts.getRandomString("reason")
+                when(config.isEnabled(Features.MUTE_RANDOM_REASON)) {
+                    true -> texts.getRandomString("reason")
+                    false -> null
+                }
             }
             logger.debug { "Got mute reason" }
 
             if (config.memberMuteLogChannel != null) try {
                 message.kord.rest.channel.createMessage(Snowflake(config.memberMuteLogChannel!!)) {
-                    content = texts.formatString("log.muted", mention, message.author!!.mention, reason)
+                    content = when(reason) {
+                        null -> texts.formatString("log.muted.noreason", mention, message.author!!)
+                        else -> texts.formatString("log.muted", mention, message.author!!.mention, reason)
+                    }
                 }
                 logger.debug { "LOG message sent" }
             } catch (e: Exception) {
@@ -97,7 +104,7 @@ class Mute: LocalizedGuildCommand {
                 throw e
             }
 
-            message.reply(texts.formatString("muted", mention, reason))
+            message.reply(texts.formatString("muted", mention))
         }
     }
 }

@@ -48,9 +48,11 @@ class Config: LocalizedGuildCommand {
                     )
                 }
 
-                field(texts.getString("muterole"), false) {
-                    config.muteRole?.toRoleMention()
-                        ?: texts.getString("role.notset")
+                field(texts.getString("mute"), false) {
+                    texts.formatString("mute.text",
+                        config.muteRole?.toRoleMention() ?: texts.getString("role.notset"),
+                        texts.getString("mute.${config.isEnabled(Features.MUTE_RANDOM_REASON)}")
+                    )
                 }
 
                 field(texts.getString("defrole"), false) {
@@ -171,9 +173,9 @@ class Config: LocalizedGuildCommand {
                     else -> message.reply(texts.getErrorString())
                 }
             }
-            "muterole" -> {
+            "mute", "muterole" -> {
                 when(args.getOrNull(1)) {
-                    "set" -> {
+                    "set", "setrole", "role" -> {
                         if (message.data.mentionRoles.size != 1) {
                             message.reply(texts.getString("muterole.invalid"))
                             return
@@ -187,6 +189,19 @@ class Config: LocalizedGuildCommand {
                             config.muteRole = null
                         }
                         message.reply(texts.getString("muterole.unset"))
+                    }
+                    "reasons", "random", "randomreasons" -> {
+                        when(args.getOrNull(2)) {
+                            "random", "enable" -> {
+                                config.enable(Features.MUTE_RANDOM_REASON)
+                                message.reply(texts.getString("mute.reason.enabled"))
+                            }
+                            "manual", "disable" -> {
+                                config.disable(Features.MUTE_RANDOM_REASON)
+                                message.reply(texts.getString("mute.reason.disabled"))
+                            }
+                            else -> message.reply(texts.getErrorString())
+                        }
                     }
                     else -> message.reply(texts.getErrorString())
                 }
@@ -240,7 +255,6 @@ class Config: LocalizedGuildCommand {
                     else -> message.reply(texts.getErrorString())
                 }
             }
-
             else -> message.reply(texts.getErrorString())
         }
     }
