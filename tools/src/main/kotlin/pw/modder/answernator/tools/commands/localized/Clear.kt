@@ -2,6 +2,7 @@ package pw.modder.answernator.tools.commands.localized
 
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
+import dev.kord.core.behavior.channel.TextChannelBehavior
 import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Message
@@ -54,7 +55,7 @@ class Clear: LocalizedGuildCommand {
         if (messages.size == 1)
             message.channel.deleteMessage(messages.first())
         else
-            guild.getChannelOf<TextChannel>(message.channelId).bulkDelete(messages.toSet())
+            TextChannelBehavior(guild.id, message.channelId, message.kord).bulkDelete(messages.toSet())
 
         message.reply(texts.formatString("done", messages.size))
     }
