@@ -18,8 +18,8 @@ object AntiSpamCache {
         .expireAfterAccess(30, TimeUnit.MINUTES)
         .build()
 
-    fun putMessage(message: Message) {
-        messages.put(message.guildId!! to message.author!!.id, message)
+    fun putMessage(guild: Snowflake, member: Snowflake, message: Message) {
+        messages.put(guild to member, message)
     }
 
     fun getMessage(guild: Snowflake, member: Snowflake): Message? {
@@ -36,7 +36,7 @@ object AntiSpamCache {
     }
 
     fun increment(message: Message): Int {
-        val triple = Triple(message.guildId!!, message.author!!.id, hashCode(message))
+        val triple = Triple(message.guildId!!, message.data.author.id, hashCode(message))
         val count = (cache.getIfPresent(triple) ?: 0)+1
         cache.put(triple, count)
         return count

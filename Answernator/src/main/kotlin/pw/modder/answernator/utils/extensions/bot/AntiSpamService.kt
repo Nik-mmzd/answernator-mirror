@@ -34,7 +34,11 @@ suspend fun Kord.antiSpam() {
                 if (config.isEnabled(Features.ANTI_SPAM_SILENT))
                     return@on
 
-                AntiSpamCache.putMessage(message.reply(config.antiSpamWarnText.format(message.author?.mention ?: "\$user")))
+                AntiSpamCache.putMessage(
+                    guild,
+                    message.data.author.id,
+                    message.reply(config.antiSpamWarnText.format(message.author?.mention ?: "\$user"))
+                )
             }
             config.antiSpamBan -> {
                 logger.info { "Creating ban: guild $guild, message ${message.id}, user ${message.authorId}, content = <${message.content}>" }
@@ -43,7 +47,7 @@ suspend fun Kord.antiSpam() {
                     deleteMessagesDays = 1
                     reason = config.antiSpamBanText
                 }
-                AntiSpamCache.getMessage(message.guildId!!, message.author!!.id)?.delete()
+                AntiSpamCache.getMessage(guild, message.data.author.id)?.delete()
             }
         }
     }
