@@ -48,7 +48,7 @@ class Quote: Command {
             title = "Цитата #${data.id}"
             url = "https://modder.pw/?id=${data.id}"
             description = data.text.takeIf { it.length < 2000 } ?: data.text.take(1999) + "…"
-            timestamp = Instant.fromEpochMilliseconds(data.createdAt)
+            timestamp = Instant.fromEpochSeconds(data.createdAt)
             field("Автор", true) { data.creatorMention }
             field("Лайков", true) { data.likesCount.toString() }
             footer { text = "Источник: Цитатник McModder'а | modder.pw" }
