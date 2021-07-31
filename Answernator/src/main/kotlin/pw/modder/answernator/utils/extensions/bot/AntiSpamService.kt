@@ -15,7 +15,7 @@ import pw.modder.answernator.utils.extensions.kord.reply
 private val logger = KotlinLogging.logger {}
 suspend fun Kord.antiSpam() {
     on<MessageCreateEvent> {
-        if (message.data.author.bot.orElse(false)) return@on
+        if (message.author?.isBot != false) return@on
         val guild = message.guildId
             ?: return@on
 
