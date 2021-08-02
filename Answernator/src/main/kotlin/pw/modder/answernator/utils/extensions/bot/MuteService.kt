@@ -3,15 +3,12 @@ package pw.modder.answernator.utils.extensions.bot
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.event.guild.MemberJoinEvent
-import dev.kord.core.event.guild.MemberLeaveEvent
 import dev.kord.core.event.guild.MemberUpdateEvent
 import dev.kord.core.on
 import mu.KotlinLogging
 import org.jetbrains.exposed.sql.transactions.transaction
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.db.guild.Features
-import pw.modder.answernator.db.guild.Mute
-import pw.modder.answernator.db.guild.Mutes
 import pw.modder.answernator.utils.extensions.kord.getMute
 import pw.modder.answernator.utils.extensions.kord.mute
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
@@ -51,7 +48,7 @@ suspend fun Kord.muteService() {
             if (config.isEnabled(Features.LOG_MUTE))
                 rest.channel.createMessage(Snowflake(config.memberMuteLogChannel ?: return@on)) {
                     content = when(config.isEnabled(Features.MUTE_RANDOM_REASON)) {
-                        true -> texts.formatString("muted.reason", member.mention, texts.getRandomString("reason"))
+                        true -> texts.formatString("muted.reason", member.mention, texts.random("reason"))
                         false -> texts.formatString("muted", member.mention)
                     }
                 }
@@ -62,7 +59,7 @@ suspend fun Kord.muteService() {
         if (config.isEnabled(Features.LOG_UNMUTE)) {
             rest.channel.createMessage(Snowflake(config.memberUnmuteLogChannel ?: return@on)) {
                 content = String.format(
-                    texts.getString("unmuted"),
+                    texts.get("unmuted"),
                     member.mention
                 )
             }

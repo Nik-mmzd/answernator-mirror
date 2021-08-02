@@ -1,22 +1,23 @@
-package pw.modder.answernator.utils
+package pw.modder.answernator.utils.locale
 
 import java.io.InputStream
 import java.net.URL
 import java.net.URLConnection
 import java.util.*
+import java.util.ResourceBundle as JavaResourceBundle
 
 
-object UTF8Control : ResourceBundle.Control() {
+object UTF8Control : JavaResourceBundle.Control() {
     override fun newBundle(
         baseName: String?,
         locale: Locale?,
         format: String?,
         loader: ClassLoader,
         reload: Boolean
-    ): ResourceBundle? { // The below is a copy of the default implementation.
+    ): JavaResourceBundle? { // The below is a copy of the default implementation.
         val bundleName: String = toBundleName(baseName, locale)
         val resourceName: String = toResourceName(bundleName, "properties")
-        var bundle: ResourceBundle? = null
+        var bundle: JavaResourceBundle? = null
         var stream: InputStream? = null
         if (reload) {
             val url: URL? = loader.getResource(resourceName)

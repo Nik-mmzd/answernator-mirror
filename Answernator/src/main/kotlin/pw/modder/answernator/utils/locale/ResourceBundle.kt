@@ -1,7 +1,6 @@
 package pw.modder.answernator.utils.locale
 
 import pw.modder.answernator.utils.Globals
-import pw.modder.answernator.utils.UTF8Control
 import java.util.*
 import java.util.ResourceBundle as JavaResourceBundle
 
@@ -9,10 +8,19 @@ interface ResourceBundle {
     val name: String
     val locale: Locale
 
+    operator fun get(key: String): String
+    fun getOrNull(key: String): String?
+    fun random(key: String): String?
+
+    @Deprecated("Use getter instead", replaceWith = ReplaceWith("get(key)"))
     fun getString(key: String): String
+    @Deprecated("Use get().format()", replaceWith = ReplaceWith("get(key).format(args)"))
     fun formatString(key: String, vararg args: Any): String
+    @Deprecated("Use getOrNull()", replaceWith = ReplaceWith("getOrNull(key)"))
     fun getNullableString(key: String): String?
+    @Deprecated("Use getOrNull().format()", replaceWith = ReplaceWith("getOrNull(key)?.format(args)"))
     fun formatNullableString(key: String, vararg args: Any): String?
+    @Deprecated("Use random()", replaceWith = ReplaceWith("random(key)"))
     fun getRandomString(key: String): String?
 }
 
@@ -26,29 +34,33 @@ class LocaleBundle private constructor(override val name: String, override val l
     constructor(name: String, locale: String):
             this(name, Locale(locale), JavaResourceBundle.getBundle("locale.$name", Locale(locale), UTF8Control))
 
-    override fun getString(key: String): String {
+    override operator fun get(key: String): String {
         if (bundle.containsKey(key)) return bundle.getString(key)
         return key
     }
 
-    override fun formatString(key: String, vararg args: Any): String {
-        return getString(key).format(args = args)
-    }
-
-    override fun getNullableString(key: String): String? {
+    override fun getOrNull(key: String): String? {
         if (bundle.containsKey(key)) return bundle.getString(key)
         return null
     }
 
-    override fun getRandomString(key: String): String {
+    override fun getString(key: String) = get(key)
+    override fun formatString(key: String, vararg args: Any): String {
+        return get(key).format(args = args)
+    }
+
+    override fun getNullableString(key: String) = getOrNull(key)
+    override fun formatNullableString(key: String, vararg args: Any): String? {
+        return getOrNull(key)?.format(*args)
+    }
+
+    override fun random(key: String): String {
         val keys = bundle.keys.asSequence().filter { it.startsWith("$key.") }.toList()
         if (keys.isEmpty()) return "$key.random"
         return bundle.getString(keys.random(Globals.random))
     }
 
-    override fun formatNullableString(key: String, vararg args: Any): String? {
-        return getNullableString(key)?.format(*args)
-    }
+    override fun getRandomString(key: String) = random(key)
 }
 
 class CommandLocaleBundle private constructor(override val name: String, override val locale: Locale,
@@ -60,42 +72,44 @@ class CommandLocaleBundle private constructor(override val name: String, overrid
     constructor(name: String, locale: Locale):
             this(name, locale, JavaResourceBundle.getBundle("locale.$name", locale, UTF8Control))
 
-    override fun getString(key: String): String {
+    override operator fun get(key: String): String {
         if (bundle.containsKey("$name.$key")) return bundle.getString("$name.$key")
         return "$name.$key"
     }
 
-    override fun formatString(key: String, vararg args: Any): String {
-        return getString(key).format(args = args)
-    }
-
-    override fun getNullableString(key: String): String? {
+    override fun getOrNull(key: String): String? {
         if (bundle.containsKey("$name.$key")) return bundle.getString("$name.$key")
         return null
     }
 
-    override fun formatNullableString(key: String, vararg args: Any): String? {
-        return getNullableString(key)?.format(*args)
+    override fun getString(key: String) = get(key)
+    override fun formatString(key: String, vararg args: Any): String {
+        return get(key).format(args = args)
     }
 
-    override fun getRandomString(key: String): String {
+    override fun getNullableString(key: String) = getOrNull(key)
+    override fun formatNullableString(key: String, vararg args: Any): String? {
+        return getOrNull(key)?.format(*args)
+    }
+
+    override fun random(key: String): String {
         val keys = bundle.keys.asSequence().filter { it.startsWith("$name.$key.") }.toList()
         if (keys.isEmpty()) return "$name.$key.random"
         return bundle.getString(keys.random(Globals.random))
     }
 
-    fun getHelp(): String? {
-        return getNullableString("help.usage")
-    }
+    override fun getRandomString(key: String) = random(key)
 
-    fun getDescription(): String? {
-        return getNullableString("help.description")
-    }
+    val help: String? get() = getOrNull("help.usage")
+    val description: String? get() = getOrNull("help.description")
 
-    fun getErrorString(key: String = "error"): String {
+    fun error(key: String = "error"): String {
         if (bundle.containsKey("$name.help.usage"))
-            return "${getString(key)}\n${bundle.getString("$name.help.usage")}"
+            return "${get(key)}\n${bundle.getString("$name.help.usage")}"
 
-        return getString(key)
+        return get(key)
     }
+
+    @Deprecated("Use error() instead", ReplaceWith("error(key)"))
+    fun getErrorString(key: String = "error") = error(key)
 }
