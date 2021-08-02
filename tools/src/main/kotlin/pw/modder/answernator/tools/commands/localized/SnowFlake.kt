@@ -14,21 +14,21 @@ class SnowFlake: LocalizedCommand {
 
     override suspend fun action(message: Message, args: List<String>, texts: CommandLocaleBundle, config: Config?) {
         if (args.isEmpty()) {
-            message.reply(texts.getErrorString())
+            message.reply(texts.error())
             return
         }
 
         message.replyEmbed {
-            title = texts.getString("title")
-            description = texts.getString("description")
+            title = texts["title"]
+            description = texts["description"]
 
             args.take(20).map { it.takeIf { it.length == 18 }?.toLongOrNull() }.map { it?.run { Snowflake(this) } }.forEach {
                 if (it == null) {
-                    field(texts.getString("field.invalid"), false) { texts.getString("field.invalid.text") }
+                    field(texts["field.invalid"], false) { texts["field.invalid.text"] }
                     return@forEach
                 }
 
-                field(it.asString, false) { texts.formatString("field.text", it.timestamp, it.worker, it.process, it.increment, it.timestampMention) }
+                field(it.asString, false) { texts["field.text"].format(it.timestamp, it.worker, it.process, it.increment, it.timestampMention) }
             }
         }
     }

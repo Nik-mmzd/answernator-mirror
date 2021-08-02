@@ -16,45 +16,45 @@ class SelfInfo: LocalizedGuildCommand {
     }
 
     private fun CommandLocaleBundle.getPerm(perm: Permission): String {
-        return getNullableString("permission.${perm.name}") ?: perm.name
+        return getOrNull("permission.${perm.name}") ?: perm.name
     }
 
     override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle, config: Config) {
         val member = message.getAuthorAsMember()
         if (member == null) {
-            message.reply(texts.getErrorString())
+            message.reply(texts.error())
             return
         }
 
         message.replyEmbed {
-            title = texts.formatString("user.title.user", member.nickname ?: member.username)
+            title = texts["user.title.user"].format(member.nickname ?: member.username)
 
             thumbnail { url = member.avatar.url }
 
             color = member.getColor()
 
-            field(texts.getString("user.username"), true) { member.tag }
-            field(texts.getString("user.id"), true) { member.id.asString }
-            field(texts.getString("user.owner"), true) { texts.getString("bool.${member.id == guild.ownerId}") }
-            field(texts.getString("user.admin"), true) { texts.getString("bool.${member.isAdmin()}") }
-            field(texts.getString("user.muted"), true) {
-                texts.getString("bool.${member.isMuted()}")
+            field(texts["user.username"], true) { member.tag }
+            field(texts["user.id"], true) { member.id.asString }
+            field(texts["user.owner"], true) { texts["bool.${member.id == guild.ownerId}"] }
+            field(texts["user.admin"], true) { texts["bool.${member.isAdmin()}"] }
+            field(texts["user.muted"], true) {
+                texts["bool.${member.isMuted()}"]
             }
-            field(texts.getString("user.superuser"), true) {
-                texts.getString("bool.${member.id.asString == Globals.config.author}")
+            field(texts["user.superuser"], true) {
+                texts["bool.${member.id.asString == Globals.config.author}"]
             }
-            field(texts.getString("user.roles"), false) {
+            field(texts["user.roles"], false) {
                 member.roleBehaviors.joinToString(" ") { it.mention }
-                    .ifEmpty { texts.getString("empty") }
+                    .ifEmpty { texts["empty"] }
             }
-            field(texts.getString("user.rights"), false) {
+            field(texts["user.rights"], false) {
                 member.getPermissions().values.joinToString(", ") { texts.getPerm(it) }
-                    .ifEmpty { texts.getString("empty") }
+                    .ifEmpty { texts["empty"] }
             }
-            field(texts.getString("user.joinedAt"), false) {
+            field(texts["user.joinedAt"], false) {
                 "<t:${member.joinedAt.epochSeconds}:f> (<t:${member.joinedAt.epochSeconds}:R>)"
             }
-            field(texts.getString("user.createdAt"), false) {
+            field(texts["user.createdAt"], false) {
                 "${member.id.timestampMention} (${member.id.relTimestampMention})"
             }
 

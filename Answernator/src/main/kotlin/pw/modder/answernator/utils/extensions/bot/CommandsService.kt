@@ -46,7 +46,7 @@ suspend fun Kord.commandService() {
 
             logger.debug { "found command ${command.name}, checking" }
             if (!command.check(message, texts.locale)) {
-                message.reply(texts.get("bot.noPerms"))
+                message.reply(texts["bot.noPerms"])
                 return@withTyping
             }
 
@@ -56,12 +56,12 @@ suspend fun Kord.commandService() {
                 command.action(message, words.drop(1).filter { it.isNotEmpty() }, texts.locale, guildConfig)
             } catch (e: NotImplementedError) {
                 when(val msg = e.message) {
-                    null -> message.reply(texts.get("bot.notImplemented"))
-                    else -> message.reply(texts.formatString("bot.notImplemented.message", msg))
+                    null -> message.reply(texts["bot.notImplemented"])
+                    else -> message.reply(texts["bot.notImplemented.message"].format(msg))
                 }
             } catch (e: Exception) { // and any other exception
                 logger.error(e) { "got error while running command" }
-                message.reply(texts.formatString("bot.error", "${config.prefix}${command.name}"))
+                message.reply(texts["bot.error"].format("${config.prefix}${command.name}"))
             }
         }
     }

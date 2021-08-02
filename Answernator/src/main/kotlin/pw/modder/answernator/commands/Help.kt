@@ -34,15 +34,15 @@ class Help: LocalizedCommand {
             }.filter { it.check(message, texts.locale) }.filterNot { it.localesWhitelist?.contains(texts.locale) == false }.groupBy { it.cmdType }
 
             message.replyEmbed {
-                title = texts.getString("title_cmdlist")
-                description = texts.getString("cmdlist.usage")
+                title = texts["title_cmdlist"]
+                description = texts["cmdlist.usage"]
 
                 cmds.forEach { (cmdType: Command.CommandGroup, cmds: List<Command>) ->
                     if (cmds.isEmpty()) return@forEach
 
                     cmds.map { it.getDescription(texts.locale)?.run { "`${it.name}`: $this" }
                         ?: "`${it.name}`" }.joinToStrings(1024, "\n").forEach {
-                        field( texts.getString("cmdlist.${cmdType.name}"), false) { it }
+                        field(texts["cmdlist.${cmdType.name}"], false) { it }
                     }
                 }
             }
@@ -52,8 +52,8 @@ class Help: LocalizedCommand {
         val cmd = CommandList.commands.singleOrNull { it.name == args.first().lowercase() }
         if (cmd == null) {
             message.replyEmbed {
-                title = texts.formatString("title", args.first().removeGraves())
-                description = texts.formatString("not_found", args.first().removeGraves())
+                title = texts["title"].format(args.first().removeGraves())
+                description = texts["not_found"].format(args.first().removeGraves())
 
             }
             return
@@ -61,8 +61,8 @@ class Help: LocalizedCommand {
 
         if (message.data.author.id.asString != Globals.config.author && !cmd.check(message, texts.locale)) {
             message.replyEmbed {
-                title = texts.formatString("title", args.first())
-                description = texts.getString("no_permissions")
+                title = texts["title"].format(args.first())
+                description = texts["no_permissions"]
             }
             return
         }
@@ -70,8 +70,8 @@ class Help: LocalizedCommand {
         val help = cmd.getHelp(texts.locale)
         val desc = cmd.getDescription(texts.locale)
         message.replyEmbed {
-            title = texts.formatString("title", args.first())
-            description = if (help.isNullOrEmpty() || desc.isNullOrEmpty()) texts.getString("not_available") else "$desc\n$help"
+            title = texts["title"].format(args.first())
+            description = if (help.isNullOrEmpty() || desc.isNullOrEmpty()) texts["not_available"] else "$desc\n$help"
         }
     }
 }

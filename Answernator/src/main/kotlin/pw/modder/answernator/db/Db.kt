@@ -29,14 +29,14 @@ object Db {
                 features = 0
                 lang = Globals.config.lang
                 cmdPrefix = Globals.config.prefix
-                greeting = texts.getString("bot.greeting.message")
+                greeting = texts["bot.greeting.message"]
                 greetingChannel = null
                 muteRole = null
                 defaultRole = null
                 antiSpamWarn = 3
                 antiSpamBan = 5
-                antiSpamWarnText = texts.getString("bot.antispam.warning")
-                antiSpamBanText = texts.getString("bot.antispam.reason")
+                antiSpamWarnText = texts["bot.antispam.warning"]
+                antiSpamBanText = texts["bot.antispam.reason"]
                 memberBanLogChannel = null
                 memberJoinLogChannel = null
                 memberLeaveLogChannel = null

@@ -18,21 +18,21 @@ class Tsar: LocalizedCommand {
 
     override suspend fun action(message: Message, args: List<String>, texts: CommandLocaleBundle, config: Config?) {
         if (!args.first().equals("велит", true)) {
-            message.reply(texts.getString("invalid"))
+            message.reply(texts["invalid"])
             return
         }
 
         message.replyEmbed {
-            title = texts.getString("title")
-            field(texts.getString("title.decree"), false) {
-                texts.getRandomString("decree")
+            title = texts["title"]
+            field(texts["title.decree"], false) {
+                texts.random("decree")
             }
             color = Color(16711680)
-            thumbnail { url = texts.getString("thumbnail") }
+            thumbnail { url = texts["thumbnail"] }
 
             footer {
-                text = texts.getRandomString("sign")
-                icon = texts.getString("footer.icon")
+                text = texts.random("sign")
+                icon = texts["footer.icon"]
             }
 
             timestamp = Clock.System.now()

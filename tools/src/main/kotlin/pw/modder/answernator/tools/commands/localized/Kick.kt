@@ -21,38 +21,38 @@ class Kick: LocalizedGuildCommand {
 
     override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle, config: Config) {
         if (args.isEmpty()) {
-            message.reply(texts.getErrorString())
+            message.reply(texts.error())
             return
         }
 
         val mentionedUserId = args.first().extractMentionedId()
         if (mentionedUserId == null) {
-            message.reply(texts.getErrorString())
+            message.reply(texts.error())
             return
         }
 
         val mentionedUser = message.mentionedUserBehaviors.firstOrNull() { it.id.asString == mentionedUserId}?.asMemberOrNull(guild.id)
         if (mentionedUser == null) {
-            message.reply(texts.getErrorString())
+            message.reply(texts.error())
             return
         }
 
         if (mentionedUser.id == message.author?.id) {
-            message.reply(texts.formatString("whitelisted.author", mentionedUser.mention))
+            message.reply(texts["whitelisted.author"].format(mentionedUser.mention))
             return
         }
 
         if (mentionedUser.id == message.kord.selfId) {
-            message.reply(texts.formatString("whitelisted.self", mentionedUser.mention))
+            message.reply(texts["whitelisted.self"].format(mentionedUser.mention))
             return
         }
 
         if (mentionedUser.isOwner() || mentionedUser.isAdmin()) {
-            message.reply(texts.getString("whitelisted"))
+            message.reply(texts["whitelisted"])
             return
         }
 
         mentionedUser.kick(args.drop(1).joinToString(separator = " "))
-        message.reply(texts.formatString("done", mentionedUser.mention))
+        message.reply(texts["done"].format(mentionedUser.mention))
     }
 }

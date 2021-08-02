@@ -3,15 +3,12 @@ package pw.modder.answernator.tools.commands.localized
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.TextChannelBehavior
-import dev.kord.core.behavior.getChannelOf
 import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Message
-import dev.kord.core.entity.channel.TextChannel
 import kotlinx.coroutines.flow.*
 import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedGuildCommand
-import pw.modder.answernator.utils.extensions.kord.authorId
 import pw.modder.answernator.utils.extensions.kord.reply
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
 import kotlin.time.Duration
@@ -29,7 +26,7 @@ class Clear: LocalizedGuildCommand {
     override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle, config: Config) {
         val limit = args.firstOrNull()?.toIntOrNull()
         if (limit == null || limit !in 1..100) {
-            message.reply(texts.getErrorString())
+            message.reply(texts.error())
             return
         }
 
@@ -48,7 +45,7 @@ class Clear: LocalizedGuildCommand {
         } while (messages.size < limit && lastMessage.timeStamp > timeLimit)
 
         if (messages.isEmpty()) {
-            message.reply(texts.getString("empty"))
+            message.reply(texts["empty"])
             return
         }
 
@@ -57,6 +54,6 @@ class Clear: LocalizedGuildCommand {
         else
             TextChannelBehavior(guild.id, message.channelId, message.kord).bulkDelete(messages.toSet())
 
-        message.reply(texts.formatString("done", messages.size))
+        message.reply(texts["done"].format(messages.size))
     }
 }

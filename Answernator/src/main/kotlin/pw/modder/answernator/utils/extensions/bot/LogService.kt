@@ -27,7 +27,7 @@ suspend fun Kord.logService() {
 
         if (reasonParts?.size == 2 && reasonParts.last().isNotEmpty()) {
             rest.channel.createMessage(banChannel) {
-                content = texts.formatString("bot.log.ban.reason", user.mention, reasonParts[0].toUserMention(), reasonParts[1])
+                content = texts["bot.log.ban.reason"].format(user.mention, reasonParts[0].toUserMention(), reasonParts[1])
             }
             return@on
         }
@@ -40,19 +40,19 @@ suspend fun Kord.logService() {
         when {
             // if no audit log we do not know who banned the user. "User AA was banned"
             auditLog == null -> rest.channel.createMessage(banChannel) {
-                content = texts.formatString("bot.log.ban.unknown", user.mention)
+                content = texts["bot.log.ban.unknown"].format(user.mention)
             }
             // we have audit log and know who banned a user but have no reason
             reasonParts == null || reasonParts.isEmpty() -> rest.channel.createMessage(banChannel) {
-                content = texts.formatString("bot.log.ban.noreason", user.mention, auditLog.userId.asString.toUserMention())
+                content = texts["bot.log.ban.noreason"].format(user.mention, auditLog.userId.asString.toUserMention())
             }
             // seems like it's not a bot format but a reason itself
             reasonParts.size == 1 -> rest.channel.createMessage(banChannel) {
-                content = texts.formatString("bot.log.ban.reason", user.mention, auditLog.userId.asString.toUserMention(), auditLog.reason!!)
+                content = texts["bot.log.ban.reason"].format(user.mention, auditLog.userId.asString.toUserMention(), auditLog.reason!!)
             }
             // wtf? We have a reason in bot format, but reason is empty.
             else -> rest.channel.createMessage(banChannel) {
-                content = texts.formatString("bot.log.ban.noreason", user.mention, reasonParts[0].toUserMention())
+                content = texts["bot.log.ban.noreason"].format(user.mention, reasonParts[0].toUserMention())
             }
         }
     }
@@ -70,10 +70,10 @@ suspend fun Kord.logService() {
 
         when(auditLog) {
             null -> rest.channel.createMessage(channel) {
-                content = texts.formatString("bot.log.unban", user.mention)
+                content = texts["bot.log.unban"].format(user.mention)
             }
             else -> rest.channel.createMessage(channel) {
-                content = texts.formatString("bot.log.unban.full", user.mention, auditLog.userId.asString.toUserMention())
+                content = texts["bot.log.unban.full"].format(user.mention, auditLog.userId.asString.toUserMention())
             }
         }
     }
@@ -85,7 +85,7 @@ suspend fun Kord.logService() {
         val texts = LocaleBundle("botGlobal", Locale(config.lang))
 
         rest.channel.createMessage(channel) {
-            content = texts.formatString("bot.log.member.join", member.mention)
+            content = texts["bot.log.member.join"].format(member.mention)
         }
     }
 
@@ -96,7 +96,7 @@ suspend fun Kord.logService() {
         val texts = LocaleBundle("botGlobal", Locale(config.lang))
 
         rest.channel.createMessage(channel) {
-            content = texts.formatString("bot.log.member.leave", user.mention)
+            content = texts["bot.log.member.leave"].format(user.mention)
         }
     }
 }

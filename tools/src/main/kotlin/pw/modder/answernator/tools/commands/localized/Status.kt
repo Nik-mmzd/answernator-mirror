@@ -22,25 +22,25 @@ class Status: LocalizedCommand {
                 message.kord.editPresence {
                     this.status = PresenceStatus.Online
                 }
-                texts.getString("online")
+                texts["online"]
             }
             "dnd" -> {
                 message.kord.editPresence {
                     this.status = PresenceStatus.DoNotDisturb
                 }
-                texts.getString("dnd")
+                texts["dnd"]
             }
             "idle" -> {
                 message.kord.editPresence {
                     this.status = PresenceStatus.Idle
                 }
-                texts.getString("idle")
+                texts["idle"]
             }
             "invisible" -> {
                 message.kord.editPresence {
                     this.status = PresenceStatus.Invisible
                 }
-                texts.getString("invisible")
+                texts["invisible"]
             }
             "game" -> {
                 val game = args.drop(1).joinToString(" ")
@@ -48,7 +48,7 @@ class Status: LocalizedCommand {
                     this.status = PresenceStatus.Online
                     this.playing(game)
                 }
-                texts.formatString("playing", game)
+                texts["playing"].format(game)
             }
             "randomgame" -> when(args.getOrNull(1)) {
                 null -> {
@@ -57,27 +57,27 @@ class Status: LocalizedCommand {
                         this.status = PresenceStatus.Online
                         this.playing(game)
                     }
-                    texts.formatString("playing", game)
+                    texts["playing"].format(game)
                 }
                 "stop" -> {
                     randomGamesTimer?.cancel()
                     randomGamesTimer = null
-                    texts.getString("playing.timed.stopped")
+                    texts["playing.timed.stopped"]
                 }
                 else -> {
                     if (randomGamesTimer != null) {
-                        message.reply(texts.getString("playing.timed.running"))
+                        message.reply(texts["playing.timed.running"])
                         return
                     }
 
                     val timeout = args[1].toLongOrNull()
                     if (timeout == null) {
-                        message.reply(texts.getString("playing.timed.error"))
+                        message.reply(texts["playing.timed.error"])
                         return
                     }
 
                     if (timeout < 30) {
-                        message.reply(texts.getString("playing.timed.error"))
+                        message.reply(texts["playing.timed.error"])
                         return
                     }
 
@@ -93,7 +93,7 @@ class Status: LocalizedCommand {
                         }
                     }
 
-                    texts.formatString("playing.timed.started", timeout)
+                    texts["playing.timed.started"].format(timeout)
                 }
             }
             "custom" -> TODO("See https://github.com/discordapp/discord-api-docs/issues/1160")
@@ -109,9 +109,9 @@ class Status: LocalizedCommand {
                 message.kord.editPresence {
                     this.status = PresenceStatus.Online
                 }
-                texts.getString("clear")
+                texts["clear"]
             }
-            else -> texts.getErrorString()
+            else -> texts.error()
         })
     }
 }

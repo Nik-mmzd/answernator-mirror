@@ -24,22 +24,22 @@ class Dice: LocalizedCommand {
             DiceParser(DiceTokenizer(params)).parse()
         } catch (e: InvalidArgumentException) {
             logger.error { e.printStackTrace() }
-            message.reply(texts.getErrorString("error.format"))
+            message.reply(texts.error("error.format"))
             return
         } catch (e: DiceLimitExceededException) {
-            message.reply(texts.formatString("error.limits", texts.getString("error.limits.${e.name}"), e.value, e.limit))
+            message.reply(texts["error.limits"].format(texts["error.limits.${e.name}"], e.value, e.limit))
             return
         }
 
         message.replyEmbed {
-            title = texts.getString("title")
+            title = texts["title"]
             color = Color(random.nextInt(0, 16777215))
             thumbnail {
                 url = "https://files.mcmodder.ru/answernator/dice.jpg"
             }
 
             data.forEach { set ->
-                field(texts.formatString("roll", DiceSerializer(set.tokens).stringify()), false) {
+                field(texts["roll"].format(DiceSerializer(set.tokens).stringify()), false) {
                     set.roll().joinToString(separator = "\n") { singleRoll ->
                         singleRoll.joinToString(separator = " ", postfix = " (**${singleRoll.sum()}**)")
                     }

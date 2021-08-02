@@ -18,32 +18,32 @@ class About: LocalizedCommand {
     override suspend fun action(message: Message, args: List<String>, texts: CommandLocaleBundle, config: Config?) {
         message.replyEmbed {
             title = message.kord.getSelf().tag
-            description = texts.getString("description") // "Third iteration of Answernator. Now in Kotlin!"
+            description = texts["description"] // "Third iteration of Answernator. Now in Kotlin!"
 
             if (message.isFromBotAuthor()) {
                 field("OS", true) { System.getProperty("os.name", "Unknown") + ' ' + System.getProperty("os.arch", "Unknown") }
-                System.getenv("HOSTNAME") ?: System.getenv("COMPUTERNAME")?.also { field(texts.getString("hostname"), true) { it } }
-                System.getProperty("java.vendor")?.also { field(texts.getString("java.vendor"), true) { it } }
-                field(texts.getString("java.version"),true) { System.getProperty("java.version", "Unknown") }
-                field(texts.getString("heap.max"), true) { FileUtils.byteCountToDisplaySize(Runtime.getRuntime().maxMemory()) }
-                field(texts.getString("heap"), true) { FileUtils.byteCountToDisplaySize(Runtime.getRuntime().totalMemory()) }
-                field(texts.getString("heap.used"), true) { FileUtils.byteCountToDisplaySize(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) }
-                field(texts.getString("heap.free"), true) { FileUtils.byteCountToDisplaySize(Runtime.getRuntime().freeMemory()) }
-                field(texts.getString("commands"), true) { CommandList.commands.size.toString() }
-                field(texts.getString("modules"), true) { CommandList.modules.joinToString("\n") { "${it.name}@${it.version}".trim('\n') } }
-                field(texts.getString("uptime"), true) { Utils.getReadableUptime() }
+                System.getenv("HOSTNAME") ?: System.getenv("COMPUTERNAME")?.also { field(texts["hostname"], true) { it } }
+                System.getProperty("java.vendor")?.also { field(texts["java.vendor"], true) { it } }
+                field(texts["java.version"],true) { System.getProperty("java.version", "Unknown") }
+                field(texts["heap.max"], true) { FileUtils.byteCountToDisplaySize(Runtime.getRuntime().maxMemory()) }
+                field(texts["heap"], true) { FileUtils.byteCountToDisplaySize(Runtime.getRuntime().totalMemory()) }
+                field(texts["heap.used"], true) { FileUtils.byteCountToDisplaySize(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) }
+                field(texts["heap.free"], true) { FileUtils.byteCountToDisplaySize(Runtime.getRuntime().freeMemory()) }
+                field(texts["commands"], true) { CommandList.commands.size.toString() }
+                field(texts["modules"], true) { CommandList.modules.joinToString("\n") { "${it.name}@${it.version}".trim('\n') } }
+                field(texts["uptime"], true) { Utils.getReadableUptime() }
             }
 
-            field(texts.getString("kotlin"), true) { KotlinVersion.CURRENT.toString() }
-            field(texts.getString("library"), true) { Globals.getDependencyVersion("dev.kord", "kord-core") }
-            field(texts.getString("bot"), true) { Globals.getDependencyVersion("pw.modder", "Answernator") }
+            field(texts["kotlin"], true) { KotlinVersion.CURRENT.toString() }
+            field(texts["library"], true) { Globals.getDependencyVersion("dev.kord", "kord-core") }
+            field(texts["bot"], true) { Globals.getDependencyVersion("pw.modder", "Answernator") }
 
-            field(texts.getString("owner"), true) { Globals.config.author.toUserMention() }
-            field(texts.getString("creator"), true) { "135017849604276224".toUserMention() }
+            field(texts["owner"], true) { Globals.config.author.toUserMention() }
+            field(texts["creator"], true) { "135017849604276224".toUserMention() }
 
-            field(texts.getString("source"), false) { texts.getString("source.link") }
-            field(texts.getString("issues"), false) { texts.getString("issues.link") }
-            field(texts.getString("invite"), false) { texts.getString("invite.link") }
+            field(texts["source"], false) { texts["source.link"] }
+            field(texts["issues"], false) { texts["issues.link"] }
+            field(texts["invite"], false) { texts["invite.link"] }
 
             color = message.getGuildOrNull()?.getMemberOrNull(message.kord.selfId)?.getColor()
             timestampNow()

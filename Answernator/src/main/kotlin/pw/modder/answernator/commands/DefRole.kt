@@ -21,7 +21,7 @@ class DefRole: LocalizedGuildCommand {
 
     override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle, config: Config) {
         if (config.defaultRole == null) {
-            message.reply(texts.getString("not.configured"))
+            message.reply(texts["not.configured"])
             return
         }
 
@@ -29,7 +29,7 @@ class DefRole: LocalizedGuildCommand {
             "add", "a", "set", "give" -> true
             "remove", "rm", "r", "delete", "del", "take" -> false
             else -> {
-                message.reply(texts.getErrorString())
+                message.reply(texts.error())
                 return
             }
         }
@@ -42,6 +42,6 @@ class DefRole: LocalizedGuildCommand {
             }
         }
 
-        message.reply(texts.formatString("done.$add", members.joinToString(" ") { it.mention }))
+        message.reply(texts["done.$add"].format(members.joinToString(" ") { it.mention }))
     }
 }

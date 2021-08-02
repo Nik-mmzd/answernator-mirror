@@ -12,11 +12,11 @@ interface LocalizedCommand: Command {
     }
 
     override fun getHelp(locale: Locale): String? {
-        return getTexts(locale).getHelp()
+        return getTexts(locale).help
     }
 
     override fun getDescription(locale: Locale): String? {
-        return getTexts(locale).getDescription()
+        return getTexts(locale).description
     }
 
     override suspend fun action(message: Message, args: List<String>, locale: Locale, config: Config?) {

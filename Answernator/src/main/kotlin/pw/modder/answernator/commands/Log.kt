@@ -22,27 +22,27 @@ class Log: LocalizedGuildCommand {
 
     override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle, config: Config) {
         if (args.isEmpty()) {
-            message.reply(texts.getErrorString())
+            message.reply(texts.error())
             return
         }
 
         if (args.first().equals("get", true)) {
             message.replyEmbed {
-                title = texts.getString("get.title")
+                title = texts["get.title"]
 
-                field(texts.getString("get.memberjoin"), true) { formatField(texts, config, Features.LOG_JOIN, config.memberJoinLogChannel) }
-                field(texts.getString("get.memberleave"), true) { formatField(texts, config, Features.LOG_LEAVE, config.memberLeaveLogChannel) }
-                field(texts.getString("get.memberban"), true) { formatField(texts, config, Features.LOG_LEAVE, config.memberBanLogChannel) }
-                field(texts.getString("get.memeberunban"), true) { formatField(texts, config, Features.LOG_UNBAN, config.memberUnbanLogChannel) }
-                field(texts.getString("get.membermute"), true) { formatField(texts, config, Features.LOG_MUTE, config.memberMuteLogChannel) }
-                field(texts.getString("get.memberunmute"), true) { formatField(texts, config, Features.LOG_UNMUTE, config.memberUnmuteLogChannel) }
+                field(texts["get.memberjoin"], true) { formatField(texts, config, Features.LOG_JOIN, config.memberJoinLogChannel) }
+                field(texts["get.memberleave"], true) { formatField(texts, config, Features.LOG_LEAVE, config.memberLeaveLogChannel) }
+                field(texts["get.memberban"], true) { formatField(texts, config, Features.LOG_LEAVE, config.memberBanLogChannel) }
+                field(texts["get.memeberunban"], true) { formatField(texts, config, Features.LOG_UNBAN, config.memberUnbanLogChannel) }
+                field(texts["get.membermute"], true) { formatField(texts, config, Features.LOG_MUTE, config.memberMuteLogChannel) }
+                field(texts["get.memberunmute"], true) { formatField(texts, config, Features.LOG_UNMUTE, config.memberUnmuteLogChannel) }
 
             }
             return
         }
 
         if (args.size == 1) {
-            message.reply(texts.getErrorString())
+            message.reply(texts.error())
             return
         }
 
@@ -51,7 +51,7 @@ class Log: LocalizedGuildCommand {
             args[1].equals("disable", true) -> "disable"
             message.mentionedChannelIds.size == 1 && args[1].isChannelMention() -> message.mentionedChannelIds.single().asString
             else -> {
-                message.reply(texts.getErrorString())
+                message.reply(texts.error())
                 return
             }
         }
@@ -67,7 +67,7 @@ class Log: LocalizedGuildCommand {
                         config.enable(Features.LOG_MUTE)
                         config.enable(Features.LOG_UNMUTE)
                     }
-                    texts.getString("enable.all")
+                    texts["enable.all"]
                 }
                 "disable" -> {
                     transaction {
@@ -78,7 +78,7 @@ class Log: LocalizedGuildCommand {
                         config.disable(Features.LOG_MUTE)
                         config.disable(Features.LOG_UNMUTE)
                     }
-                    texts.getString("disable.all")
+                    texts["disable.all"]
                 }
                 else -> {
                     transaction {
@@ -89,7 +89,7 @@ class Log: LocalizedGuildCommand {
                         config.memberMuteLogChannel = action
                         config.memberUnmuteLogChannel = action
                     }
-                    texts.formatString("channel.all", action.toChannelMention())
+                    texts["channel.all"].format(action.toChannelMention())
                 }
             }
             "join" -> process(action, "join", config, texts, Features.LOG_JOIN) {
@@ -111,12 +111,12 @@ class Log: LocalizedGuildCommand {
                 memberUnmuteLogChannel = action
             }
 
-            else -> texts.getErrorString()
+            else -> texts.error()
         })
     }
 
     private fun formatField(texts: CommandLocaleBundle, config: Config, feature: Features, channel: String?): String {
-        return texts.formatString("get.status", texts.getString("get.status.${config.isEnabled(feature)}"), channel?.toChannelMention() ?: texts.getString("get.not.set"))
+        return texts["get.status"].format(texts["get.status.${config.isEnabled(feature)}"], channel?.toChannelMention() ?: texts["get.not.set"])
     }
 
     private fun process(action: String, name: String, config: Config, texts: CommandLocaleBundle, feature: Features, block: Config.() -> Unit): String {
@@ -125,19 +125,19 @@ class Log: LocalizedGuildCommand {
                 transaction {
                     config.enable(feature)
                 }
-                return texts.getString("enable.$name")
+                return texts["enable.$name"]
             }
             "disable" -> {
                 transaction {
                     config.disable(feature)
                 }
-                return texts.getString("disable.$name")
+                return texts["disable.$name"]
             }
             else -> {
                 transaction {
                     config.block()
                 }
-                return texts.formatString("channel.$name", action.toChannelMention())
+                return texts["channel.$name"].format(action.toChannelMention())
             }
         }
     }

@@ -16,7 +16,7 @@ class RandomGame: LocalizedCommand {
     override suspend fun action(message: Message, args: List<String>, texts: CommandLocaleBundle, config: Config?) {
         val num = args.firstOrNull()?.toIntOrNull() ?: 1
         if (num > 64 || num < 1) {
-            message.reply(texts.getErrorString())
+            message.reply(texts.error())
             return
         }
 

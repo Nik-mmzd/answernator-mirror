@@ -35,46 +35,46 @@ class Mute: LocalizedGuildCommand {
 
         logger.debug { "Checking configs" }
         if (muteRole == null) {
-            message.reply(texts.getString("not.configured"))
+            message.reply(texts["not.configured"])
             return
         }
         if (args.isEmpty()) {
-            message.reply(texts.getErrorString())
+            message.reply(texts.error())
             return
         }
 
         val mentionedUserId = args.first().extractMentionedId()
         if (mentionedUserId == null) {
-            message.reply(texts.getErrorString())
+            message.reply(texts.error())
             return
         }
 
         val mentionedUser = message.mentionedUserBehaviors.find { it.id.asString == mentionedUserId }?.asMemberOrNull(guild.id)
         if (mentionedUser == null) {
-            message.reply(texts.getErrorString())
+            message.reply(texts.error())
             return
         }
 
         with(mentionedUser) {
             if (message.kord.selfId == mentionedUser.id) {
-                message.reply(texts.formatString("muted.self", mention)) // easter egg
+                message.reply(texts["muted.self"].format(mention)) // easter egg
                 return
             }
             if (mentionedUser.isAdmin()) {
-                message.reply(texts.formatString("error.whitelisted", mention))
+                message.reply(texts["error.whitelisted"].format(mention))
                 return
             }
 
             if (Db.isMuted(guildId, id)) {
                 logger.debug { "Member is muted" }
-                message.reply(texts.formatString("muted.already", mention))
+                message.reply(texts["muted.already"].format(mention))
                 return
             }
 
             logger.debug { "Member is not muted" }
             val reason = args.drop(1).joinToString(" ").ifEmpty {
                 when(config.isEnabled(Features.MUTE_RANDOM_REASON)) {
-                    true -> texts.getRandomString("reason")
+                    true -> texts.random("reason")
                     false -> null
                 }
             }
@@ -83,8 +83,8 @@ class Mute: LocalizedGuildCommand {
             if (config.memberMuteLogChannel != null) try {
                 message.kord.rest.channel.createMessage(Snowflake(config.memberMuteLogChannel!!)) {
                     content = when(reason) {
-                        null -> texts.formatString("log.muted.noreason", mention, message.author!!)
-                        else -> texts.formatString("log.muted", mention, message.author!!.mention, reason)
+                        null -> texts["log.muted.noreason"].format(mention, message.author!!)
+                        else -> texts["log.muted"].format(mention, message.author!!.mention, reason)
                     }
                 }
                 logger.debug { "LOG message sent" }
@@ -104,7 +104,7 @@ class Mute: LocalizedGuildCommand {
                 throw e
             }
 
-            message.reply(texts.formatString("muted", mention))
+            message.reply(texts["muted"].format(mention))
         }
     }
 }
@@ -126,23 +126,23 @@ class Unmute: LocalizedGuildCommand {
 
         logger.debug { "Checking configs" }
         if (muteRole == null) {
-            message.reply(texts.getString("not.configured"))
+            message.reply(texts["not.configured"])
             return
         }
         if (args.isEmpty()) {
-            message.reply(texts.getErrorString())
+            message.reply(texts.error())
             return
         }
 
         val mentionedUserId = args.first().extractMentionedId()
         if (mentionedUserId == null) {
-            message.reply(texts.getErrorString())
+            message.reply(texts.error())
             return
         }
 
         val mentionedUser = message.mentionedUserBehaviors.find { it.id.asString == mentionedUserId }?.asMemberOrNull(guild.id)
         if (mentionedUser == null) {
-            message.reply(texts.getErrorString())
+            message.reply(texts.error())
             return
         }
 
@@ -151,7 +151,7 @@ class Unmute: LocalizedGuildCommand {
 
             if (mute == null) {
                 logger.debug { "Member is not muted" }
-                message.reply(texts.formatString("unmuted.already", mention))
+                message.reply(texts["unmuted.already"].format(mention))
                 return
             }
 
@@ -163,7 +163,7 @@ class Unmute: LocalizedGuildCommand {
 
             if (config.memberUnmuteLogChannel != null) try {
                 message.kord.rest.channel.createMessage(Snowflake(config.memberUnmuteLogChannel!!)) {
-                    content = texts.formatString("log.unmuted", mention, message.author!!.mention)
+                    content = texts["log.unmuted"].format(mention, message.author!!.mention)
                 }
                 logger.debug { "LOG message sent" }
             } catch (e: Exception) {
@@ -172,7 +172,7 @@ class Unmute: LocalizedGuildCommand {
 
             removeRole(Snowflake(muteRole), reason)
 
-            message.reply(texts.formatString("unmuted", mention))
+            message.reply(texts["unmuted"].format(mention))
         }
     }
 }

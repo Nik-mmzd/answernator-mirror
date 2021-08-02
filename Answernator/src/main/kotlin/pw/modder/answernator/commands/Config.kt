@@ -22,59 +22,56 @@ class Config: LocalizedGuildCommand {
 
     override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle, config: Config) {
         if (args.isEmpty()) {
-            message.reply(texts.getErrorString())
+            message.reply(texts.error())
             return
         }
 
         when(args.first()) {
             "get", "show" -> message.replyEmbed {
                 title = guild.name
-                description = texts.getString("description")
+                description = texts["description"]
 
-                field(texts.getString("lang"), true) { "`${config.lang}`" }
-                field(texts.getString("prefix"), true) { "`${config.cmdPrefix}`" }
-                field(texts.getString("lang.available"), true) {
+                field(texts["lang"], true) { "`${config.lang}`" }
+                field(texts["prefix"], true) { "`${config.cmdPrefix}`" }
+                field(texts["lang.available"], true) {
                     Globals.config.langs.joinToString(separator = ", ") { "`$it`" }
-                        .ifEmpty { texts.getString("lang.none") }
+                        .ifEmpty { texts["lang.none"] }
                 }
 
-                field(texts.getString("greeter"), false) {
-                    texts.formatString(
-                        "greeter.text",
-                        texts.getString("greeter.${config.isEnabled(Features.GREETING)}"),
+                field(texts["greeter"], false) {
+                    texts["greeter.text"].format(
+                        texts["greeter.${config.isEnabled(Features.GREETING)}"],
                         config.greetingChannel?.toChannelMention()
-                            ?: texts.getString("channel.notset"),
+                            ?: texts["channel.notset"],
                         config.greeting.format("%user%", "%guild%")
                     )
                 }
 
-                field(texts.getString("mute"), false) {
-                    texts.formatString("mute.text",
-                        config.muteRole?.toRoleMention() ?: texts.getString("role.notset"),
-                        texts.getString("mute.${config.isEnabled(Features.MUTE_RANDOM_REASON)}")
+                field(texts["mute"], false) {
+                    texts["mute.text"].format(
+                        config.muteRole?.toRoleMention() ?: texts["role.notset"],
+                        texts["mute.${config.isEnabled(Features.MUTE_RANDOM_REASON)}"]
                     )
                 }
 
-                field(texts.getString("defrole"), false) {
-                    texts.formatString(
-                        "defrole.text",
-                        texts.getString("defrole.${config.isEnabled(Features.DEFAULT_ROLE)}"),
+                field(texts["defrole"], false) {
+                    texts["defrole.text"].format(
+                        texts.get("defrole.${config.isEnabled(Features.DEFAULT_ROLE)}"),
                         config.defaultRole?.toRoleMention()
-                            ?: texts.getString("role.notset")
+                            ?: texts["role.notset"]
                     )
                 }
 
-                field(texts.getString("blacklist"), false) {
+                field(texts["blacklist"], false) {
                     transaction {
                         Db.getBlacklisted(guild.id).joinToString(separator = ", ") { "`$it`" }
-                    }.ifEmpty { texts.getString("blacklist.none") }
+                    }.ifEmpty { texts["blacklist.none"] }
                 }
 
-                field(texts.getString("antispam"), false) {
-                    texts.formatString(
-                        "antispam.text",
-                        texts.getString("antispam.${config.isEnabled(Features.ANTI_SPAM)}"),
-                        texts.getString("antispam.${config.isEnabled(Features.ANTI_SPAM_SILENT)}"),
+                field(texts["antispam"], false) {
+                    texts["antispam.text"].format(
+                        texts["antispam.${config.isEnabled(Features.ANTI_SPAM)}"],
+                        texts["antispam.${config.isEnabled(Features.ANTI_SPAM_SILENT)}"],
                         config.antiSpamWarn,
                         config.antiSpamBan
                     )
@@ -82,22 +79,22 @@ class Config: LocalizedGuildCommand {
             }
             "lang" -> {
                 if (args.getOrNull(1) !in Globals.config.langs) {
-                    message.reply(texts.formatString("locale.notfound", args[1]))
+                    message.reply(texts["locale.notfound"].format(args[1]))
                     return
                 }
 
                 transaction { config.lang = args[1] }
-                message.reply(texts.formatString("locale.updated", args[1]))
+                message.reply(texts["locale.updated"].format(args[1]))
 
             }
             "prefix" -> {
                 if (args.getOrNull(1)?.length != 1) {
-                    message.reply(texts.formatString("prefix.incorrect", args[1]))
+                    message.reply(texts["prefix.incorrect"].format(args[1]))
                     return
                 }
 
                 transaction { config.cmdPrefix = args[1].first() }
-                message.reply(texts.formatString("prefix.updated", args[1]))
+                message.reply(texts["prefix.updated"].format(args[1]))
             }
             "greeting", "greet" -> {
                 when(args.getOrNull(1)) {
@@ -108,124 +105,124 @@ class Config: LocalizedGuildCommand {
                                 .replace("%user%", "%1\$s")
                                 .replace("%guild%", "%2\$s")
                         }
-                        message.reply(texts.getString("greeting.set"))
+                        message.reply(texts["greeting.set"])
                     }
                     "enable" -> {
                         transaction {
                             config.enable(Features.GREETING)
                         }
-                        message.reply(texts.getString("greeting.enabled"))
+                        message.reply(texts["greeting.enabled"])
                     }
                     "disable" -> {
                         transaction {
                             config.disable(Features.GREETING)
                         }
-                        message.reply(texts.getString("greeting.disabled"))
+                        message.reply(texts["greeting.disabled"])
                     }
                     "channel" -> {
                         val channels = message.data.mentionedChannels.value
                         if (channels?.size != 1) {
-                            message.reply(texts.getString("greeting.channel.none"))
+                            message.reply(texts["greeting.channel.none"])
                             return
                         }
 
                         transaction { config.greetingChannel = channels.first().asString }
-                        message.reply(texts.formatString("greeting.channel.set", channels.first().asString.toChannelMention()))
+                        message.reply(texts["greeting.channel.set"].format(channels.first().asString.toChannelMention()))
                     }
-                    else -> message.reply(texts.getErrorString())
+                    else -> message.reply(texts.error())
                 }
             }
             "defrole" -> {
                 when(args.getOrNull(1)) {
                     "enable" -> {
                         if (config.defaultRole == null) {
-                            message.reply(texts.getString("defrole.missing"))
+                            message.reply(texts["defrole.missing"])
                             return
                         }
 
                         transaction {
                             config.enable(Features.DEFAULT_ROLE)
                         }
-                        message.reply(texts.getString("defrole.enabled"))
+                        message.reply(texts["defrole.enabled"])
                     }
                     "disable" -> {
                         transaction {
                             config.disable(Features.DEFAULT_ROLE)
                         }
-                        message.reply(texts.getString("defrole.disabled"))
+                        message.reply(texts["defrole.disabled"])
                     }
                     "set" -> {
                         if (message.data.mentionRoles.size != 1) {
-                            message.reply(texts.getString("defrole.invalid"))
+                            message.reply(texts["defrole.invalid"])
                             return
                         }
 
                         transaction { config.defaultRole = message.data.mentionRoles.first().asString }
-                        message.reply(texts.formatString("defrole.set", message.data.mentionRoles.first().asString.toRoleMention()))
+                        message.reply(texts["defrole.set"].format(message.data.mentionRoles.first().asString.toRoleMention()))
                     }
                     "unset" -> {
                         transaction {
                             config.disable(Features.DEFAULT_ROLE)
                             config.defaultRole = null
                         }
-                        message.reply(texts.getString("defrole.unset"))
+                        message.reply(texts["defrole.unset"])
                     }
-                    else -> message.reply(texts.getErrorString())
+                    else -> message.reply(texts.error())
                 }
             }
             "mute", "muterole" -> {
                 when(args.getOrNull(1)) {
                     "set", "setrole", "role" -> {
                         if (message.data.mentionRoles.size != 1) {
-                            message.reply(texts.getString("muterole.invalid"))
+                            message.reply(texts["muterole.invalid"])
                             return
                         }
 
                         transaction { config.muteRole = message.data.mentionRoles.first().asString }
-                        message.reply(texts.formatString("muterole.set", message.data.mentionRoles.first().asString.toRoleMention()))
+                        message.reply(texts["muterole.set"].format(message.data.mentionRoles.first().asString.toRoleMention()))
                     }
                     "unset" -> {
                         transaction {
                             config.muteRole = null
                         }
-                        message.reply(texts.getString("muterole.unset"))
+                        message.reply(texts["muterole.unset"])
                     }
                     "reasons", "random", "randomreasons" -> {
                         when(args.getOrNull(2)) {
                             "random", "enable" -> {
                                 config.enable(Features.MUTE_RANDOM_REASON)
-                                message.reply(texts.getString("mute.reason.enabled"))
+                                message.reply(texts["mute.reason.enabled"])
                             }
                             "manual", "disable" -> {
                                 config.disable(Features.MUTE_RANDOM_REASON)
-                                message.reply(texts.getString("mute.reason.disabled"))
+                                message.reply(texts["mute.reason.disabled"])
                             }
-                            else -> message.reply(texts.getErrorString())
+                            else -> message.reply(texts.error())
                         }
                     }
-                    else -> message.reply(texts.getErrorString())
+                    else -> message.reply(texts.error())
                 }
             }
             "blacklist" -> {
                 when(args.getOrNull(1)) {
                     "show", "get" -> message.replyEmbed {
-                        title = texts.getString("blacklist.title")
+                        title = texts["blacklist.title"]
                         description = Db.getBlacklisted(guild.id).joinToString(separator = ", ") { "`$it`" }
                     }
                     "add" -> {
                         val cmd = args.getOrNull(2)
                         if (cmd == null) {
-                            message.reply(texts.getString("blacklist.nocommand"))
+                            message.reply(texts["blacklist.nocommand"])
                             return
                         }
 
                         if (Db.isBlackListed(guild.id, cmd)) {
-                            message.reply(texts.getString("blacklist.add.already"))
+                            message.reply(texts["blacklist.add.already"])
                             return
                         }
 
                         if (CommandList.findCommand(cmd) == null) {
-                            message.reply(texts.getString("blacklist.add.notfound"))
+                            message.reply(texts["blacklist.add.notfound"])
                             return
                         }
 
@@ -234,28 +231,28 @@ class Config: LocalizedGuildCommand {
                             this.guild = guild.id.asString
                         } }
 
-                        message.reply(texts.formatString("blacklist.add", cmd))
+                        message.reply(texts["blacklist.add"].format(cmd))
                     }
                     "remove", "rm", "delete" -> {
                         val cmd = args.getOrNull(2)
                         if (cmd == null) {
-                            message.reply(texts.getString("blacklist.nocommand"))
+                            message.reply(texts["blacklist.nocommand"])
                             return
                         }
 
                         val blacklistedCommand = Db.getBlackListedCommand(guild.id, cmd)
                         if (blacklistedCommand == null) {
-                            message.reply(texts.getString("blacklist.remove.already"))
+                            message.reply(texts["blacklist.remove.already"])
                             return
                         }
 
                         transaction { blacklistedCommand.delete() }
-                        message.reply(texts.formatString("blacklist.remove", cmd))
+                        message.reply(texts["blacklist.remove"].format(cmd))
                     }
-                    else -> message.reply(texts.getErrorString())
+                    else -> message.reply(texts.error())
                 }
             }
-            else -> message.reply(texts.getErrorString())
+            else -> message.reply(texts.error())
         }
     }
 }

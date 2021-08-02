@@ -33,7 +33,7 @@ suspend fun Kord.muteService() {
 
         if (hasRole && member.id == kord.selfId) {
             rest.channel.createMessage(Snowflake(config.memberMuteLogChannel ?: return@on)) {
-                content = texts.formatString("muted.self", member.mention)
+                content = texts["muted.self"].format(member.mention)
             }
             return@on
         }
@@ -48,8 +48,8 @@ suspend fun Kord.muteService() {
             if (config.isEnabled(Features.LOG_MUTE))
                 rest.channel.createMessage(Snowflake(config.memberMuteLogChannel ?: return@on)) {
                     content = when(config.isEnabled(Features.MUTE_RANDOM_REASON)) {
-                        true -> texts.formatString("muted.reason", member.mention, texts.random("reason"))
-                        false -> texts.formatString("muted", member.mention)
+                        true -> texts["muted.reason"].format(member.mention, texts.random("reason"))
+                        false -> texts["muted"].format(member.mention)
                     }
                 }
             return@on
@@ -59,7 +59,7 @@ suspend fun Kord.muteService() {
         if (config.isEnabled(Features.LOG_UNMUTE)) {
             rest.channel.createMessage(Snowflake(config.memberUnmuteLogChannel ?: return@on)) {
                 content = String.format(
-                    texts.get("unmuted"),
+                    texts["unmuted"],
                     member.mention
                 )
             }
