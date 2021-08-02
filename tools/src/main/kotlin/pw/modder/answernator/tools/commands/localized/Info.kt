@@ -11,6 +11,7 @@ import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.LocalizedGuildCommand
+import pw.modder.answernator.utils.TimestampFormat
 import pw.modder.answernator.utils.extensions.*
 import pw.modder.answernator.utils.extensions.kord.*
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
@@ -52,7 +53,7 @@ class Info: LocalizedGuildCommand {
                     title = texts["message.title"].format(this@message.author?.tag ?: "Unkwon")
                     description = this@message.content.takeIf { it.length < 501 } ?: (this@message.content.take(499) + "…")
 
-                    field(texts["message.created"], false) { "${this@message.id.timestampMention} (${this@message.id.relTimestampMention})" }
+                    field(texts["message.created"], false) { "${this@message.id.timestampMention} (${this@message.id.timestampMention(TimestampFormat.RELATIVE)})" }
                     field(texts["message.embed"], true) { texts["bool.${data.embeds.isNotEmpty()}"] }
                     field(texts["message.pinned"], true) { texts["bool.${data.pinned}"] }
                     field(texts["message.webhook"], true) { texts["bool.${data.webhookId.asOptional.hasValue()}"] }
@@ -124,7 +125,7 @@ class Info: LocalizedGuildCommand {
                         "<t:${member.joinedAt.epochSeconds}:f> (<t:${member.joinedAt.epochSeconds}:R>)"
                     }
                     field(texts["user.createdAt"], false) {
-                        "${id.timestampMention} (${id.relTimestampMention})"
+                        "${id.timestampMention} (${id.timestampMention(TimestampFormat.RELATIVE)})"
                     }
 
                     timestampNow()
@@ -134,7 +135,7 @@ class Info: LocalizedGuildCommand {
                 message.replyEmbed {
                     title = data.icon.orElse("") + data.name.orElse { texts["channel.title"] }
 
-                    field(texts["channel.created"], false) { "${data.id.timestampMention} (${data.id.relTimestampMention})" }
+                    field(texts["channel.created"], false) { "${data.id.timestampMention} (${data.id.timestampMention(TimestampFormat.RELATIVE)})" }
                     field(texts["channel.id"], true) { data.id.asString }
                     field(texts["channel.type"], true) { data.type::class.simpleName ?: texts["channel.unknown"] }
                     data.parentId?.asOptional?.ifHasValue { parent ->
@@ -182,7 +183,7 @@ class Info: LocalizedGuildCommand {
                     field(texts["role.hoist"], true) { texts["bool.$hoisted"] }
                     field(texts["role.position"], true) { rawPosition.toString() }
                     field(texts["role.createdAt"], false) {
-                        "${this@role.id.timestampMention} (${this@role.id.relTimestampMention})"
+                        "${this@role.id.timestampMention} (${this@role.id.timestampMention(TimestampFormat.RELATIVE)})"
                     }
                     field(texts["role.rights"], false) {
                         permissions.values.joinToString(", ") { texts.getPerm(it) }.ifEmpty { texts["empty"] }

@@ -3,11 +3,15 @@ package pw.modder.answernator.utils.extensions
 fun String.removeGraves(): String {
     return replace("`", "")
 }
-private enum class MentionType(val prefix: String) { USER("@"), USERNAME("@!"), CHANNEL("#"), ROLE("@&") }
+private enum class MentionType(val prefix: String) {
+    USER("@"), NICKNAME("@!"), CHANNEL("#"), ROLE("@&")
+}
 
-private fun String.toMention(mentionType: MentionType): String {
+private fun String.toMention(mentionType: MentionType, suffix: String? = null): String {
     if (isEmpty()) return this
-    return "<${mentionType.prefix}$this>"
+    if (suffix == null)
+        return "<${mentionType.prefix}$this>"
+    return "<${mentionType.prefix}$this:$suffix>"
 }
 
 fun String.toUserMention(): String = toMention(MentionType.USER)
@@ -18,7 +22,7 @@ private fun String.isMention(mentionType: MentionType): Boolean {
     return Regex("<${mentionType.prefix}\\d{18}>").matches(this)
 }
 
-fun String.isUserMention(): Boolean = isMention(MentionType.USER) || isMention(MentionType.USERNAME)
+fun String.isUserMention(): Boolean = isMention(MentionType.USER) || isMention(MentionType.NICKNAME)
 fun String.isChannelMention(): Boolean = isMention(MentionType.CHANNEL)
 fun String.isRoleMention(): Boolean = isMention(MentionType.ROLE)
 

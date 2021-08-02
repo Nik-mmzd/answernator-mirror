@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.toList
 import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedGuildCommand
+import pw.modder.answernator.utils.TimestampFormat
 import pw.modder.answernator.utils.extensions.kord.*
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
 
@@ -51,7 +52,7 @@ class Guild: LocalizedGuildCommand {
                 field(texts["roles"], true) { (givenGuild.roles.count() - 1).toString() }
             }
             field(texts["created_at"], false) {
-                "${givenGuild.id.timestampMention} (${givenGuild.id.relTimestampMention})"
+                "${givenGuild.id.timestampMention} (${givenGuild.id.timestampMention(TimestampFormat.RELATIVE)})"
             }
             field(texts["region"], true) {
                 givenGuild.getRegion().name.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }

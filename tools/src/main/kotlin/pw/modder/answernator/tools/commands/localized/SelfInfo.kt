@@ -6,6 +6,7 @@ import dev.kord.core.entity.Message
 import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.LocalizedGuildCommand
+import pw.modder.answernator.utils.TimestampFormat
 import pw.modder.answernator.utils.extensions.kord.*
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
 import java.util.*
@@ -55,7 +56,7 @@ class SelfInfo: LocalizedGuildCommand {
                 "<t:${member.joinedAt.epochSeconds}:f> (<t:${member.joinedAt.epochSeconds}:R>)"
             }
             field(texts["user.createdAt"], false) {
-                "${member.id.timestampMention} (${member.id.relTimestampMention})"
+                "${member.id.timestampMention} (${member.id.timestampMention(TimestampFormat.RELATIVE)})"
             }
 
             timestampNow()
