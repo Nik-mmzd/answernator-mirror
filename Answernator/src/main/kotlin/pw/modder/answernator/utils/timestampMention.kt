@@ -2,7 +2,6 @@ package pw.modder.answernator.utils
 
 import kotlinx.datetime.Instant
 
-private const val PREFIX = "t"
 enum class TimestampFormat(val suffix: String) {
     SHORT_TIME("t"), LONG_TIME("T"),
     SHORT_DATE("d"), LONG_DATE("D"),
@@ -10,5 +9,5 @@ enum class TimestampFormat(val suffix: String) {
     RELATIVE("R")
 }
 
-fun Instant.mention() = "$PREFIX:$epochSeconds"
-fun Instant.mention(format: TimestampFormat) = "$PREFIX:$epochSeconds:${format.suffix}"
+fun Instant.mention() = "t:$epochSeconds"
+fun Instant.mention(format: TimestampFormat) = "t:$epochSeconds:${format.suffix}"
