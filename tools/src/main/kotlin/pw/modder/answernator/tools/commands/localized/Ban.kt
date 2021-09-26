@@ -53,7 +53,7 @@ class Ban: LocalizedGuildCommand {
 
         member.ban {
             deleteMessagesDays = 0
-            reason = args.drop(1).joinToString(" ", prefix = "${message.data.author.id}|")
+            reason = args.drop(1).joinToString(" ", prefix = "${message.data.author.id.asString}|")
         }
 
         message.reply(texts["done"].format(member.mention))
