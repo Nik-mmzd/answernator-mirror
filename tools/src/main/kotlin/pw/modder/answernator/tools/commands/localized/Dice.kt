@@ -11,6 +11,7 @@ import pw.modder.answernator.utils.LocalizedCommand
 import pw.modder.answernator.utils.extensions.kord.reply
 import pw.modder.answernator.utils.extensions.kord.replyEmbed
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
+import kotlin.math.sin
 
 private val logger = KotlinLogging.logger {}
 class Dice: LocalizedCommand {
@@ -35,13 +36,13 @@ class Dice: LocalizedCommand {
             title = texts["title"]
             color = Color(random.nextInt(0, 16777215))
             thumbnail {
-                url = "https://files.mcmodder.ru/answernator/dice.jpg"
+                url = "https://files.modder.pw/answernator/dice.jpg"
             }
 
             data.forEach { set ->
                 field(texts["roll"].format(DiceSerializer(set.tokens).stringify()), false) {
                     set.roll().joinToString(separator = "\n") { singleRoll ->
-                        singleRoll.joinToString(separator = " ", postfix = " (**${singleRoll.sum()}**)")
+                        singleRoll.joinToString(separator = " ", postfix = " (**${singleRoll.sum() - set.modifier}**)")
                     }
                 }
             }
