@@ -42,7 +42,7 @@ class Dice: LocalizedCommand {
             data.forEach { set ->
                 field(texts["roll"].format(DiceSerializer(set.tokens).stringify()), false) {
                     set.roll().joinToString(separator = "\n") { singleRoll ->
-                        singleRoll.joinToString(separator = " ", postfix = " (**${singleRoll.sum() - set.modifier}**)")
+                        singleRoll.joinToString(separator = " ", postfix = " (**${singleRoll.sum() + set.modifier}**)")
                     }
                 }
             }
