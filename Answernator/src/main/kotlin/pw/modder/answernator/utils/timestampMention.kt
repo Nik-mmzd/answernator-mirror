@@ -9,5 +9,5 @@ enum class TimestampFormat(val suffix: String) {
     RELATIVE("R")
 }
 
-fun Instant.mention() = "t:$epochSeconds"
-fun Instant.mention(format: TimestampFormat) = "t:$epochSeconds:${format.suffix}"
+fun Instant.mention() = "<t:$epochSeconds>"
+fun Instant.mention(format: TimestampFormat) = "<t:$epochSeconds:${format.suffix}>"
