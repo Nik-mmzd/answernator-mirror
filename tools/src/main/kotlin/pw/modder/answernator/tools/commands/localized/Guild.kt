@@ -59,7 +59,7 @@ class Guild: LocalizedGuildCommand {
             }
             field(texts["features"], true) {
                 givenGuild.features.joinToString(", ") {
-                    texts["features.${it.value}"]
+                    texts.getOrNull("features.${it.value}") ?: it.value
                 }.ifEmpty { texts["features.empty"] }
             }
             field(texts["verificationLevel"], true) {
