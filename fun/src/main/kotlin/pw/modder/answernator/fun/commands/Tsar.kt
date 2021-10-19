@@ -17,7 +17,7 @@ class Tsar: LocalizedCommand {
     override val localesWhitelist: List<Locale> = listOf(Locale("ru"))
 
     override suspend fun action(message: Message, args: List<String>, texts: CommandLocaleBundle, config: Config?) {
-        if (!args.first().equals("велит", true)) {
+        if (args.firstOrNull()?.equals("велит", true) != true) {
             message.reply(texts["invalid"])
             return
         }
