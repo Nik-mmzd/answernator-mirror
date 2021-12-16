@@ -1,6 +1,8 @@
 package pw.modder.answernator.utils.extensions.kord
 
 import dev.kord.common.entity.Snowflake
+import dev.kord.common.entity.optional.map
+import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.behavior.reply
 import dev.kord.core.entity.Message
 import dev.kord.rest.builder.message.EmbedBuilder
@@ -25,14 +27,16 @@ val Message.channelType: Command.ChannelTypes get() {
 
 val Message.authorId: Snowflake get() = data.author.id
 
-suspend fun Message.reply(content: String) = reply {
+suspend fun Message.reply(content: String) = channel.createMessage {
     this.content = content
     noReplyMention()
+    messageReference = referencedMessage?.id ?: id
 }
 
-suspend inline fun Message.replyEmbed(block: EmbedBuilder.() -> Unit) = reply {
+suspend inline fun Message.replyEmbed(block: EmbedBuilder.() -> Unit) = channel.createMessage {
     embed(block)
     noReplyMention()
+    messageReference = referencedMessage?.id ?: id
 }
 
 fun Message.isFromBotAuthor(): Boolean {
