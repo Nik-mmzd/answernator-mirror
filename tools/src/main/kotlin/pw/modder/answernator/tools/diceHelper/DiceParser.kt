@@ -1,7 +1,6 @@
 package pw.modder.answernator.tools.diceHelper
 
 class DiceParser(val tokenizer: DiceTokenizer) {
-    @OptIn(ExperimentalStdlibApi::class)
     fun parse(): List<DiceSet> {
         val tokens = tokenizer.tokenize()
         val result = mutableListOf<DiceSet>()

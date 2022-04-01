@@ -11,6 +11,7 @@ import pw.modder.answernator.utils.LocalizedGuildCommand
 import pw.modder.answernator.utils.TimestampFormat
 import pw.modder.answernator.utils.extensions.kord.*
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
+import java.util.*
 
 class Guild: LocalizedGuildCommand {
     override val name = "guild"
@@ -20,13 +21,13 @@ class Guild: LocalizedGuildCommand {
     override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle, config: Config) {
         if (args.firstOrNull().equals("list", true)) {
             message.reply(message.kord.guilds.toList().joinToString("\n", prefix = texts["list.available"]) {
-                "${it.name}: `${it.id.asString}`"
+                "${it.name}: `${it.id}`"
             })
             return
         }
 
         val givenGuild = when {
-            args.isNotEmpty() -> message.kord.guilds.firstOrNull { it.id.asString == args.first() }
+            args.isNotEmpty() -> message.kord.guilds.firstOrNull { it.id.toString() == args.first() }
                 ?: message.kord.guilds.firstOrNull { it.name.contains(args.joinToString(separator = " "), true) }
             else -> guild
         }
@@ -55,7 +56,11 @@ class Guild: LocalizedGuildCommand {
                 "${givenGuild.id.timestampMention} (${givenGuild.id.timestampMention(TimestampFormat.RELATIVE)})"
             }
             field(texts["region"], true) {
-                givenGuild.getRegion().name.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+                buildList {
+                    givenGuild.regions.collect {
+                        add(it.name.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() })
+                    }
+                }.joinToString(separator = ", ")
             }
             field(texts["features"], true) {
                 givenGuild.features.joinToString(", ") {

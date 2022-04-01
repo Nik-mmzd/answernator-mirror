@@ -59,7 +59,7 @@ class Help: LocalizedCommand {
             return
         }
 
-        if (message.data.author.id.asString != Globals.config.author && !cmd.check(message, texts.locale)) {
+        if (message.data.author.id.toString() != Globals.config.author && !cmd.check(message, texts.locale)) {
             message.replyEmbed {
                 title = texts["title"].format(args.first())
                 description = texts["no_permissions"]

@@ -28,7 +28,15 @@ class SnowFlake: LocalizedCommand {
                     return@forEach
                 }
 
-                field(it.asString, false) { texts["field.text"].format(it.timestamp, it.worker, it.process, it.increment, it.timestampMention) }
+                field(it.toString(), false) {
+                    texts["field.text"].format(
+                        it.timestamp,
+                        it.worker,
+                        it.process,
+                        it.increment,
+                        it.timestampMention
+                    )
+                }
             }
         }
     }

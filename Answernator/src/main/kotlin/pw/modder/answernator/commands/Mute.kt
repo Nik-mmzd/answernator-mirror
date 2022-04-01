@@ -49,7 +49,7 @@ class Mute: LocalizedGuildCommand {
             return
         }
 
-        val mentionedUser = message.mentionedUserBehaviors.find { it.id.asString == mentionedUserId }?.asMemberOrNull(guild.id)
+        val mentionedUser = message.mentionedUserBehaviors.find { it.id.toString() == mentionedUserId }?.asMemberOrNull(guild.id)
         if (mentionedUser == null) {
             message.reply(texts.error())
             return
@@ -140,7 +140,7 @@ class Unmute: LocalizedGuildCommand {
             return
         }
 
-        val mentionedUser = message.mentionedUserBehaviors.find { it.id.asString == mentionedUserId }?.asMemberOrNull(guild.id)
+        val mentionedUser = message.mentionedUserBehaviors.find { it.id.toString() == mentionedUserId }?.asMemberOrNull(guild.id)
         if (mentionedUser == null) {
             message.reply(texts.error())
             return

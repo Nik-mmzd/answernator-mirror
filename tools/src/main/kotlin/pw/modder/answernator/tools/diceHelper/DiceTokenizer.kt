@@ -40,7 +40,6 @@ private val dice_tokens = mapOf(
 data class DiceToken(val type: DiceTokens, val value: String)
 
 class DiceTokenizer(val input: String) {
-    @OptIn(ExperimentalStdlibApi::class)
     fun tokenize(): List<DiceToken> {
         return buildList {
             var tokenPos = 0
@@ -49,7 +48,7 @@ class DiceTokenizer(val input: String) {
                     ?: DiceTokens.DICES.takeIf { input[tokenPos].isDigit() }
                     ?: throw InvalidArgumentException("Found unknown token ${input[tokenPos]}")
 
-                if (token == DiceTokens.SPACE && (isEmpty() || last() == DiceTokens.SPACE)) {
+                if (token == DiceTokens.SPACE && (isEmpty() || last().type == DiceTokens.SPACE)) {
                     tokenPos++
                     continue
                 }

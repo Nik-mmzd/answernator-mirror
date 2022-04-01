@@ -13,7 +13,6 @@ class Dice(val faces: Int) {
             throw InvalidArgumentException("Dice faces count ($faces) can't be less that 2")
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
     fun roll(explode: Boolean, limit: Int): Int {
         return buildList {
             var explodes = 0
@@ -48,7 +47,6 @@ class DiceSet(
             throw DiceLimitExceededException("Tries count $tries exceeds limit ${DiceConfig.triesLimit}", "tries", tries, DiceConfig.triesLimit)
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
     fun roll(): List<List<Int>> = buildList {
         repeat(tries) {
             val roll = dices.map { it.roll(explode, explodeLimit) }

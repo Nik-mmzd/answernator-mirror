@@ -31,7 +31,7 @@ class Ban: LocalizedGuildCommand {
             return
         }
 
-        val member = message.mentionedUserBehaviors.first { it.id.asString == mentionedUserId }.asMemberOrNull(guild.id)
+        val member = message.mentionedUserBehaviors.first { it.id.toString() == mentionedUserId }.asMemberOrNull(guild.id)
         if (member == null) {
             message.reply(texts.error())
             return
@@ -53,7 +53,7 @@ class Ban: LocalizedGuildCommand {
 
         member.ban {
             deleteMessagesDays = 0
-            reason = args.drop(1).joinToString(" ", prefix = "${message.data.author.id.asString}|")
+            reason = args.drop(1).joinToString(" ", prefix = "${message.data.author.id}|")
         }
 
         message.reply(texts["done"].format(member.mention))

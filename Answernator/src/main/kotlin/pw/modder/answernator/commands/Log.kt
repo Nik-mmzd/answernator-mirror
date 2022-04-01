@@ -49,7 +49,8 @@ class Log: LocalizedGuildCommand {
         val action = when {
             args[1].equals("enable", true) -> "enable"
             args[1].equals("disable", true) -> "disable"
-            message.mentionedChannelIds.size == 1 && args[1].isChannelMention() -> message.mentionedChannelIds.single().asString
+            message.mentionedChannelIds.size == 1 && args[1].isChannelMention() -> message.mentionedChannelIds.single()
+                .toString()
             else -> {
                 message.reply(texts.error())
                 return

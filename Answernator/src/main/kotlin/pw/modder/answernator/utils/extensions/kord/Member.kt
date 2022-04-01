@@ -37,8 +37,8 @@ fun Member.isMuted(): Boolean {
 
 fun Member.mute(): Mute {
     return transaction { Mute.new {
-        guild = guildId.asString
-        memberId = this@mute.id.asString
+        guild = guildId.toString()
+        memberId = this@mute.id.toString()
     } }
 }
 

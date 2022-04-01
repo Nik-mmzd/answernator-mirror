@@ -46,58 +46,58 @@ object Db {
             }
         }
     }
-    fun createDefaultConfig(guild: Snowflake) = createDefaultConfig(guild.asString)
+    fun createDefaultConfig(guild: Snowflake) = createDefaultConfig(guild.toString())
 
     fun getConfig(guildId: String): Config? {
         return transaction {
             Config.find { Configs.guildId eq guildId }.firstOrNull()
         }
     }
-    fun getConfig(guildId: Snowflake) = getConfig(guildId.asString)
+    fun getConfig(guildId: Snowflake) = getConfig(guildId.toString())
 
     fun getGuildConfig(guildId: String): GuildConfig? {
         return transaction {
             GuildConfig.find { Configs.guildId eq guildId }.firstOrNull()
         }
     }
-    fun getGuildConfig(guildId: Snowflake) = getGuildConfig(guildId.asString)
+    fun getGuildConfig(guildId: Snowflake) = getGuildConfig(guildId.toString())
 
     fun getLogConfig(guildId: String): LogConfig? {
         return transaction {
             LogConfig.find { Configs.guildId eq guildId }.firstOrNull()
         }
     }
-    fun getLogConfig(guildId: Snowflake) = getLogConfig(guildId.asString)
+    fun getLogConfig(guildId: Snowflake) = getLogConfig(guildId.toString())
 
     fun getAntiSpamConfig(guildId: String): AntiSpamConfig? {
         return transaction {
             AntiSpamConfig.find { Configs.guildId eq guildId }.firstOrNull()
         }
     }
-    fun getAntiSpamConfig(guildId: Snowflake) = getAntiSpamConfig(guildId.asString)
+    fun getAntiSpamConfig(guildId: Snowflake) = getAntiSpamConfig(guildId.toString())
 
     fun isMuted(guildId: String, memberId: String): Boolean {
         return transaction { Mute.find { Mutes.guildId eq guildId and(Mutes.memberId eq memberId) }.count() > 0L }
     }
-    fun isMuted(guildId: Snowflake, memberId: Snowflake) = isMuted(guildId.asString, memberId.asString)
+    fun isMuted(guildId: Snowflake, memberId: Snowflake) = isMuted(guildId.toString(), memberId.toString())
 
     fun getMute(guildId: String, memberId: String): Mute? {
         return transaction { Mute.find { Mutes.guildId eq guildId and(Mutes.memberId eq memberId) }.firstOrNull() }
     }
-    fun getMute(guildId: Snowflake, memberId: Snowflake) = getMute(guildId.asString, memberId.asString)
+    fun getMute(guildId: Snowflake, memberId: Snowflake) = getMute(guildId.toString(), memberId.toString())
 
     fun isBlackListed(guildId: String, command: String): Boolean {
         return transaction { BlacklistedCommand.find { BlacklistedCommands.guildId eq guildId and(BlacklistedCommands.command eq command) }.count() > 0L }
     }
-    fun isBlackListed(guildId: Snowflake, command: String) = isBlackListed(guildId.asString, command)
+    fun isBlackListed(guildId: Snowflake, command: String) = isBlackListed(guildId.toString(), command)
 
     fun getBlackListed(guildId: String): List<String> {
         return transaction { BlacklistedCommand.find { BlacklistedCommands.guildId eq guildId }.map { it.command } }
     }
-    fun getBlacklisted(guildId: Snowflake) = getBlackListed(guildId.asString)
+    fun getBlacklisted(guildId: Snowflake) = getBlackListed(guildId.toString())
 
     fun getBlackListedCommand(guildId: String, command: String): BlacklistedCommand? {
         return transaction { BlacklistedCommand.find { BlacklistedCommands.guildId eq guildId and(BlacklistedCommands.command eq command) }.firstOrNull() }
     }
-    fun getBlackListedCommand(guildId: Snowflake, command: String) = getBlackListedCommand (guildId.asString, command)
+    fun getBlackListedCommand(guildId: Snowflake, command: String) = getBlackListedCommand(guildId.toString(), command)
 }

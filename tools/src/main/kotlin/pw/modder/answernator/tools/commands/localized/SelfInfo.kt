@@ -30,19 +30,19 @@ class SelfInfo: LocalizedGuildCommand {
         message.replyEmbed {
             title = texts["user.title.user"].format(member.nickname ?: member.username)
 
-            thumbnail { url = member.avatar.url }
+            thumbnail { url = member.avatar?.url ?: member.defaultAvatar.url }
 
             color = member.getColor()
 
             field(texts["user.username"], true) { member.tag }
-            field(texts["user.id"], true) { member.id.asString }
+            field(texts["user.id"], true) { member.id.toString() }
             field(texts["user.owner"], true) { texts["bool.${member.id == guild.ownerId}"] }
             field(texts["user.admin"], true) { texts["bool.${member.isAdmin()}"] }
             field(texts["user.muted"], true) {
                 texts["bool.${member.isMuted()}"]
             }
             field(texts["user.superuser"], true) {
-                texts["bool.${member.id.asString == Globals.config.author}"]
+                texts["bool.${member.id.toString() == Globals.config.author}"]
             }
             field(texts["user.roles"], false) {
                 member.roleBehaviors.joinToString(" ") { it.mention }

@@ -15,13 +15,6 @@ dependencies {
 }
 
 tasks {
-    compileKotlin {
-        kotlinOptions.freeCompilerArgs+="-Xopt-in=kotlin.RequiresOptIn"
-    }
-    compileTestKotlin {
-        kotlinOptions.freeCompilerArgs+="-Xopt-in=kotlin.RequiresOptIn"
-    }
-
     val createModuleVersionFile by creating {
         doLast {
             file("$buildDir/module.tools.txt").printWriter().use { pw ->

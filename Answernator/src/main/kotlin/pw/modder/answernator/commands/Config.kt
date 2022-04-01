@@ -126,8 +126,10 @@ class Config: LocalizedGuildCommand {
                             return
                         }
 
-                        transaction { config.greetingChannel = channels.first().asString }
-                        message.reply(texts["greeting.channel.set"].format(channels.first().asString.toChannelMention()))
+                        transaction { config.greetingChannel = channels.first().toString() }
+                        message.reply(texts["greeting.channel.set"].format(
+                            channels.first().toString().toChannelMention()
+                        ))
                     }
                     else -> message.reply(texts.error())
                 }
@@ -157,8 +159,10 @@ class Config: LocalizedGuildCommand {
                             return
                         }
 
-                        transaction { config.defaultRole = message.data.mentionRoles.first().asString }
-                        message.reply(texts["defrole.set"].format(message.data.mentionRoles.first().asString.toRoleMention()))
+                        transaction { config.defaultRole = message.data.mentionRoles.first().toString() }
+                        message.reply(texts["defrole.set"].format(
+                            message.data.mentionRoles.first().toString().toRoleMention()
+                        ))
                     }
                     "unset" -> {
                         transaction {
@@ -178,8 +182,10 @@ class Config: LocalizedGuildCommand {
                             return
                         }
 
-                        transaction { config.muteRole = message.data.mentionRoles.first().asString }
-                        message.reply(texts["muterole.set"].format(message.data.mentionRoles.first().asString.toRoleMention()))
+                        transaction { config.muteRole = message.data.mentionRoles.first().toString() }
+                        message.reply(texts["muterole.set"].format(
+                            message.data.mentionRoles.first().toString().toRoleMention()
+                        ))
                     }
                     "unset" -> {
                         transaction {
@@ -228,7 +234,7 @@ class Config: LocalizedGuildCommand {
 
                         transaction { BlacklistedCommand.new {
                             this.command = cmd.lowercase()
-                            this.guild = guild.id.asString
+                            this.guild = guild.id.toString()
                         } }
 
                         message.reply(texts["blacklist.add"].format(cmd))

@@ -11,8 +11,7 @@ import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedGuildCommand
 import pw.modder.answernator.utils.extensions.kord.reply
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
-import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
+import kotlin.time.Duration.Companion.days
 
 class Clear: LocalizedGuildCommand {
     override val name = "clear"
@@ -22,7 +21,6 @@ class Clear: LocalizedGuildCommand {
     override val cmdType = Command.CommandGroup.MODER
     override val requiredPermission: Permission? = Permission.ManageMessages
 
-    @OptIn(ExperimentalTime::class)
     override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle, config: Config) {
         val limit = args.firstOrNull()?.toIntOrNull()
         if (limit == null || limit !in 1..100) {
@@ -31,18 +29,18 @@ class Clear: LocalizedGuildCommand {
         }
 
         val messages = mutableListOf<Snowflake>()
-        val timeLimit = message.id.timeStamp.minus(Duration.days(2))
+        val timeLimit = message.id.timestamp.minus(2.days)
         var lastMessage = message.id
         do {
             message.channel.getMessagesBefore(lastMessage)
                 .onEach { lastMessage = it.id }
-                .filter { it.id.timeStamp > timeLimit }
+                .filter { it.id.timestamp > timeLimit }
                 .filter { message.mentionedUserIds.isEmpty() || it.author!!.id in message.mentionedUserIds }
                 .take(limit - messages.size)
                 .collect {
                     messages.add(it.id)
                 }
-        } while (messages.size < limit && lastMessage.timeStamp > timeLimit)
+        } while (messages.size < limit && lastMessage.timestamp > timeLimit)
 
         if (messages.isEmpty()) {
             message.reply(texts["empty"])

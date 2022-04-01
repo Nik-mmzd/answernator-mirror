@@ -44,11 +44,15 @@ suspend fun Kord.logService() {
             }
             // we have audit log and know who banned a user but have no reason
             reasonParts == null || reasonParts.isEmpty() -> rest.channel.createMessage(banChannel) {
-                content = texts["bot.log.ban.noreason"].format(user.mention, auditLog.userId.asString.toUserMention())
+                content = texts["bot.log.ban.noreason"].format(user.mention, auditLog.userId.toString().toUserMention())
             }
             // seems like it's not a bot format but a reason itself
             reasonParts.size == 1 -> rest.channel.createMessage(banChannel) {
-                content = texts["bot.log.ban.reason"].format(user.mention, auditLog.userId.asString.toUserMention(), auditLog.reason!!)
+                content = texts["bot.log.ban.reason"].format(
+                    user.mention,
+                    auditLog.userId.toString().toUserMention(),
+                    auditLog.reason!!
+                )
             }
             // wtf? We have a reason in bot format, but reason is empty.
             else -> rest.channel.createMessage(banChannel) {
@@ -73,7 +77,7 @@ suspend fun Kord.logService() {
                 content = texts["bot.log.unban"].format(user.mention)
             }
             else -> rest.channel.createMessage(channel) {
-                content = texts["bot.log.unban.full"].format(user.mention, auditLog.userId.asString.toUserMention())
+                content = texts["bot.log.unban.full"].format(user.mention, auditLog.userId.toString().toUserMention())
             }
         }
     }

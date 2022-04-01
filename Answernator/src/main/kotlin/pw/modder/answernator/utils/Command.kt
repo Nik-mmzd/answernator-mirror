@@ -30,7 +30,7 @@ interface Command {
             return true
         }
 
-        if (message.authorId.asString == Globals.config.author
+        if (message.authorId.toString() == Globals.config.author
             && userGroup == UserGroup.ADMIN
             && channels.contains(ChannelTypes.DIRECT)) return true
 

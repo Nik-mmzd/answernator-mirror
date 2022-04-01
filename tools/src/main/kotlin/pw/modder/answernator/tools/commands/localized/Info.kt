@@ -62,9 +62,15 @@ class Info: LocalizedGuildCommand {
                     field(texts["message.mentions"], false) {
                         texts["message.mentions.text"].format(
                             texts["bool.${data.mentionEveryone}"],
-                            data.mentions.takeIf { it.size < 9 }?.joinToString(separator = " ") { it.asString.toUserMention() }?.ifEmpty { texts["empty"] } ?: data.mentions.size.toString(),
-                            data.mentionRoles.takeIf { it.size < 9 }?.joinToString(separator = " ") { it.asString.toRoleMention() }?.ifEmpty { texts["empty"] } ?: data.mentionRoles.size.toString(),
-                            data.mentionedChannels.value?.takeIf { it.size < 9 }?.joinToString(separator = " ") { it.asString.toChannelMention() }?.ifEmpty { texts["empty"] } ?: data.mentionedChannels.value?.size?.toString() ?: "0"
+                            data.mentions.takeIf { it.size < 9 }?.joinToString(separator = " ") {
+                                it.toString().toUserMention()
+                            }?.ifEmpty { texts["empty"] } ?: data.mentions.size.toString(),
+                            data.mentionRoles.takeIf { it.size < 9 }?.joinToString(separator = " ") {
+                                it.toString().toRoleMention()
+                            }?.ifEmpty { texts["empty"] } ?: data.mentionRoles.size.toString(),
+                            data.mentionedChannels.value?.takeIf { it.size < 9 }?.joinToString(separator = " ") {
+                                it.toString().toChannelMention()
+                            }?.ifEmpty { texts["empty"] } ?: data.mentionedChannels.value?.size?.toString() ?: "0"
                         )
                     }
                     field(texts["message.attachments"], false) {
@@ -79,7 +85,7 @@ class Info: LocalizedGuildCommand {
 
                     data.referencedMessage.ifHasValue { ref ->
                         field(texts["message.reference"], false) {
-                            "[${ref.content.takeIf { it.length < 129 } ?: (ref.content.take(127) + "…")}](https://discord.com/channels/${ref.guildId.value?.asString ?: "@me"}/${ref.channelId.asString}/${ref.id.asString})"
+                            "[${ref.content.takeIf { it.length < 129 } ?: (ref.content.take(127) + "…")}](https://discord.com/channels/${ref.guildId.value?.toString() ?: "@me"}/${ref.channelId.toString()}/${ref.id.toString()})"
                         }
                     }
 
@@ -102,16 +108,17 @@ class Info: LocalizedGuildCommand {
                 message.replyEmbed {
                     title = texts["user.title.${if (isBot) "bot" else "user"}"]
                         .format(member.nickname ?: username)
-                    thumbnail { url = avatar.url }
+
+                    thumbnail { url = avatar?.url ?: defaultAvatar.url }
                     color = member.getColor()
 
                     field(texts["user.username"], true) { tag }
-                    field(texts["user.id"], true) { id.asString }
+                    field(texts["user.id"], true) { id.toString() }
                     field(texts["user.owner"], true) { texts["bool.${id == guild.ownerId}"] }
                     field(texts["user.admin"], true) { texts["bool.${member.isAdmin()}"] }
                     field(texts["user.muted"], true) { texts["bool.${member.isMuted()}"] }
                     field(texts["user.superuser"], true) {
-                        texts["bool.${id.asString == Globals.config.author}"]
+                        texts["bool.${id.toString() == Globals.config.author}"]
                     }
                     field(texts["user.roles"], false) {
                         member.roles.toList().sortedByDescending { it.rawPosition }.joinToString(" ") { it.mention }
@@ -136,7 +143,7 @@ class Info: LocalizedGuildCommand {
                     title = data.icon.orElse("") + data.name.orElse { texts["channel.title"] }
 
                     field(texts["channel.created"], false) { "${data.id.timestampMention} (${data.id.timestampMention(TimestampFormat.RELATIVE)})" }
-                    field(texts["channel.id"], true) { data.id.asString }
+                    field(texts["channel.id"], true) { data.id.toString() }
                     field(texts["channel.type"], true) { data.type::class.simpleName ?: texts["channel.unknown"] }
                     data.parentId?.asOptional?.ifHasValue { parent ->
                         guild.channels.firstOrNull { it.id == parent }?.run {
@@ -171,12 +178,12 @@ class Info: LocalizedGuildCommand {
 
                     this.color = this@role.color.takeIf { it.rgb != 0 }
 
-                    field(texts["role.id"], true) { this@role.id.asString }
+                    field(texts["role.id"], true) { this@role.id.toString() }
                     field(texts["role.default"], true) {
-                        texts["bool.${config.defaultRole == this@role.id.asString}"]
+                        texts["bool.${config.defaultRole == this@role.id.toString()}"]
                     }
                     field(texts["role.mute"],true) {
-                        texts["bool.${config.muteRole == this@role.id.asString}"]
+                        texts["bool.${config.muteRole == this@role.id.toString()}"]
                     }
                     field(texts["role.managed"], true) { texts["bool.$managed"] }
                     field(texts["role.mentionable"], true) { texts["bool.$mentionable"] }

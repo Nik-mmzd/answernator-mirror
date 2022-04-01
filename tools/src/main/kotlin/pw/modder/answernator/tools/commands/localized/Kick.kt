@@ -31,7 +31,7 @@ class Kick: LocalizedGuildCommand {
             return
         }
 
-        val mentionedUser = message.mentionedUserBehaviors.firstOrNull() { it.id.asString == mentionedUserId}?.asMemberOrNull(guild.id)
+        val mentionedUser = message.mentionedUserBehaviors.firstOrNull() { it.id.toString() == mentionedUserId }?.asMemberOrNull(guild.id)
         if (mentionedUser == null) {
             message.reply(texts.error())
             return

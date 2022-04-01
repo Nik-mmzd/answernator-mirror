@@ -40,7 +40,7 @@ suspend inline fun Message.replyEmbed(block: EmbedBuilder.() -> Unit) = channel.
 }
 
 fun Message.isFromBotAuthor(): Boolean {
-    return data.author.id.asString == Globals.config.author
+    return data.author.id.toString() == Globals.config.author
 }
 
 fun MessageCreateBuilder.noReplyMention() {
