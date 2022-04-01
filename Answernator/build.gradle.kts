@@ -18,14 +18,14 @@ publishing {
     }
 }
 
-val gitVersion: groovy.lang.Closure<*> by extra
+val gitVersion: groovy.lang.Closure<String> by extra
 
 group = "pw.modder"
-version = gitVersion.call()
+version = gitVersion()
 
 val slf4jVersion: String by project
 dependencies {
-    implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+    runtimeOnly("org.slf4j:slf4j-simple:$slf4jVersion")
 }
 
 val jar by tasks.getting(Jar::class) {
@@ -38,11 +38,9 @@ tasks {
     val createDependenciesFile by creating {
         doLast {
             file("$buildDir/dependencies.txt").printWriter().use { pw ->
-                pw.append("${project.group}:${project.name}:${project.version}")
-                pw.appendln()
+                pw.appendLine("${project.group}:${project.name}:${project.version}")
                 configurations.runtimeClasspath.get().resolvedConfiguration.resolvedArtifacts.forEach {
-                    pw.append(it.moduleVersion.toString())
-                    pw.appendln()
+                    pw.appendLine(it.moduleVersion.toString())
                 }
             }
         }

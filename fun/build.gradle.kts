@@ -17,8 +17,7 @@ tasks {
     val createModuleVersionFile by creating {
         doLast {
             file("$buildDir/module.fun.txt").printWriter().use { pw ->
-                pw.append(project.version.toString())
-                pw.appendLine()
+                pw.appendLine(project.version.toString())
             }
         }
     }

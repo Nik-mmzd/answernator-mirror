@@ -1,8 +1,8 @@
 plugins {
-    kotlin("jvm") version "1.5.21"
-    kotlin("plugin.serialization") version "1.5.21" apply false
+    kotlin("jvm") version "1.6.10"
+    kotlin("plugin.serialization") version "1.6.10" apply false
     id("com.palantir.git-version") version "0.12.2" apply false
-    id("com.github.johnrengelman.shadow") version "5.2.0" apply false
+    id("com.github.johnrengelman.shadow") version "7.1.2" apply false
 }
 
 dependencies {
@@ -14,10 +14,10 @@ repositories {
 
 tasks {
     compileKotlin {
-        kotlinOptions.jvmTarget = "1.8"
+        kotlinOptions.jvmTarget = "11"
     }
     compileTestKotlin {
-        kotlinOptions.jvmTarget = "1.8"
+        kotlinOptions.jvmTarget = "11"
     }
 }
 
@@ -37,7 +37,7 @@ subprojects {
     }
 
     dependencies {
-        implementation(kotlin("stdlib-jdk8"))
+        implementation(kotlin("stdlib"))
         implementation(kotlin("reflect"))
         implementation("dev.kord:kord-core:$kordVersion")
         implementation("commons-io:commons-io:$commonsIoVersion")
