@@ -4,11 +4,16 @@ plugins {
     `version-catalog`
 }
 
+val gitVersion: groovy.lang.Closure<String> by extra
+
+group = "pw.modder"
+version = gitVersion()
+
 catalog {
     versionCatalog {
         from(files("../gradle/libs.versions.toml"))
         version("answernator", project.version.toString())
-        library("answernator", project.group.toString(), "answernator").versionRef("answernator")
+        library("answernator", rootProject.group.toString(), "answernator").versionRef("answernator")
     }
 }
 
@@ -43,11 +48,6 @@ publishing {
         }
     }
 }
-
-val gitVersion: groovy.lang.Closure<String> by extra
-
-group = "pw.modder"
-version = gitVersion()
 
 val slf4jVersion: String by project
 dependencies {

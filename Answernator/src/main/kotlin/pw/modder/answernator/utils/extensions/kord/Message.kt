@@ -1,9 +1,7 @@
 package pw.modder.answernator.utils.extensions.kord
 
 import dev.kord.common.entity.Snowflake
-import dev.kord.common.entity.optional.map
 import dev.kord.core.behavior.channel.createMessage
-import dev.kord.core.behavior.reply
 import dev.kord.core.entity.Message
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.MessageCreateBuilder
