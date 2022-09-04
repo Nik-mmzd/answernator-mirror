@@ -1,6 +1,8 @@
 package pw.modder.answernator
 
 import dev.kord.core.Kord
+import dev.kord.gateway.Intent
+import dev.kord.gateway.PrivilegedIntent
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.utils.CommandList
 import pw.modder.answernator.utils.Globals
@@ -23,5 +25,8 @@ suspend fun main() {
         antiSpam()
     }
 
-    bot.login()
+    bot.login {
+        @OptIn(PrivilegedIntent::class)
+        intents += Intent.MessageContent
+    }
 }
