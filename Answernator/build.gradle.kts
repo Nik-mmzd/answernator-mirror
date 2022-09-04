@@ -23,7 +23,6 @@ publishing {
 
         create<MavenPublication>("catalog") {
             artifactId = "answernator-catalog"
-            groupId = project.group.toString() + ".catalogs"
 
             from(components["versionCatalog"])
         }

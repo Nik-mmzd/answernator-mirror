@@ -19,6 +19,10 @@ suspend fun Kord.antiSpam() {
         val guild = message.guildId
             ?: return@on
 
+        if (message.content.isEmpty() && message.attachments.isEmpty()) {
+            logger.warn { "Guild $guild, message ${message.id}, user ${message.authorId}, message is EMPTY, check bot permissions" }
+            return@on
+        } // hotfix
         val config = Db.getAntiSpamConfig(guild) ?: return@on
         if (message.content.startsWith(config.cmdPrefix) && message.content.length <= 48) return@on
 
