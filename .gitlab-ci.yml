@@ -1,0 +1,49 @@
+stages:
+  - build
+  - publish
+
+default:
+  image: gradle:jdk17-alpine
+
+variables:
+  GRADLE_OPTS: "-Dorg.gradle.internal.launcher.welcomeMessageEnabled=false"
+  GRADLE_PROJECT_OPTS: "-Porg.gradle.parallel=false"
+
+.cache_paths: &cache_paths
+  - "**/build"
+
+.build:
+  stage: build
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    policy: pull-push
+    paths: *cache_paths
+
+.build-ro:
+  stage: build
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    policy: pull
+    paths: *cache_paths
+
+build:
+  extends: .build
+  script: gradle $GRADLE_PROJECT_OPTS assemble build
+  artifacts:
+    expire_in: 30 days
+    paths:
+      - '**/build/libs/*.jar'
+  only:
+    - master
+    - tags
+
+publish:
+  extends: .build-ro
+  stage: publish
+  dependencies:
+    - build
+  needs:
+    - build
+  script: gradle $GRADLE_PROJECT_OPTS publish
+  only:
+    - tags
