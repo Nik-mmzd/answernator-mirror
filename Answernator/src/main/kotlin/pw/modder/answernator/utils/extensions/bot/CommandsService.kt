@@ -28,7 +28,7 @@ suspend fun Kord.commandService() {
         val guildConfig = message.data.guildId.asOptional.orElse(null)
             ?.let { Db.getConfig(it) ?: Db.createDefaultConfig(it) }
 
-        if (message.content.first() != guildConfig?.cmdPrefix ?: config.prefix)
+        if (message.content.first() != (guildConfig?.cmdPrefix ?: config.prefix))
             return@on
 
         val texts = LocaleBundle("botGlobal", guildConfig?.lang ?: config.lang)

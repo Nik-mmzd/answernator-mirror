@@ -30,7 +30,7 @@ val Message.authorId: Snowflake get() = data.author.id
 suspend fun Message.reply(content: String) = channel.createMessage {
     this.content = content
     noReplyMention()
-    messageReference = referencedMessage?.id ?: id
+    messageReference = data.referencedMessage.value?.id ?: id
 }
 
 suspend inline fun Message.replyEmbed(block: EmbedBuilder.() -> Unit) = channel.createMessage {
