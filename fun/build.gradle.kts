@@ -1,9 +1,3 @@
-plugins {
-    kotlin("jvm")
-    kotlin("plugin.serialization")
-    id("com.palantir.git-version")
-}
-
 val gitVersion: groovy.lang.Closure<String> by extra
 
 group = "pw.modder.answernator"
