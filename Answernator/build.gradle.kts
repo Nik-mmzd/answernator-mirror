@@ -13,7 +13,7 @@ catalog {
     versionCatalog {
         from(files("../gradle/libs.versions.toml"))
         version("answernator", project.version.toString())
-        library("answernator", rootProject.group.toString(), "answernator").versionRef("answernator")
+        library("answernator", project.group.toString(), "answernator").versionRef("answernator")
     }
 }
 
