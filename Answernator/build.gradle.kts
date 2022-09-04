@@ -52,7 +52,6 @@ version = gitVersion()
 
 val slf4jVersion: String by project
 dependencies {
-    implementation(libs.bundles.exposed)
     implementation(libs.guava)
     implementation(libs.apache.commons.io)
     runtimeOnly(libs.h2)

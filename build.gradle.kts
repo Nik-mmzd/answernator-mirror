@@ -44,6 +44,7 @@ subprojects {
     dependencies {
         api(rootProject.libs.bundles.common)
         api(rootProject.libs.kotlin.logging)
+        api(rootProject.libs.bundles.exposed)
     }
 
     java {

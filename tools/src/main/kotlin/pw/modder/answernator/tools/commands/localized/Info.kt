@@ -162,7 +162,7 @@ class Info: LocalizedGuildCommand {
                     data.userLimit.asOptional.ifHasValue {
                         field(texts["channel.limit"], true) { it.toString() }
                     }
-                    data.rateLimitPerUser.asOptional.ifHasValue {
+                    data.rateLimitPerUser.ifHasValue {
                         field(texts["channel.rate"], true) { it.toString() }
                     }
                     data.topic.ifHasValue {

@@ -6,6 +6,7 @@ version = gitVersion(mapOf ("prefix" to "tools@"))
 
 dependencies {
     implementation(project(":Answernator"))
+    implementation(libs.apache.commons.io)
 }
 
 tasks {

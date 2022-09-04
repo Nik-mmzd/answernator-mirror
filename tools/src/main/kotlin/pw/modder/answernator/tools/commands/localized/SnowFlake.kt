@@ -31,8 +31,8 @@ class SnowFlake: LocalizedCommand {
                 field(it.toString(), false) {
                     texts["field.text"].format(
                         it.timestamp,
-                        it.worker,
-                        it.process,
+                        it.workerId,
+                        it.processId,
                         it.increment,
                         it.timestampMention
                     )
