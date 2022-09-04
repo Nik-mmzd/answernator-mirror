@@ -8,7 +8,7 @@ kotlin = "1.7.10"
 kotlin-logging = "2.1.23"
 ktor = "2.1.0"
 logback = "1.2.11"
-h2 = "2.1.210"
+h2 = "1.4.200"
 shadow = "7.1.2"
 
 [libraries]
