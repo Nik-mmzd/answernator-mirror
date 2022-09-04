@@ -6,7 +6,7 @@ plugins {
 
 catalog {
     versionCatalog {
-        from(files("gradle/libs.versions.toml"))
+        from(files("../gradle/libs.versions.toml"))
         version("answernator", project.version.toString())
         library("answernator", project.group.toString(), "answernator").versionRef("answernator")
     }
