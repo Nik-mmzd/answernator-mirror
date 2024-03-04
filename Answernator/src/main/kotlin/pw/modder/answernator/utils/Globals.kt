@@ -21,7 +21,10 @@ object Globals {
 
     val deps = Utils.loadDependenciesList()
 
-    fun getDependencyVersion(group: String, name: String) = deps.single { it.group == group && it.name == name }.version
+    fun getDependencyVersion(group: String, name: String): String {
+        val nameWithJvm = "${name}-jvm"
+        return deps.single { it.group == group && (it.name == name || it.name == nameWithJvm) }.version
+    }
 
     val random = Random(System.currentTimeMillis())
 
