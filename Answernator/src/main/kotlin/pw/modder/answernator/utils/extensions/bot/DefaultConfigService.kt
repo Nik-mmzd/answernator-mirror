@@ -3,7 +3,7 @@ package pw.modder.answernator.utils.extensions.bot
 import dev.kord.core.Kord
 import dev.kord.core.event.guild.GuildCreateEvent
 import dev.kord.core.on
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import pw.modder.answernator.db.Db
 
 private val logger = KotlinLogging.logger {  }

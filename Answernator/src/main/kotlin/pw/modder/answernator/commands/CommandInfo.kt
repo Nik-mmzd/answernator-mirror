@@ -66,7 +66,7 @@ class CommandInfo: Command {
                     field("Bot can run", true) { contains(this@cmd).toBoolString() }
                 }
             }
-            message.getAuthorAsMember()?.getPermissions()?.run {
+            message.getAuthorAsMember().getPermissions().run {
                 field("Member can use", true) { cmd.check(message, locale).toBoolString() }
             }
 

@@ -91,7 +91,7 @@ class Info: LocalizedGuildCommand {
 
                     data.flags.ifHasValue { flags ->
                         field(texts["message.flags"], false) {
-                            flags.flags.joinToString(separator = ", ") { texts.getOrNull("message.flags.${it::class.simpleName}") ?: it::class.simpleName ?: "Unkwon" }.ifEmpty { texts["empty"] }
+                            flags.values.joinToString(separator = ", ") { texts.getOrNull("message.flags.${it::class.simpleName}") ?: it::class.simpleName ?: "Unkwon" }.ifEmpty { texts["empty"] }
                         }
                     }
 
@@ -109,7 +109,7 @@ class Info: LocalizedGuildCommand {
                     title = texts["user.title.${if (isBot) "bot" else "user"}"]
                         .format(member.nickname ?: username)
 
-                    thumbnail { url = avatar?.url ?: defaultAvatar.url }
+                    thumbnail { url = avatar?.cdnUrl?.toUrl() ?: defaultAvatar.cdnUrl.toUrl() }
                     color = member.getColor()
 
                     field(texts["user.username"], true) { tag }

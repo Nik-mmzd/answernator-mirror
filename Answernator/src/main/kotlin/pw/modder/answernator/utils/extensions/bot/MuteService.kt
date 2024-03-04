@@ -5,7 +5,7 @@ import dev.kord.core.Kord
 import dev.kord.core.event.guild.MemberJoinEvent
 import dev.kord.core.event.guild.MemberUpdateEvent
 import dev.kord.core.on
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.jetbrains.exposed.sql.transactions.transaction
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.db.guild.Features

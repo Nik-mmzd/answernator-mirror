@@ -11,6 +11,7 @@ import pw.modder.answernator.utils.extensions.extractMentionedId
 import pw.modder.answernator.utils.extensions.kord.isAdmin
 import pw.modder.answernator.utils.extensions.kord.reply
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
+import kotlin.time.Duration.Companion.seconds
 
 class Ban: LocalizedGuildCommand {
     override val name = "ban"
@@ -52,7 +53,7 @@ class Ban: LocalizedGuildCommand {
         }
 
         member.ban {
-            deleteMessagesDays = 0
+            deleteMessageDuration = 0.seconds
             reason = args.drop(1).joinToString(" ", prefix = "${message.data.author.id}|")
         }
 

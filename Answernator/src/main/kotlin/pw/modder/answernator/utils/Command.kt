@@ -3,14 +3,13 @@ package pw.modder.answernator.utils
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.core.entity.Message
-import mu.KLogger
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.utils.extensions.kord.authorId
 import pw.modder.answernator.utils.extensions.kord.isFromBotAuthor
 import java.util.*
 
-private val logger: KLogger = KotlinLogging.logger {}
+private val logger = KotlinLogging.logger {}
 interface Command {
     val name: String
     val userGroup: UserGroup get() = UserGroup.ALL
@@ -35,7 +34,7 @@ interface Command {
             && channels.contains(ChannelTypes.DIRECT)) return true
 
         logger.debug { "getting permissions" }
-        val perms = (message.getAuthorAsMember()?.getPermissions() ?: Permissions())
+        val perms = (message.getAuthorAsMember().getPermissions())
 
         if (userGroup == UserGroup.ADMIN && !perms.contains(Permission.Administrator)) return false
         if (localesWhitelist?.contains(locale) == false) return false

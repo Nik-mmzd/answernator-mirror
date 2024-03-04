@@ -1,6 +1,6 @@
 package pw.modder.answernator.utils
 
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.net.URLClassLoader
 import java.util.*

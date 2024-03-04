@@ -3,10 +3,13 @@ package pw.modder.answernator.utils.extensions.kord
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.entity.Message
+import dev.kord.rest.builder.message.AllowedMentionsBuilder
 import dev.kord.rest.builder.message.EmbedBuilder
+import dev.kord.rest.builder.message.allowedMentions
 import dev.kord.rest.builder.message.create.MessageCreateBuilder
 import dev.kord.rest.builder.message.create.allowedMentions
 import dev.kord.rest.builder.message.create.embed
+import dev.kord.rest.builder.message.embed
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.Globals
 
@@ -42,5 +45,7 @@ fun Message.isFromBotAuthor(): Boolean {
 }
 
 fun MessageCreateBuilder.noReplyMention() {
-    allowedMentions { repliedUser = false }
+    allowedMentions {
+        repliedUser = false
+    }
 }

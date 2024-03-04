@@ -5,7 +5,7 @@ import dev.kord.core.Kord
 import dev.kord.core.behavior.channel.withTyping
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.utils.CommandList
 import pw.modder.answernator.utils.Globals

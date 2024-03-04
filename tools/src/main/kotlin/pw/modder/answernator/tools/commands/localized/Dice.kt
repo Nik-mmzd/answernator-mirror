@@ -2,7 +2,7 @@ package pw.modder.answernator.tools.commands.localized
 
 import dev.kord.common.Color
 import dev.kord.core.entity.Message
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.tools.diceHelper.*
 import pw.modder.answernator.utils.Command

@@ -4,13 +4,14 @@ import dev.kord.core.Kord
 import dev.kord.core.behavior.ban
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import pw.modder.answernator.cache.AntiSpamCache
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.db.guild.Features
 import pw.modder.answernator.utils.extensions.kord.authorId
 import pw.modder.answernator.utils.extensions.kord.guildId
 import pw.modder.answernator.utils.extensions.kord.reply
+import kotlin.time.Duration.Companion.days
 
 private val logger = KotlinLogging.logger {}
 suspend fun Kord.antiSpam() {
@@ -48,7 +49,7 @@ suspend fun Kord.antiSpam() {
                 logger.info { "Creating ban: guild $guild, message ${message.id}, user ${message.authorId}, content = <${message.content}>" }
 
                 message.getGuild().ban(message.author!!.id) {
-                    deleteMessagesDays = 1
+                    deleteMessageDuration = 1.days
                     reason = config.antiSpamBanText
                 }
                 AntiSpamCache.getMessage(guild, message.data.author.id)?.delete()

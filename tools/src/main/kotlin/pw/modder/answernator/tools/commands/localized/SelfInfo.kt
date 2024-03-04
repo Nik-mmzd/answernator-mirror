@@ -22,15 +22,11 @@ class SelfInfo: LocalizedGuildCommand {
 
     override suspend fun action(message: Message, args: List<String>, guild: Guild, texts: CommandLocaleBundle, config: Config) {
         val member = message.getAuthorAsMember()
-        if (member == null) {
-            message.reply(texts.error())
-            return
-        }
 
         message.replyEmbed {
             title = texts["user.title.user"].format(member.nickname ?: member.username)
 
-            thumbnail { url = member.avatar?.url ?: member.defaultAvatar.url }
+            thumbnail { url = member.avatar?.cdnUrl?.toUrl() ?: member.defaultAvatar.cdnUrl.toUrl() }
 
             color = member.getColor()
 
