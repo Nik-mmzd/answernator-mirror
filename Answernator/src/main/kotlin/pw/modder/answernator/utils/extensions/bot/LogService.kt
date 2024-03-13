@@ -43,7 +43,7 @@ suspend fun Kord.logService() {
                 content = texts["bot.log.ban.unknown"].format(user.mention)
             }
             // we have audit log and know who banned a user but have no reason
-            reasonParts == null || reasonParts.isEmpty() -> rest.channel.createMessage(banChannel) {
+            reasonParts.isNullOrEmpty() -> rest.channel.createMessage(banChannel) {
                 content = texts["bot.log.ban.noreason"].format(user.mention, auditLog.userId.toString().toUserMention())
             }
             // seems like it's not a bot format but a reason itself

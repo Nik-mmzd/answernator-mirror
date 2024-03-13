@@ -83,7 +83,7 @@ class Mute: LocalizedGuildCommand {
             if (config.memberMuteLogChannel != null) try {
                 message.kord.rest.channel.createMessage(Snowflake(config.memberMuteLogChannel!!)) {
                     content = when(reason) {
-                        null -> texts["log.muted.noreason"].format(mention, message.author!!)
+                        null -> texts["log.muted.noreason"].format(mention, message.author!!.mention)
                         else -> texts["log.muted"].format(mention, message.author!!.mention, reason)
                     }
                 }
