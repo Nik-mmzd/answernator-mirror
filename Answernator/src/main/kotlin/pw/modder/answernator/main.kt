@@ -29,6 +29,7 @@ suspend fun main() {
         defaultRoleService()
         logService()
         antiSpam()
+        zombieWatchdog()
     }
 
     bot.login {
