@@ -8,9 +8,11 @@ dependencies {
 }
 
 tasks {
-    val createModuleVersionFile by creating {
+    val depsFile = layout.buildDirectory.file("module.fun.txt")
+
+    val createModuleVersionFile by registering {
         doLast {
-            file("$buildDir/module.fun.txt").printWriter().use { pw ->
+            depsFile.get().asFile.printWriter().use { pw ->
                 pw.appendLine(project.version.toString())
             }
         }
@@ -18,6 +20,6 @@ tasks {
 
     jar {
         dependsOn(createModuleVersionFile)
-        from("$buildDir/module.fun.txt")
+        from(depsFile)
     }
 }

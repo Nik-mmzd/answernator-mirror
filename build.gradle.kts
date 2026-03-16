@@ -5,22 +5,9 @@ plugins {
     alias(libs.plugins.shadow) apply false
 }
 
-dependencies {
-    implementation(kotlin("stdlib-jdk8"))
-}
-
 allprojects {
     repositories {
         mavenCentral()
-    }
-}
-
-tasks {
-    compileKotlin {
-        kotlinOptions.jvmTarget = "11"
-    }
-    compileTestKotlin {
-        kotlinOptions.jvmTarget = "11"
     }
 }
 
@@ -47,17 +34,6 @@ subprojects {
         api(rootProject.libs.bundles.exposed)
     }
 
-    java {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-
-    tasks {
-        compileKotlin {
-            kotlinOptions.jvmTarget = "11"
-        }
-        compileTestKotlin {
-            kotlinOptions.jvmTarget = "11"
-        }
-    }
+    kotlin.jvmToolchain(17)
+    java.toolchain { languageVersion.set(JavaLanguageVersion.of(17)) }
 }

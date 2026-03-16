@@ -2,6 +2,7 @@ plugins {
     id(libs.plugins.shadow.get().pluginId)
     `maven-publish`
     `version-catalog`
+    application
 }
 
 val gitVersion: groovy.lang.Closure<String> by extra
@@ -58,10 +59,8 @@ dependencies {
     runtimeOnly(libs.logback.classic)
 }
 
-val jar by tasks.getting(Jar::class) {
-    manifest {
-        attributes["Main-Class"] = "pw.modder.answernator.MainKt"
-    }
+application {
+    mainClass = "pw.modder.answernator.MainKt"
 }
 
 java {
@@ -69,9 +68,11 @@ java {
 }
 
 tasks {
-    val createDependenciesFile by creating {
+    val depsFile = layout.buildDirectory.file("dependencies.txt")
+
+    val createDependenciesFile by registering {
         doLast {
-            file("$buildDir/dependencies.txt").printWriter().use { pw ->
+            depsFile.get().asFile.printWriter().use { pw ->
                 pw.appendLine("${project.group}:${project.name}:${project.version}")
                 configurations.runtimeClasspath.get().resolvedConfiguration.resolvedArtifacts.forEach {
                     pw.appendLine(it.moduleVersion.toString())
@@ -82,11 +83,11 @@ tasks {
 
     jar {
         dependsOn(createDependenciesFile)
-        from("$buildDir/dependencies.txt")
+        from(depsFile)
     }
 
     shadowJar {
         dependsOn(createDependenciesFile)
-        from("$buildDir/dependencies.txt")
+        from(depsFile)
     }
 }
