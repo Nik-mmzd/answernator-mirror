@@ -4,7 +4,6 @@ import dev.kord.core.entity.Message
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.client.statement.*
-import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
 import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.utils.Command
@@ -12,6 +11,7 @@ import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.extensions.kord.reply
 import pw.modder.answernator.utils.extensions.kord.replyEmbed
 import java.util.*
+import kotlin.time.Instant
 import pw.modder.answernator.`fun`.utils.Quote as QuoteData
 
 private val json = Json { ignoreUnknownKeys = true }

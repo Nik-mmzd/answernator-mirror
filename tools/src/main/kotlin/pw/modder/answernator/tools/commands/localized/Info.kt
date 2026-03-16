@@ -128,8 +128,9 @@ class Info: LocalizedGuildCommand {
                         member.getPermissions().values.joinToString(", ") { texts.getPerm(it) }
                             .ifEmpty { texts["empty"] }
                     }
-                    field(texts["user.joinedAt"], false) {
-                        "<t:${member.joinedAt.epochSeconds}:f> (<t:${member.joinedAt.epochSeconds}:R>)"
+                    val joined = member.joinedAt
+                    if (joined != null) field(texts["user.joinedAt"], false) {
+                        "<t:${joined.epochSeconds}:f> (<t:${joined.epochSeconds}:R>)"
                     }
                     field(texts["user.createdAt"], false) {
                         "${id.timestampMention} (${id.timestampMention(TimestampFormat.RELATIVE)})"

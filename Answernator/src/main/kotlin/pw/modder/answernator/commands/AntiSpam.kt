@@ -2,7 +2,7 @@ package pw.modder.answernator.commands
 
 import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Message
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.db.guild.Features
 import pw.modder.answernator.utils.Command

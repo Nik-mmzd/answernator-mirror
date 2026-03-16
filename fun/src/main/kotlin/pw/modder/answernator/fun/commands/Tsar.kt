@@ -2,7 +2,6 @@ package pw.modder.answernator.`fun`.commands
 
 import dev.kord.common.Color
 import dev.kord.core.entity.Message
-import kotlinx.datetime.Clock
 import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.utils.Command
 import pw.modder.answernator.utils.LocalizedCommand
@@ -10,6 +9,7 @@ import pw.modder.answernator.utils.extensions.kord.reply
 import pw.modder.answernator.utils.extensions.kord.replyEmbed
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
 import java.util.*
+import kotlin.time.Clock
 
 class Tsar: LocalizedCommand {
     override val name = "царь"

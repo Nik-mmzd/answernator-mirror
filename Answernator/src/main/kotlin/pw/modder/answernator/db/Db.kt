@@ -1,8 +1,10 @@
 package pw.modder.answernator.db
 
 import dev.kord.common.entity.Snowflake
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.core.and
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.jdbc.*
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import pw.modder.answernator.db.guild.*
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.locale.LocaleBundle

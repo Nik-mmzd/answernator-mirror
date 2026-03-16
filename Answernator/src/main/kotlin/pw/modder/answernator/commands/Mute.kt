@@ -5,7 +5,7 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Message
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.db.guild.Features

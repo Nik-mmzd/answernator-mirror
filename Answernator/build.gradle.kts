@@ -90,4 +90,8 @@ tasks {
         dependsOn(createDependenciesFile)
         from(depsFile)
     }
+
+    test {
+        failOnNoDiscoveredTests = false
+    }
 }

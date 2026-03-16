@@ -6,7 +6,7 @@ import dev.kord.core.event.guild.MemberJoinEvent
 import dev.kord.core.event.guild.MemberUpdateEvent
 import dev.kord.core.on
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.db.guild.Features
 import pw.modder.answernator.utils.extensions.kord.getMute

@@ -5,7 +5,7 @@ import dev.kord.common.entity.Permission
 import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Member
 import kotlinx.coroutines.flow.toList
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import pw.modder.answernator.db.Db
 import pw.modder.answernator.db.guild.Mute
 
