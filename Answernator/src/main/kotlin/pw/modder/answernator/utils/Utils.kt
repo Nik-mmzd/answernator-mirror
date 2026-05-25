@@ -1,5 +1,6 @@
 package pw.modder.answernator.utils
 
+import kotlinx.io.IOException
 import java.io.InputStream
 import java.lang.management.ManagementFactory
 import java.util.concurrent.TimeUnit
@@ -7,7 +8,7 @@ import java.util.concurrent.TimeUnit
 object Utils {
     private fun getResource(path: String): InputStream {
         return javaClass.classLoader.getResourceAsStream(path)
-            ?: throw Exception("Resource $path not found")
+            ?: throw IOException("Resource $path not found")
     }
 
     fun loadDependenciesList(): List<Dependency> {

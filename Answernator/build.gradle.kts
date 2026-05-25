@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.targets.js.npm.fromSrcPackageJson
+
 plugins {
     id(libs.plugins.shadow.get().pluginId)
     `maven-publish`
