@@ -8,6 +8,7 @@ import pw.modder.answernator.db.Db
 import pw.modder.answernator.utils.CommandList
 import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.extensions.bot.*
+import pw.modder.answernator4.interaction.InteractionCommandList
 
 suspend fun main() {
     val sentryDSN: String? = System.getenv("ANSWERNATOR_SENTRY_DSN")
@@ -16,6 +17,7 @@ suspend fun main() {
 
     Db.initDb()
     CommandList.load()
+    InteractionCommandList.load()
 
     val bot = Kord(Globals.config.token)
 
@@ -23,6 +25,7 @@ suspend fun main() {
         startDebug()
         configService()
         commandService()
+        interactionCommandService()
         greetingService()
         defaultStatusService()
         muteService()

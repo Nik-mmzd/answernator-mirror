@@ -2,11 +2,7 @@ package pw.modder.answernator4.interaction
 
 import dev.kord.common.entity.ApplicationCommandOptionType
 import dev.kord.core.Kord
-import dev.kord.core.entity.interaction.ApplicationCommandInteraction
-import dev.kord.core.entity.interaction.ChatInputCommandInteraction
-import dev.kord.core.event.interaction.InteractionCreateEvent
 import dev.kord.rest.builder.interaction.*
-import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
 fun ChatInputCreateBuilder.option(option: Option<*>, bundleName: String) {
@@ -25,38 +21,56 @@ fun ChatInputCreateBuilder.option(option: Option<*>, bundleName: String) {
     }
 }
 
-operator fun <T> Option<T>.provideDelegate(thisRef: Command, property: KProperty<*>): Option<T> {
+operator fun <T> Option<T>.provideDelegate(thisRef: ChatInputCommand, property: KProperty<*>): Option<T> {
     val impl = this as OptionImpl<T>
     val named = if (impl.name == LocalizableString.EMPTY) impl.name(property.name) as OptionImpl<T> else impl
     thisRef.registerOption(named as OptionImpl<*>)
     return named
 }
 
-operator fun <T> Option<T>.getValue(thisRef: Command, property: KProperty<*>): Option<T> = this
+operator fun <T> Option<T>.getValue(thisRef: ChatInputCommand, property: KProperty<*>): Option<T> = this
 
-suspend fun Kord.register(command: Command) {
+suspend fun Kord.register(command: ChatInputCommand) {
     val bName = command.bundleName
     val dKey = command.description.key
 
     val (desc, descLocs) = getAllLocalizations(bName, dKey)
 
     createGlobalChatInputCommand(command.name, desc) {
-        descriptionLocalizations?.putAll(descLocs)
+        if (desc.isNotEmpty()) {
+            descriptionLocalizations?.putAll(descLocs)
+        }
 
         val (nameValue, nameLocs) = getAllLocalizations(bName, command.name)
         name = nameValue
         nameLocalizations?.putAll(nameLocs)
-        
+
+        defaultMemberPermissions = command.defaultMemberPermissions
+
         command.options.forEach { option(it, bName) }
     }
 }
 
-fun <T> InteractionCreateEvent.option(option: Option<T>): ReadOnlyProperty<Any?, T> =
-    ReadOnlyProperty { _, _ ->
-        val interaction = interaction as? ApplicationCommandInteraction
-            ?: error("Interaction is not an ApplicationCommandInteraction")
-        val options = (interaction as? ChatInputCommandInteraction)?.command?.options
-        val commandOption = options?.get(option.name.key)
-        
-        (option as OptionImpl<T>).extractValue(commandOption)
+suspend fun Kord.registerUser(command: UserCommand) {
+    val bName = command.bundleName
+
+    createGlobalUserCommand(command.name) {
+        val (nameValue, nameLocs) = getAllLocalizations(bName, command.name)
+        name = nameValue
+        nameLocalizations?.putAll(nameLocs)
+
+        defaultMemberPermissions = command.defaultMemberPermissions
     }
+}
+
+suspend fun Kord.registerMessage(command: MessageCommand) {
+    val bName = command.bundleName
+
+    createGlobalMessageCommand(command.name) {
+        val (nameValue, nameLocs) = getAllLocalizations(bName, command.name)
+        name = nameValue
+        nameLocalizations?.putAll(nameLocs)
+
+        defaultMemberPermissions = command.defaultMemberPermissions
+    }
+}

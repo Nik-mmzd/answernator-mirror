@@ -162,8 +162,8 @@ fun Option<Long>.maxValue(maxValue: Long): Option<Long> =
 fun Option<Long>.coerceValue(minValue: Long, maxValue: Long): Option<Long> =
     minValue(minValue).maxValue(maxValue)
 
-fun Option<Long>.coerceValue(range: ClosedRange<Long>): Option<Long> =
-    coerceValue(range.start, range.endInclusive)
+//fun Option<Long>.coerceValue(range: ClosedRange<Long>): Option<Long> =
+//    coerceValue(range.start, range.endInclusive)
 
 fun Option<Int>.choice(
     value: Int,
@@ -184,7 +184,7 @@ fun Option<Int>.maxValue(maxValue: Int): Option<Int> =
     (this as OptionImpl<Int>).maxValue(maxValue.toLong())
 
 fun Option<Int>.coerceValue(minValue: Int, maxValue: Int): Option<Int> = minValue(minValue).maxValue(maxValue)
-fun Option<Int>.coerceValue(range: ClosedRange<Int>): Option<Int> = coerceValue(range.start, range.endInclusive)
+//fun Option<Int>.coerceValue(range: ClosedRange<Int>): Option<Int> = coerceValue(range.start, range.endInclusive)
 
 
 fun Option<Short>.choice(
@@ -209,8 +209,8 @@ fun Option<Short>.maxValue(maxValue: Short): Option<Short> =
 fun Option<Short>.coerceValue(minValue: Short, maxValue: Short): Option<Short> =
     minValue(minValue).maxValue(maxValue)
 
-fun Option<Short>.coerceValue(range: ClosedRange<Short>): Option<Short> =
-    coerceValue(range.start, range.endInclusive)
+//fun Option<Short>.coerceValue(range: ClosedRange<Short>): Option<Short> =
+//    coerceValue(range.start, range.endInclusive)
 
 fun Option<Byte>.choice(
     value: Byte,
@@ -233,8 +233,8 @@ fun Option<Byte>.maxValue(maxValue: Byte): Option<Byte> =
 fun Option<Byte>.coerceValue(minValue: Byte, maxValue: Byte): Option<Byte> =
     minValue(minValue).maxValue(maxValue)
 
-fun Option<Byte>.coerceValue(range: ClosedRange<Byte>): Option<Byte> =
-    coerceValue(range.start, range.endInclusive)
+//fun Option<Byte>.coerceValue(range: ClosedRange<Byte>): Option<Byte> =
+//    coerceValue(range.start, range.endInclusive)
 
 fun Option<Double>.choice(
     value: Double,
@@ -257,8 +257,8 @@ fun Option<Double>.maxValue(maxValue: Double): Option<Double> =
 fun Option<Double>.coerceValue(minValue: Double, maxValue: Double): Option<Double> =
     minValue(minValue).maxValue(maxValue)
 
-fun Option<Double>.coerceValue(range: ClosedRange<Double>): Option<Double> =
-    coerceValue(range.start, range.endInclusive)
+//fun Option<Double>.coerceValue(range: ClosedRange<Double>): Option<Double> =
+//    coerceValue(range.start, range.endInclusive)
 
 fun Option<Float>.choice(
     value: Float,
@@ -282,8 +282,8 @@ fun Option<Float>.maxValue(maxValue: Float): Option<Float> =
 fun Option<Float>.coerceValue(minValue: Float, maxValue: Float): Option<Float> =
     minValue(minValue).maxValue(maxValue)
 
-fun Option<Float>.coerceValue(range: ClosedRange<Float>): Option<Float> =
-    coerceValue(range.start, range.endInclusive)
+//fun Option<Float>.coerceValue(range: ClosedRange<Float>): Option<Float> =
+//    coerceValue(range.start, range.endInclusive)
 
 fun Option<Channel>.channelTypes(vararg types: ChannelType): Option<Channel> {
     return types.fold(this as OptionImpl<Channel>) { option, type ->

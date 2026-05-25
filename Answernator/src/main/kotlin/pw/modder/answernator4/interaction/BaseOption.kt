@@ -57,19 +57,19 @@ internal data class BaseOption<out T : Any>(
     }
 
     override fun buildSpec(builder: OptionsBuilder, bundleName: String) {
-        builder.name = name.key
-        builder.description = description.key
+        require(description != LocalizableString.EMPTY) {
+            "Option '${name.key}' has no description. Discord requires a non-empty description for all options."
+        }
+
         builder.required = required
 
-        bundleName?.let { bName ->
-            val (nameValue, nameLocs) = getAllLocalizations(bName, name.key)
-            builder.name = nameValue
-            builder.nameLocalizations?.putAll(nameLocs)
+        val (nameValue, nameLocs) = getAllLocalizations(bundleName, name.key)
+        builder.name = nameValue
+        builder.nameLocalizations?.putAll(nameLocs)
 
-            val (descValue, descLocs) = getAllLocalizations(bName, description.key)
-            builder.description = descValue
-            builder.descriptionLocalizations?.putAll(descLocs)
-        }
+        val (descValue, descLocs) = getAllLocalizations(bundleName, description.key)
+        builder.description = descValue
+        builder.descriptionLocalizations?.putAll(descLocs)
 
         when (builder) {
             is StringChoiceBuilder -> {

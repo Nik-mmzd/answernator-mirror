@@ -1,6 +1,7 @@
 package pw.modder.answernator4.interaction
 
 import dev.kord.common.Locale
+import dev.kord.common.entity.Permissions
 import dev.kord.core.Kord
 import dev.kord.core.event.interaction.InteractionCreateEvent
 import pw.modder.answernator.utils.locale.UTF8Control
@@ -30,26 +31,19 @@ internal fun getAllLocalizations(bundleName: String, key: String): Pair<String, 
     return name to translations
 }
 
+internal fun ResourceBundle.l(key: String): String = if (containsKey(key)) getString(key) else key
+
 abstract class Command {
     abstract val name: String
-    open val description: LocalizableString = LocalizableString.EMPTY
     abstract val bundleName: String
+    open val defaultMemberPermissions: Permissions? = null
 
     val InteractionCreateEvent.bundle: ResourceBundle
         get() {
-            val bName = bundleName
-            val discordLocale = this.interaction.locale ?: Locale("en-US")
+            val discordLocale = interaction.locale ?: Locale("en-US")
             val javaLocale = SUPPORTED_LOCALES[discordLocale] ?: java.util.Locale.ROOT
-            return ResourceBundle.getBundle("locale.$bName", javaLocale, UTF8Control)
+            return ResourceBundle.getBundle("locale.$bundleName", javaLocale, UTF8Control)
         }
 
-    private val _options = mutableListOf<OptionImpl<*>>()
-    val options: List<Option<*>> get() = _options
-
-    internal fun registerOption(option: OptionImpl<*>) {
-        _options.add(option)
-    }
-
     abstract suspend fun register(kord: Kord)
-    abstract suspend fun InteractionCreateEvent.execute()
 }
