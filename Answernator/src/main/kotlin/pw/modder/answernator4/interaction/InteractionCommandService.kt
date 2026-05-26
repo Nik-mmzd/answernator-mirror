@@ -1,4 +1,4 @@
-package pw.modder.answernator.utils.extensions.bot
+package pw.modder.answernator4.interaction
 
 import dev.kord.core.Kord
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
@@ -6,10 +6,6 @@ import dev.kord.core.event.interaction.MessageCommandInteractionCreateEvent
 import dev.kord.core.event.interaction.UserCommandInteractionCreateEvent
 import dev.kord.core.on
 import io.github.oshai.kotlinlogging.KotlinLogging
-import pw.modder.answernator4.interaction.ChatInputCommand
-import pw.modder.answernator4.interaction.InteractionCommandList
-import pw.modder.answernator4.interaction.MessageCommand
-import pw.modder.answernator4.interaction.UserCommand
 
 private val logger = KotlinLogging.logger {}
 

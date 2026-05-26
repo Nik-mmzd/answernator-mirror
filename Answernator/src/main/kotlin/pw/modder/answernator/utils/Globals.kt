@@ -17,7 +17,7 @@ object Globals {
         val configFile = File(configFileName)
         if (!configFile.exists()) {
             configFile.writeText(JSON.encodeToString(Config.serializer(), Config.DEFAULT))
-            throw Exception("Missing config")
+            throw RuntimeException("Missing config")
         }
         config = Config.loadFrom(configFile)
     }

@@ -1,38 +1,26 @@
-package pw.modder.answernator
+package pw.modder.answernator4
 
 import dev.kord.core.Kord
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import io.sentry.Sentry
-import pw.modder.answernator.db.Db
-import pw.modder.answernator.utils.CommandList
 import pw.modder.answernator.utils.Globals
-import pw.modder.answernator.utils.extensions.bot.*
-import pw.modder.answernator4.interaction.InteractionCommandList
 import pw.modder.answernator4.interaction.interactionCommandService
+import pw.modder.answernator.utils.extensions.bot.zombieWatchdog
+import pw.modder.answernator4.interaction.InteractionCommandList
 
+// TEMP MAIN
 suspend fun main() {
     val sentryDSN: String? = System.getenv("ANSWERNATOR_SENTRY_DSN")
     if (sentryDSN != null)
         Sentry.init(sentryDSN)
 
-    Db.initDb()
-    CommandList.load()
     InteractionCommandList.load()
 
     val bot = Kord(Globals.config.token)
 
     with(bot) {
-        startDebug()
-        configService()
-        commandService()
         interactionCommandService()
-        greetingService()
-        defaultStatusService()
-        muteService()
-        defaultRoleService()
-        logService()
-        antiSpam()
         zombieWatchdog()
     }
 

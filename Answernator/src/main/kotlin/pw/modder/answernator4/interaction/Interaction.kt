@@ -46,6 +46,7 @@ suspend fun Kord.register(command: ChatInputCommand) {
         nameLocalizations?.putAll(nameLocs)
 
         defaultMemberPermissions = command.defaultMemberPermissions
+        dmPermission = command.dmPermission
 
         command.options.forEach { option(it, bName) }
     }
@@ -60,6 +61,7 @@ suspend fun Kord.registerUser(command: UserCommand) {
         nameLocalizations?.putAll(nameLocs)
 
         defaultMemberPermissions = command.defaultMemberPermissions
+        dmPermission = command.dmPermission
     }
 }
 
@@ -72,5 +74,6 @@ suspend fun Kord.registerMessage(command: MessageCommand) {
         nameLocalizations?.putAll(nameLocs)
 
         defaultMemberPermissions = command.defaultMemberPermissions
+        dmPermission = command.dmPermission
     }
 }

@@ -8,9 +8,10 @@ import pw.modder.answernator4.interaction.MessageCommand
 import pw.modder.answernator4.interaction.l
 
 class GetCommandIssuer : MessageCommand() {
-    override val name = "message.get_author"
+    override val name = "get_author"
     override val bundleName = "v4.get_author"
     override val defaultMemberPermissions = Permissions(Permission.ManageMessages)
+    override val dmPermission = false
 
     override suspend fun MessageCommandInteractionCreateEvent.execute() {
         val reply = interaction.deferEphemeralResponse()
@@ -22,18 +23,17 @@ class GetCommandIssuer : MessageCommand() {
             return
         }
 
-        val author = message.data.referencedMessage.value?.author
-        if (author == null) {
+        val interaction = message.interaction
+        if (interaction == null) {
             reply.respond {
                 content = bundle.l("command.get_author.result_no_reference")
-                    .format(message.data.author.id, message.data.author.username)
             }
             return
         }
 
         reply.respond {
             content = bundle.l("command.get_author.result")
-                .format(author.id, author.username)
+                .format(interaction.user.id, interaction.id, interaction.name, interaction.type)
         }
     }
 }

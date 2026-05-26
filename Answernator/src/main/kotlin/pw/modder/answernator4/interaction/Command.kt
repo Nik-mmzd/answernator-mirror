@@ -37,6 +37,7 @@ abstract class Command {
     abstract val name: String
     abstract val bundleName: String
     open val defaultMemberPermissions: Permissions? = null
+    open val dmPermission: Boolean? = null
 
     val InteractionCreateEvent.bundle: ResourceBundle
         get() {

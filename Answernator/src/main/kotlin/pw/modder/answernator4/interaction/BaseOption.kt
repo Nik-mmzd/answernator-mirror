@@ -134,3 +134,11 @@ fun userId(): Option<Snowflake> = BaseOption(
         Snowflake(option.value.toString())
     }
 )
+
+fun long(): Option<Long> = BaseOption(
+    type = ApplicationCommandOptionType.Integer,
+    valueExtractor = { option ->
+        checkNotNull(option) { "Option required but missing" }
+        option.value as Long
+    }
+)
