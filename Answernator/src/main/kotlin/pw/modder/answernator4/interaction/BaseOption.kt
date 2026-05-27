@@ -142,3 +142,11 @@ fun long(): Option<Long> = BaseOption(
         option.value as Long
     }
 )
+
+fun boolean(): Option<Boolean> = BaseOption(
+    type = ApplicationCommandOptionType.Boolean,
+    valueExtractor = { option ->
+        checkNotNull(option) { "Option required but missing" }
+        option.value as Boolean
+    }
+)

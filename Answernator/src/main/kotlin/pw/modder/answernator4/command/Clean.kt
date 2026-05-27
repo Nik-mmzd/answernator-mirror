@@ -16,10 +16,13 @@ import kotlinx.coroutines.flow.takeWhile
 import pw.modder.answernator.utils.extensions.kord.authorId
 import pw.modder.answernator4.interaction.ChatInputCommand
 import pw.modder.answernator4.interaction.Option
+import pw.modder.answernator4.interaction.default
 import pw.modder.answernator4.interaction.description
 import pw.modder.answernator4.interaction.getValue
 import pw.modder.answernator4.interaction.l
 import pw.modder.answernator4.interaction.long
+import pw.modder.answernator4.interaction.maxValue
+import pw.modder.answernator4.interaction.minValue
 import pw.modder.answernator4.interaction.optional
 import pw.modder.answernator4.interaction.provideDelegate
 import pw.modder.answernator4.interaction.string
@@ -37,7 +40,7 @@ class Clean : ChatInputCommand() {
     override val dmPermission = false
 
     val limit: Option<Long> by long().description("clean.limit")
-    val minutes: Option<Long?> by long().description("clean.minutes").optional()
+    val minutes: Option<Long?> by long().description("clean.minutes").minValue(1).maxValue(1440).optional()
     val user1: Option<Snowflake?> by userId().description("clean.user").optional()
     val user2: Option<Snowflake?> by userId().description("clean.user").optional()
     val user3: Option<Snowflake?> by userId().description("clean.user").optional()

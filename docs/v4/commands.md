@@ -105,7 +105,8 @@ You can then chain optional modifiers:
 
 | Modifier | What it does |
 |----------|--------------|
-| `.optional()` | Wraps the option type as nullable. `Option<T>` becomes `Option<T?>`. The user may omit the argument. |
+| `.optional()` | Wraps the option type as nullable. `Option<T>` becomes `Option<T?>`. The user may omit the argument; missing values come back as `null`. |
+| `.default(value)` | Makes the argument optional, but with a fallback. The user may omit it; missing values come back as `value`. Type stays `Option<T>`. Pick this when there's a sensible default — it's nicer at the call site than `.optional()` + manual `?:`. |
 | `.map { value, _ -> ... }` | Transforms the parsed value. Useful for converting a `String` into a domain type, parsing a duration, etc. |
 | `.choice(value, "locale.key", bundleName)` | Adds a Discord choice. Multiple `.choice(...)` calls accumulate. |
 | `.minValue(n)` / `.maxValue(n)` | Numeric range bounds. |

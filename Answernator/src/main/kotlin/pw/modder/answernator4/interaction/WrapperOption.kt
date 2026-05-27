@@ -82,6 +82,43 @@ private class OptionalOption<T : Any>(
 
 fun <T : Any> Option<T>.optional(): Option<T?> = OptionalOption(this as OptionImpl<T>)
 
+private class DefaultOption<T : Any>(
+    override val option: OptionImpl<T>,
+    private val defaultValue: T,
+) : WrapperOption<T, T>() {
+    override val required: Boolean
+        get() = false
+
+    override fun extractValue(data: OptionValue<*>?): T {
+        if (data == null) {
+            return defaultValue
+        }
+        return option.extractValue(data)
+    }
+
+    override fun buildSpec(builder: OptionsBuilder, bundleName: String) {
+        super.buildSpec(builder, bundleName)
+        builder.required = false
+    }
+
+    override fun wrap(option: OptionImpl<T>): OptionImpl<T> = DefaultOption(option, defaultValue)
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+        other as DefaultOption<*>
+        return option == other.option && defaultValue == other.defaultValue
+    }
+
+    override fun hashCode(): Int {
+        var result = option.hashCode()
+        result = 31 * result + defaultValue.hashCode()
+        return result
+    }
+}
+
+fun <T : Any> Option<T>.default(value: T): Option<T> = DefaultOption(this as OptionImpl<T>, value)
+
 private class TransformerOption<T, R>(
     override val option: OptionImpl<R>,
     private val transformer: (OptionValue<*>?, () -> R) -> T

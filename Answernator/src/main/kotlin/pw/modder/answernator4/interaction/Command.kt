@@ -11,7 +11,7 @@ import pw.modder.answernator4.interaction.button.ButtonField
 import pw.modder.answernator4.interaction.button.ButtonGroup
 import java.util.ResourceBundle
 
-private val SUPPORTED_LOCALES = mapOf(
+internal val SUPPORTED_LOCALES = mapOf(
     Locale("en-US") to java.util.Locale.ROOT,
     Locale("ru") to java.util.Locale("ru")
 )
