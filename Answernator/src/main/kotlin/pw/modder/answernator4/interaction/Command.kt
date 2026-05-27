@@ -2,6 +2,7 @@ package pw.modder.answernator4.interaction
 
 import dev.kord.common.Locale
 import dev.kord.common.entity.Permissions
+import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.core.event.interaction.InteractionCreateEvent
@@ -41,6 +42,19 @@ abstract class Command {
     abstract val bundleName: String
     open val defaultMemberPermissions: Permissions? = null
     open val dmPermission: Boolean? = null
+
+    /**
+     * If non-empty, the command is registered per-guild for each ID instead of globally.
+     * `dmPermission` is ignored for guild-scoped commands (Discord doesn't allow it there).
+     */
+    open val guildIds: List<Snowflake> = emptyList()
+
+    /**
+     * The command name as Discord stores it: the ROOT-locale value from [bundleName] for the [name] key,
+     * or [name] itself if the bundle has no such key. This is what comes back in `invokedCommandName`
+     * / `command.rootName`, so it's the right thing to key command-lookup maps by.
+     */
+    val effectiveName: String by lazy { getAllLocalizations(bundleName, name).first }
 
     /**
      * Optional. When set, the command's buttons can be rendered with `interaction.respondWithCommandButtons(this)`,

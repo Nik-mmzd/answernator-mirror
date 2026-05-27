@@ -62,7 +62,7 @@ dependencies {
 }
 
 application {
-    mainClass = "pw.modder.answernator.MainKt"
+    mainClass = "pw.modder.answernator4.MainKt"
 }
 
 java {

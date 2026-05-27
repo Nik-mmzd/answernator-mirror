@@ -2,20 +2,24 @@ package pw.modder.answernator4.command
 
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
+import dev.kord.common.entity.Snowflake
+import dev.kord.common.entity.TextInputStyle
+import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.event.interaction.MessageCommandInteractionCreateEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import pw.modder.answernator4.interaction.MessageCommand
-import pw.modder.answernator4.interaction.Option
-import pw.modder.answernator4.interaction.description
-import pw.modder.answernator4.interaction.getValue
 import pw.modder.answernator4.interaction.l
-import pw.modder.answernator4.interaction.optional
-import pw.modder.answernator4.interaction.provideDelegate
-import pw.modder.answernator4.interaction.string
-import java.util.UUID
+import pw.modder.answernator4.interaction.modal.Modal
+import pw.modder.answernator4.interaction.modal.SelectChoice
+import pw.modder.answernator4.interaction.modal.getValue
+import pw.modder.answernator4.interaction.modal.provideDelegate
+import pw.modder.answernator4.interaction.modal.radioGroup
+import pw.modder.answernator4.interaction.modal.showModal
+import pw.modder.answernator4.interaction.modal.textField
+import java.util.ResourceBundle
 import kotlin.time.Duration.Companion.days
-import kotlin.uuid.Uuid
+import kotlin.time.Duration.Companion.hours
 
 private val logger = KotlinLogging.logger {}
 class BanCommandIssuer : MessageCommand() {
@@ -25,38 +29,51 @@ class BanCommandIssuer : MessageCommand() {
     override val dmPermission = false
 
     override suspend fun MessageCommandInteractionCreateEvent.execute() {
-        val reply = interaction.deferEphemeralResponse()
         val message = interaction.getTargetOrNull()
         if (message == null) {
-            reply.respond {
+            interaction.respondEphemeral {
                 content = bundle.l("command.ban_author.no_message")
             }
             return
         }
 
-        val interaction = message.interaction
-        if (interaction == null) {
-            reply.respond {
+        val msgInteraction = message.interaction
+        if (msgInteraction == null) {
+            interaction.respondEphemeral {
                 content = bundle.l("command.ban_author.no_reference")
             }
             return
         }
 
-        val guild = message.data.guildId.value
+        val guild = message.data.guildId.value ?: interaction.data.member.value?.guildId
         if (guild == null) {
-            reply.respond {
+            interaction.respondEphemeral {
                 content = bundle.l("command.ban_author.no_guild")
             }
             return
         }
 
-        // TODO modal for duration and reason
+        val defaultReason = bundle.l("command.ban_author.ban_reason_default").format(msgInteraction.id, msgInteraction.name)
+        val modal = BanModal(bundle, msgInteraction.user.id, defaultReason)
+        val modalReply = interaction.showModal(modal)
+
+        if (modalReply == null) {
+            interaction.respondEphemeral {
+                content = bundle.l("command.ban_author.cancelled")
+            }
+            return
+        }
+        val reply = modalReply.interaction.deferEphemeralResponse()
+
+        val reason = modalReply[modal.reason]
+        val duration = modalReply[modal.duration].toIntOrNull()?.hours
 
         try {
-            interaction.kord.rest.guild.addGuildBan(guild, interaction.user.id) {
-                deleteMessageDuration = 1.days
-                reason = bundle.l("command.ban_author.ban_reason_default").format(interaction.id, interaction.name)
-            }
+            logger.info { "Banning user ${msgInteraction.user.id} from ${guild}, reason: $reason, cleanup: $duration" }
+//            msgInteraction.kord.rest.guild.addGuildBan(guild, msgInteraction.user.id) {
+//                deleteMessageDuration = duration
+//                this.reason = reason
+//            }
         } catch (e: Exception) {
             logger.warn(e) { "An error occurred while adding guild to ban" }
             reply.respond {
@@ -67,7 +84,26 @@ class BanCommandIssuer : MessageCommand() {
 
         reply.respond {
             content = bundle.l("command.ban_author.result")
-                .format(interaction.user.id, interaction.id, interaction.name, interaction.type)
+                .format(msgInteraction.user.id, msgInteraction.id, msgInteraction.name, msgInteraction.type)
         }
+    }
+
+    class BanModal(bundle: ResourceBundle, userId: Snowflake, defaultReason: String) : Modal(bundle.l("command.ban_author.modal.title").format(userId)) {
+        val reason by textField(
+            label = bundle.l("command.ban_author.modal.reason"),
+            style = TextInputStyle.Paragraph,
+            defaultValue = defaultReason,
+        )
+
+        val duration by radioGroup(
+            label = bundle.l("command.ban_author.modal.duration"),
+            choices = listOf(
+                SelectChoice(bundle.l("command.ban_author.modal.duration.1hour"), "1"),
+                SelectChoice(bundle.l("command.ban_author.modal.duration.6hours"), "6"),
+                SelectChoice(bundle.l("command.ban_author.modal.duration.12hours"), "12"),
+                SelectChoice(bundle.l("command.ban_author.modal.duration.24hours"), "24", default = true),
+                SelectChoice(bundle.l("command.ban_author.modal.duration.none"), "0"),
+            )
+        )
     }
 }

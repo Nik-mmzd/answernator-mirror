@@ -24,6 +24,7 @@ abstract class Command {
     abstract val bundleName: String
     open val defaultMemberPermissions: Permissions? = null
     open val dmPermission: Boolean? = null
+    open val guildIds: List<Snowflake> = emptyList()
 
     // Optional button support — see buttons.md
     open val buttons: ButtonGroup? = null
@@ -39,7 +40,8 @@ A few notes on the common bits:
 - **`name`** is what Discord sees and the user types. It also doubles as the lookup key in the global button handler (see [`buttons.md`](buttons.md)), so keep it unique across commands.
 - **`bundleName`** points at a resource bundle under `src/main/resources/locale/`. For a command with `bundleName = "v4.ban_author"`, the framework loads `locale/v4/ban_author.properties` for `en-US` and `locale/v4/ban_author_ru.properties` for `ru`.
 - **`defaultMemberPermissions`** maps to Discord's "this command is hidden unless the member has these permissions" feature. Set it to `Permissions(Permission.BanMembers)` for a ban command, etc.
-- **`dmPermission = false`** disables the command in DMs. Most moderation commands want this.
+- **`dmPermission = false`** disables the command in DMs. Most moderation commands want this. Note: ignored for guild-scoped commands (Discord doesn't allow that flag there).
+- **`guildIds`** controls scope. By default it's empty — the command is registered globally and propagates to every guild the bot is in (with up to an hour of Discord-side cache lag). Override with a non-empty list of `Snowflake`s and the command is registered per-guild instead, appearing instantly in those guilds only. Useful for testing in a dev server, or for commands that only make sense in specific communities.
 
 The `bundle` extension property is the bridge between an incoming interaction and the localized strings: inside `execute()`, `bundle.l("some.key")` gives you the user's locale-appropriate text. We'll see this used everywhere below.
 

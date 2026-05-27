@@ -34,45 +34,77 @@ suspend fun Kord.register(command: ChatInputCommand) {
     val bName = command.bundleName
 
     val (desc, descLocs) = getAllLocalizations(bName, "${command.name}.description")
+    val (nameValue, nameLocs) = getAllLocalizations(bName, command.name)
 
-    createGlobalChatInputCommand(command.name, desc) {
-        if (desc.isNotEmpty()) {
-            descriptionLocalizations?.putAll(descLocs)
+    if (command.guildIds.isEmpty()) {
+        createGlobalChatInputCommand(command.name, desc) {
+            if (desc.isNotEmpty()) {
+                descriptionLocalizations?.putAll(descLocs)
+            }
+            name = nameValue
+            nameLocalizations?.putAll(nameLocs)
+            defaultMemberPermissions = command.defaultMemberPermissions
+            dmPermission = command.dmPermission
+            command.options.forEach { option(it, bName) }
         }
+        return
+    }
 
-        val (nameValue, nameLocs) = getAllLocalizations(bName, command.name)
-        name = nameValue
-        nameLocalizations?.putAll(nameLocs)
-
-        defaultMemberPermissions = command.defaultMemberPermissions
-        dmPermission = command.dmPermission
-
-        command.options.forEach { option(it, bName) }
+    command.guildIds.forEach { guildId ->
+        createGuildChatInputCommand(guildId, command.name, desc) {
+            if (desc.isNotEmpty()) {
+                descriptionLocalizations?.putAll(descLocs)
+            }
+            name = nameValue
+            nameLocalizations?.putAll(nameLocs)
+            defaultMemberPermissions = command.defaultMemberPermissions
+            command.options.forEach { option(it, bName) }
+        }
     }
 }
 
 suspend fun Kord.registerUser(command: UserCommand) {
     val bName = command.bundleName
+    val (nameValue, nameLocs) = getAllLocalizations(bName, command.name)
 
-    createGlobalUserCommand(command.name) {
-        val (nameValue, nameLocs) = getAllLocalizations(bName, command.name)
-        name = nameValue
-        nameLocalizations?.putAll(nameLocs)
+    if (command.guildIds.isEmpty()) {
+        createGlobalUserCommand(command.name) {
+            name = nameValue
+            nameLocalizations?.putAll(nameLocs)
+            defaultMemberPermissions = command.defaultMemberPermissions
+            dmPermission = command.dmPermission
+        }
+        return
+    }
 
-        defaultMemberPermissions = command.defaultMemberPermissions
-        dmPermission = command.dmPermission
+    command.guildIds.forEach { guildId ->
+        createGuildUserCommand(guildId, command.name) {
+            name = nameValue
+            nameLocalizations?.putAll(nameLocs)
+            defaultMemberPermissions = command.defaultMemberPermissions
+        }
     }
 }
 
 suspend fun Kord.registerMessage(command: MessageCommand) {
     val bName = command.bundleName
+    val (nameValue, nameLocs) = getAllLocalizations(bName, command.name)
 
-    createGlobalMessageCommand(command.name) {
-        val (nameValue, nameLocs) = getAllLocalizations(bName, command.name)
-        name = nameValue
-        nameLocalizations?.putAll(nameLocs)
+    if (command.guildIds.isEmpty()) {
+        createGlobalMessageCommand(command.name) {
+            name = nameValue
+            nameLocalizations?.putAll(nameLocs)
+            defaultMemberPermissions = command.defaultMemberPermissions
+            dmPermission = command.dmPermission
+        }
+        return
+    }
 
-        defaultMemberPermissions = command.defaultMemberPermissions
-        dmPermission = command.dmPermission
+    command.guildIds.forEach { guildId ->
+        createGuildMessageCommand(guildId, command.name) {
+            name = nameValue
+            nameLocalizations?.putAll(nameLocs)
+            defaultMemberPermissions = command.defaultMemberPermissions
+        }
     }
 }

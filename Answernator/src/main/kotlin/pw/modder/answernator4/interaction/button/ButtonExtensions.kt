@@ -76,7 +76,7 @@ suspend fun ActionInteractionBehavior.respondWithCommandButtons(
 ) {
     val group = command.buttons
         ?: error("Command '${command.name}' has no buttons declared")
-    val baseId = "cmd:${command.name}"
+    val baseId = "cmd:${command.effectiveName}"
 
     if (ephemeral) {
         respondEphemeral { renderButtons(group, baseId) }

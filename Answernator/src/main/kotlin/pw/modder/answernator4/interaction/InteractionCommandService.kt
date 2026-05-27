@@ -3,6 +3,7 @@ package pw.modder.answernator4.interaction
 import dev.kord.core.Kord
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
+import dev.kord.core.event.interaction.InteractionCreateEvent
 import dev.kord.core.event.interaction.MessageCommandInteractionCreateEvent
 import dev.kord.core.event.interaction.UserCommandInteractionCreateEvent
 import dev.kord.core.on
@@ -11,9 +12,9 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 private val logger = KotlinLogging.logger {}
 
 suspend fun Kord.interactionCommandService() {
-    val chatInput = InteractionCommandList.commands.filterIsInstance<ChatInputCommand>().associateBy { it.name }
-    val user = InteractionCommandList.commands.filterIsInstance<UserCommand>().associateBy { it.name }
-    val message = InteractionCommandList.commands.filterIsInstance<MessageCommand>().associateBy { it.name }
+    val chatInput = InteractionCommandList.commands.filterIsInstance<ChatInputCommand>().associateBy { it.effectiveName }
+    val user = InteractionCommandList.commands.filterIsInstance<UserCommand>().associateBy { it.effectiveName }
+    val message = InteractionCommandList.commands.filterIsInstance<MessageCommand>().associateBy { it.effectiveName }
 
     InteractionCommandList.commands.forEach { command ->
         try {
@@ -24,7 +25,12 @@ suspend fun Kord.interactionCommandService() {
         }
     }
 
+    on<InteractionCreateEvent> {
+        logger.debug { "Event ${this::class.simpleName} Interaction ${interaction::class.simpleName} created: $interaction" }
+    }
+
     on<ChatInputCommandInteractionCreateEvent> {
+        logger.debug { "Got ChatInputCommandInteractionCreateEvent with command ${interaction.invokedCommandName} (${interaction.command.rootName})" }
         val command = chatInput[interaction.command.rootName] ?: return@on
         try {
             with(command) { execute() }
@@ -34,6 +40,7 @@ suspend fun Kord.interactionCommandService() {
     }
 
     on<UserCommandInteractionCreateEvent> {
+        logger.debug { "Got UserCommandInteractionCreateEvent with command ${interaction.invokedCommandName}" }
         val command = user[interaction.invokedCommandName] ?: return@on
         try {
             with(command) { execute() }
@@ -43,6 +50,7 @@ suspend fun Kord.interactionCommandService() {
     }
 
     on<MessageCommandInteractionCreateEvent> {
+        logger.debug { "Got MessageCommandInteractionCreateEvent with command ${interaction.invokedCommandName}" }
         val command = message[interaction.invokedCommandName] ?: return@on
         try {
             with(command) { execute() }
