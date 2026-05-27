@@ -1,6 +1,7 @@
 package pw.modder.answernator4.interaction
 
 import dev.kord.core.Kord
+import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.core.event.interaction.MessageCommandInteractionCreateEvent
 import dev.kord.core.event.interaction.UserCommandInteractionCreateEvent
@@ -47,6 +48,22 @@ suspend fun Kord.interactionCommandService() {
             with(command) { execute() }
         } catch (e: Exception) {
             logger.error(e) { "Error in message command '${command.name}'" }
+        }
+    }
+
+    on<ButtonInteractionCreateEvent> {
+        val parts = interaction.componentId.split(":", limit = 3)
+        if (parts.size != 3 || parts[0] != "cmd") return@on
+        val commandName = parts[1]
+        val buttonId = parts[2]
+
+        val command = chatInput[commandName] ?: user[commandName] ?: message[commandName] ?: return@on
+        val button = command.buttons?.buttons?.firstOrNull { it.id == buttonId } ?: return@on
+
+        try {
+            with(command) { onButtonClick(button) }
+        } catch (e: Exception) {
+            logger.error(e) { "Error in command '$commandName' button click '$buttonId'" }
         }
     }
 }

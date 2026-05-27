@@ -14,6 +14,7 @@ import dev.kord.rest.builder.component.section
 import dev.kord.rest.builder.message.MessageBuilder
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.withTimeoutOrNull
+import pw.modder.answernator4.interaction.Command
 import java.util.UUID
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
@@ -57,6 +58,30 @@ suspend fun ActionInteractionBehavior.respondWithButtons(
         withTimeoutOrNull(waitFor) { stop.await() }
     } finally {
         job.cancel()
+    }
+}
+
+/**
+ * Renders the [command]'s [Command.buttons] as the interaction response without waiting for clicks.
+ * Click events are routed to [Command.onButtonClick] by the global listener in `interactionCommandService`.
+ *
+ * Use this when the button view's lifetime should be independent of the command coroutine —
+ * e.g. a refreshable bot-status panel.
+ *
+ * @throws IllegalStateException if [command] doesn't declare [Command.buttons].
+ */
+suspend fun ActionInteractionBehavior.respondWithCommandButtons(
+    command: Command,
+    ephemeral: Boolean = true,
+) {
+    val group = command.buttons
+        ?: error("Command '${command.name}' has no buttons declared")
+    val baseId = "cmd:${command.name}"
+
+    if (ephemeral) {
+        respondEphemeral { renderButtons(group, baseId) }
+    } else {
+        respondPublic { renderButtons(group, baseId) }
     }
 }
 

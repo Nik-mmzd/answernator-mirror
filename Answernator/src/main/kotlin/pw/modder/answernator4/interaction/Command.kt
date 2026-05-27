@@ -3,8 +3,11 @@ package pw.modder.answernator4.interaction
 import dev.kord.common.Locale
 import dev.kord.common.entity.Permissions
 import dev.kord.core.Kord
+import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.core.event.interaction.InteractionCreateEvent
 import pw.modder.answernator.utils.locale.UTF8Control
+import pw.modder.answernator4.interaction.button.ButtonField
+import pw.modder.answernator4.interaction.button.ButtonGroup
 import java.util.ResourceBundle
 
 private val SUPPORTED_LOCALES = mapOf(
@@ -38,6 +41,18 @@ abstract class Command {
     abstract val bundleName: String
     open val defaultMemberPermissions: Permissions? = null
     open val dmPermission: Boolean? = null
+
+    /**
+     * Optional. When set, the command's buttons can be rendered with `interaction.respondWithCommandButtons(this)`,
+     * and clicks are routed to [onButtonClick] by the global listener in [interactionCommandService].
+     */
+    open val buttons: ButtonGroup? = null
+
+    /**
+     * Called by [interactionCommandService] when a button declared in [buttons] is clicked.
+     * Default implementation is a no-op.
+     */
+    open suspend fun ButtonInteractionCreateEvent.onButtonClick(button: ButtonField) {}
 
     val InteractionCreateEvent.bundle: ResourceBundle
         get() {

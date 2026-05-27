@@ -5,8 +5,6 @@ import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import kotlin.properties.ReadOnlyProperty
 
 abstract class ChatInputCommand : Command() {
-    open val description: LocalizableString = LocalizableString.EMPTY
-
     fun <T> ChatInputCommandInteractionCreateEvent.option(option: Option<T>): ReadOnlyProperty<Any?, T> {
         val resolvedName = getAllLocalizations(bundleName, option.name.key).first
         return ReadOnlyProperty { _, _ ->

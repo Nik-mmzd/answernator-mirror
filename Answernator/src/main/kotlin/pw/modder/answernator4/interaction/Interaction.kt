@@ -32,9 +32,8 @@ operator fun <T> Option<T>.getValue(thisRef: ChatInputCommand, property: KProper
 
 suspend fun Kord.register(command: ChatInputCommand) {
     val bName = command.bundleName
-    val dKey = command.description.key
 
-    val (desc, descLocs) = getAllLocalizations(bName, dKey)
+    val (desc, descLocs) = getAllLocalizations(bName, "${command.name}.description")
 
     createGlobalChatInputCommand(command.name, desc) {
         if (desc.isNotEmpty()) {
