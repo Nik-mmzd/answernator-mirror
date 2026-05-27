@@ -43,11 +43,24 @@ A few notes on the common bits:
 
 The `bundle` extension property is the bridge between an incoming interaction and the localized strings: inside `execute()`, `bundle.l("some.key")` gives you the user's locale-appropriate text. We'll see this used everywhere below.
 
+### Discord-side limits
+
+Discord enforces a few hard limits on application commands. The framework doesn't validate these for you — they show up as 400-level errors at registration time — so it's worth keeping them in mind when picking names and writing copy:
+
+| Limit | Value | Where it applies |
+|-------|-------|------------------|
+| Command name length | 1..32 characters | All three command types |
+| Description length | 1..100 characters | `ChatInputCommand` only |
+| Description for context-menu commands | must be empty | `UserCommand`, `MessageCommand` |
+| Options per command | at most 25 | `ChatInputCommand` only |
+
+In practice this means: chat-input commands always need a non-empty `${name}.description` key in their bundle, while user/message commands don't have a description at all — the framework's `registerUser` / `registerMessage` deliberately don't pass one through.
+
 ---
 
 ## Slash commands (`ChatInputCommand`)
 
-Slash commands are the workhorse type. They have a name, an optional description, and zero or more **options** — the typed arguments the user fills in. Here's the smallest useful slash command:
+Slash commands are the workhorse type. They have a name, a (required) description, and up to 25 **options** — the typed arguments the user fills in. Here's the smallest useful slash command:
 
 ```kotlin
 class BanInfo : ChatInputCommand() {
@@ -152,7 +165,7 @@ A couple of practical notes from this example:
 
 ## User and Message commands
 
-User and message commands are simpler — they have no options. The user picks the command from a context menu, and the framework gives you the target user or message.
+User and message commands are simpler — they have no options and no description (Discord forbids one for context-menu commands; the framework registers them with an empty description automatically). The user picks the command from a context menu, and the framework gives you the target user or message.
 
 ```kotlin
 class GetCommandIssuer : MessageCommand() {
