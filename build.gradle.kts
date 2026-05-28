@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.plugin.serialization) apply false
     alias(libs.plugins.git.version) apply false
     alias(libs.plugins.shadow) apply false
+    alias(libs.plugins.buildconfig) apply false
 }
 
 allprojects {

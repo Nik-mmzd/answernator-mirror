@@ -1,6 +1,7 @@
 package pw.modder.answernator4.interaction
 
 import dev.kord.common.Locale
+import dev.kord.common.asJavaLocale
 import dev.kord.common.entity.ApplicationCommandType
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
@@ -12,24 +13,21 @@ import pw.modder.answernator4.interaction.button.ButtonField
 import pw.modder.answernator4.interaction.button.ButtonGroup
 import java.util.ResourceBundle
 
-internal val SUPPORTED_LOCALES = mapOf(
-    Locale("en-US") to java.util.Locale.ROOT,
-    Locale("ru") to java.util.Locale("ru")
-)
+private val DEFAULT_LOCALE = Locale("en-US")
+
+internal val SUPPORTED_LOCALES: Set<Locale> = linkedSetOf(DEFAULT_LOCALE, Locale("ru"))
 
 internal fun getAllLocalizations(bundleName: String, key: String): Pair<String, Map<Locale, String>> {
     val translations = mutableMapOf<Locale, String>()
     var name = key
 
-    SUPPORTED_LOCALES.forEach { (kordLocale, javaLocale) ->
+    SUPPORTED_LOCALES.forEach { kordLocale ->
         try {
-            val bundle = ResourceBundle.getBundle("locale.$bundleName", javaLocale, UTF8Control)
+            val bundle = ResourceBundle.getBundle("locale.$bundleName", kordLocale.asJavaLocale(), UTF8Control)
             if (bundle.containsKey(key)) {
                 val value = bundle.getString(key)
                 translations[kordLocale] = value
-                if (javaLocale == java.util.Locale.ROOT) {
-                    name = value
-                }
+                if (kordLocale == DEFAULT_LOCALE) name = value
             }
         } catch (_: Exception) {}
     }
@@ -70,12 +68,24 @@ abstract class Command {
      */
     open suspend fun ButtonInteractionCreateEvent.onButtonClick(button: ButtonField) {}
 
+    /**
+     * Provides localization bundle for **member** locale
+     */
     val InteractionCreateEvent.bundle: ResourceBundle
         get() {
-            val discordLocale = interaction.locale ?: Locale("en-US")
-            val javaLocale = SUPPORTED_LOCALES[discordLocale] ?: java.util.Locale.ROOT
-            return ResourceBundle.getBundle("locale.$bundleName", javaLocale, UTF8Control)
+            val discordLocale = interaction.locale ?: DEFAULT_LOCALE
+            return ResourceBundle.getBundle("locale.$bundleName", discordLocale.asJavaLocale(), UTF8Control)
         }
+
+    /**
+     * Provides localization bundle for **guild** locale
+     */
+    val InteractionCreateEvent.gbundle: ResourceBundle
+        get() {
+            val discordLocale = interaction.guildLocale ?: interaction.locale ?: DEFAULT_LOCALE
+            return ResourceBundle.getBundle("locale.$bundleName", discordLocale.asJavaLocale(), UTF8Control)
+        }
+
 
     abstract suspend fun register(kord: Kord)
 }

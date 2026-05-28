@@ -53,7 +53,7 @@ class BanCommandIssuer : MessageCommand() {
             return
         }
 
-        val defaultReason = bundle.l("command.ban_author.ban_reason_default").format(msgInteraction.id, msgInteraction.name)
+        val defaultReason = gbundle.l("command.ban_author.ban_reason_default").format(msgInteraction.id, msgInteraction.name)
         val modal = BanModal(bundle, msgInteraction.user.id, defaultReason)
         val modalReply = interaction.showModal(modal)
 

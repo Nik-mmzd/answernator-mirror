@@ -7,9 +7,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import pw.modder.answernator4.interaction.ChatInputCommand
 import pw.modder.answernator4.interaction.Option
 import pw.modder.answernator4.interaction.description
-import pw.modder.answernator4.interaction.getValue
 import pw.modder.answernator4.interaction.l
-import pw.modder.answernator4.interaction.provideDelegate
 import pw.modder.answernator4.interaction.userId
 
 private val logger = KotlinLogging.logger {}
@@ -22,6 +20,7 @@ class BanInfo : ChatInputCommand() {
 
     override suspend fun ChatInputCommandInteractionCreateEvent.execute() {
         val reply = interaction.deferPublicResponse()
+        val bundle = gbundle
         val target by option(target)
 
         val guildId = interaction.data.guildId.value

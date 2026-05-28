@@ -18,13 +18,11 @@ import pw.modder.answernator4.interaction.ChatInputCommand
 import pw.modder.answernator4.interaction.Option
 import pw.modder.answernator4.interaction.default
 import pw.modder.answernator4.interaction.description
-import pw.modder.answernator4.interaction.getValue
 import pw.modder.answernator4.interaction.l
 import pw.modder.answernator4.interaction.long
 import pw.modder.answernator4.interaction.maxValue
 import pw.modder.answernator4.interaction.minValue
 import pw.modder.answernator4.interaction.optional
-import pw.modder.answernator4.interaction.provideDelegate
 import pw.modder.answernator4.interaction.string
 import pw.modder.answernator4.interaction.userId
 import kotlin.time.Clock

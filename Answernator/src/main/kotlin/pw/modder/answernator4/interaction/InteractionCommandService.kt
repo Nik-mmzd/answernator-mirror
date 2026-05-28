@@ -3,6 +3,7 @@ package pw.modder.answernator4.interaction
 import dev.kord.common.entity.ApplicationCommandType
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
+import pw.modder.answernator4.Env
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.core.event.interaction.InteractionCreateEvent
@@ -49,14 +50,29 @@ suspend fun Kord.interactionCommandService() {
         deleteStaleGuildCommands(guildId, guildDesired)
     }
 
+    val cache = CommandRegistryCache(Env.COMMAND_HASH_CACHE)
+    cache.load()
+
     InteractionCommandList.commands.forEach { command ->
+        val cacheKey = "${command.effectiveName}:${command.discordType.value}"
+        val hash = try { command.specHash() } catch (e: Exception) {
+            logger.warn(e) { "Failed to compute spec hash for '${command.name}', will re-register" }
+            null
+        }
+        if (hash != null && cache.isUnchanged(cacheKey, hash)) {
+            logger.debug { "Skipping unchanged command: ${command.name}" }
+            return@forEach
+        }
         try {
             command.register(this)
+            if (hash != null) cache.update(cacheKey, hash)
             logger.info { "Registered interaction command: ${command.name}" }
         } catch (e: Exception) {
             logger.error(e) { "Failed to register interaction command: ${command.name}" }
         }
     }
+
+    cache.save()
 
     on<InteractionCreateEvent> {
         logger.debug { "Event ${this::class.simpleName} Interaction ${interaction::class.simpleName} created: $interaction" }

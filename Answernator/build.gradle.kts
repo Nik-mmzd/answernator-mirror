@@ -1,10 +1,9 @@
-import org.jetbrains.kotlin.gradle.targets.js.npm.fromSrcPackageJson
-
 plugins {
-    id(libs.plugins.shadow.get().pluginId)
+    alias(libs.plugins.shadow)
     `maven-publish`
     `version-catalog`
     application
+    alias(libs.plugins.buildconfig)
 }
 
 val gitVersion: groovy.lang.Closure<String> by extra
@@ -70,30 +69,19 @@ java {
 }
 
 tasks {
-    val depsFile = layout.buildDirectory.file("dependencies.txt")
-
-    val createDependenciesFile by registering {
-        doLast {
-            depsFile.get().asFile.printWriter().use { pw ->
-                pw.appendLine("${project.group}:${project.name}:${project.version}")
-                configurations.runtimeClasspath.get().resolvedConfiguration.resolvedArtifacts.forEach {
-                    pw.appendLine(it.moduleVersion.toString())
-                }
-            }
-        }
-    }
-
-    jar {
-        dependsOn(createDependenciesFile)
-        from(depsFile)
-    }
-
-    shadowJar {
-        dependsOn(createDependenciesFile)
-        from(depsFile)
-    }
-
     test {
         failOnNoDiscoveredTests = false
     }
+}
+
+buildConfig {
+    className("BuildConfig")
+    packageName("pw.modder.answernator4")
+
+    buildConfigField("APP_VERSION", project.version.toString())
+    buildConfigField("APP_NAME", project.name)
+    buildConfigField("APP_CREATOR_ID", providers.gradleProperty("answernator.author.id"))
+    buildConfigField("APP_SOURCE_URL", providers.gradleProperty("answernator.url.source"))
+    buildConfigField("APP_ISSUES_URL", providers.gradleProperty("answernator.url.issues"))
+    buildConfigField("KORD_VERSION", libs.versions.kord)
 }

@@ -21,14 +21,6 @@ fun ChatInputCreateBuilder.option(option: Option<*>, bundleName: String) {
     }
 }
 
-operator fun <T> Option<T>.provideDelegate(thisRef: ChatInputCommand, property: KProperty<*>): Option<T> {
-    val impl = this as OptionImpl<T>
-    val named = if (impl.name == LocalizableString.EMPTY) impl.name(property.name) as OptionImpl<T> else impl
-    thisRef.registerOption(named as OptionImpl<*>)
-    return named
-}
-
-operator fun <T> Option<T>.getValue(thisRef: ChatInputCommand, property: KProperty<*>): Option<T> = this
 
 suspend fun Kord.register(command: ChatInputCommand) {
     val bName = command.bundleName
