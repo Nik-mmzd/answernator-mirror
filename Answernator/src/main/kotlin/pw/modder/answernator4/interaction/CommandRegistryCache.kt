@@ -2,17 +2,23 @@ package pw.modder.answernator4.interaction
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
+import java.nio.file.LinkOption
+import java.nio.file.Paths
 import java.util.Properties
+import kotlin.io.path.bufferedReader
+import kotlin.io.path.bufferedWriter
+import kotlin.io.path.isRegularFile
+import kotlin.io.path.reader
 
 internal class CommandRegistryCache(path: String) {
-    private val file = File(path)
+    private val path = Paths.get(path)
     private val props = Properties()
     private val logger = KotlinLogging.logger {}
 
     fun load() {
-        if (!file.exists()) return
+        if (!path.isRegularFile()) return
         try {
-            file.bufferedReader().use { props.load(it) }
+            path.bufferedReader(Charsets.UTF_8).use { props.load(it) }
             logger.debug { "Loaded command registry cache (${props.size} entries)" }
         } catch (e: Exception) {
             logger.warn(e) { "Failed to load command registry cache, all commands will be re-registered" }
@@ -28,7 +34,7 @@ internal class CommandRegistryCache(path: String) {
 
     fun save() {
         try {
-            file.bufferedWriter().use { props.store(it, null) }
+            path.bufferedWriter(Charsets.UTF_8).use { props.store(it, null) }
         } catch (e: Exception) {
             logger.warn(e) { "Failed to save command registry cache" }
         }

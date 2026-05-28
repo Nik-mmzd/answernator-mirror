@@ -58,6 +58,8 @@ dependencies {
     implementation(libs.bundles.sentry.kotlin)
     runtimeOnly(libs.h2)
     runtimeOnly(libs.logback.classic)
+
+    testImplementation(libs.kotlin.test)
 }
 
 application {
@@ -70,6 +72,7 @@ java {
 
 tasks {
     test {
+        useJUnitPlatform()
         failOnNoDiscoveredTests = false
     }
 }
