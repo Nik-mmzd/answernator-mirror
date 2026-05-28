@@ -4,6 +4,7 @@ import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.DiscordPartialEmoji
 import dev.kord.common.entity.MessageFlag
 import dev.kord.core.behavior.interaction.respondEphemeral
+import dev.kord.core.behavior.interaction.respondPublic
 import dev.kord.core.behavior.interaction.response.edit
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
@@ -25,6 +26,7 @@ import pw.modder.answernator4.interaction.l
 import pw.modder.answernator4.interaction.maxLength
 import pw.modder.answernator4.interaction.name
 import pw.modder.answernator4.interaction.string
+import java.util.ResourceBundle
 
 private const val CUSTOM_ID_PREFIX_LEN = "cmd:dice:reroll:".length
 private const val MAX_STATE_LEN = 100 - CUSTOM_ID_PREFIX_LEN
@@ -36,11 +38,23 @@ class Dice : ChatInputCommand() {
 
     val dices: Option<String> by string().name("dice.dices").description("dice.dices.description").maxLength(80).default("1d6")
     val public: Option<Boolean> by boolean().name("dice.public").description("dice.public.description").default(false)
+    val help: Option<Boolean> by boolean().name("dice.help").description("dice.help.description").default(false)
 
     override suspend fun ChatInputCommandInteractionCreateEvent.execute() {
         val dices by option(dices)
         val isPublic by option(public)
+        val isHelp by option(help)
         val texts = if (isPublic) gbundle else bundle
+
+        if (isHelp) {
+            val helpText = texts.l("command.dice.help")
+            if (isPublic) {
+                interaction.respondPublic { content = helpText }
+            } else {
+                interaction.respondEphemeral { content = helpText }
+            }
+            return
+        }
 
         val expression = try {
             DiceExpression.parse(dices)
@@ -63,7 +77,7 @@ class Dice : ChatInputCommand() {
             this@Dice,
             ephemeral = !isPublic,
             state = state,
-            content = renderRolls(expression),
+            content = renderRolls(expression, texts),
         )
     }
 
@@ -75,6 +89,7 @@ class Dice : ChatInputCommand() {
             return
         }
         val isEphemeral = interaction.message.flags?.contains(MessageFlag.Ephemeral) == true
+        val bundle = if (isEphemeral) bundle else gbundle
         val response = if (isEphemeral) {
             interaction.deferEphemeralMessageUpdate()
         } else {
@@ -85,16 +100,17 @@ class Dice : ChatInputCommand() {
                 this@Dice.buttons,
                 baseId = "cmd:${this@Dice.effectiveName}",
                 state = state,
-                contentOverride = renderRolls(expression),
+                contentOverride = renderRolls(expression, bundle),
             )
         }
     }
 
-    private fun renderRolls(expression: DiceExpression): String = buildString {
+    private fun renderRolls(expression: DiceExpression, bundle: ResourceBundle): String = buildString {
         val results = expression.roll()
+        val rollingTemplate = bundle.l("command.dice.rolling")
         expression.sets.forEachIndexed { setIndex, set ->
             if (setIndex > 0) appendLine()
-            append("**").append(set).append("**").appendLine()
+            append(rollingTemplate.format(set)).appendLine()
             results[setIndex].forEach { tryResult ->
                 tryResult.values.joinTo(this, separator = " ")
                 append(" (**").append(tryResult.total).append("**)").appendLine()
