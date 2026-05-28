@@ -1,6 +1,7 @@
 package pw.modder.answernator4.interaction
 
 import dev.kord.common.Locale
+import dev.kord.common.entity.ApplicationCommandType
 import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
@@ -40,6 +41,7 @@ internal fun ResourceBundle.l(key: String): String = if (containsKey(key)) getSt
 abstract class Command {
     abstract val name: String
     abstract val bundleName: String
+    abstract val discordType: ApplicationCommandType
     open val defaultMemberPermissions: Permissions? = null
     open val dmPermission: Boolean? = null
 

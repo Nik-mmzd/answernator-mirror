@@ -1,10 +1,12 @@
 package pw.modder.answernator4.interaction
 
+import dev.kord.common.entity.ApplicationCommandType
 import dev.kord.core.Kord
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import kotlin.properties.ReadOnlyProperty
 
 abstract class ChatInputCommand : Command() {
+    override val discordType = ApplicationCommandType.ChatInput
     fun <T> ChatInputCommandInteractionCreateEvent.option(option: Option<T>): ReadOnlyProperty<Any?, T> {
         val resolvedName = getAllLocalizations(bundleName, option.name.key).first
         return ReadOnlyProperty { _, _ ->

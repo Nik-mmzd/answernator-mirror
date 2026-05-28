@@ -200,7 +200,9 @@ Commands are discovered through Java's `ServiceLoader`, which means:
 2. The fully qualified class name must appear in `META-INF/services/pw.modder.answernator4.interaction.Command`, one per line.
 3. The compiled JAR must end up in the `./commands/` directory next to the bot's working directory. This is the same directory the legacy plugin system uses — both systems coexist.
 
-At startup, `InteractionCommandList.load()` reads all JARs from `./commands/`, instantiates every command via `ServiceLoader`, and then `interactionCommandService()` in `main.kt` registers each one with Discord and wires up event dispatch.
+At startup, `InteractionCommandList.load()` reads all JARs from `./commands/`, instantiates every command via `ServiceLoader`, and then `interactionCommandService()` in `main.kt` syncs the command list with Discord and wires up event dispatch.
+
+The sync is bidirectional: commands present in the local list but missing from Discord are created; commands registered in Discord that are no longer in the local list are deleted. This means removing a command class (or its entry from the services file) and restarting the bot is sufficient to un-register it from Discord — no manual API calls needed.
 
 For commands inside the main `Answernator` module, the services file lives at `Answernator/src/main/resources/META-INF/services/pw.modder.answernator4.interaction.Command`. Add your new command's FQCN to that file when you create it.
 

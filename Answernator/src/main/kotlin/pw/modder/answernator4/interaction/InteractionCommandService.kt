@@ -1,5 +1,7 @@
 package pw.modder.answernator4.interaction
 
+import dev.kord.common.entity.ApplicationCommandType
+import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
@@ -11,10 +13,41 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
+private fun List<Command>.toDesiredSet(): Set<Pair<String, ApplicationCommandType>> =
+    map { it.effectiveName to it.discordType }.toSet()
+
+private suspend fun Kord.deleteStaleGlobalCommands(desired: Set<Pair<String, ApplicationCommandType>>) {
+    getGlobalApplicationCommands().collect { existing ->
+        val type = existing.type
+        if (type !is ApplicationCommandType.Unknown && (existing.name to type) !in desired) {
+            logger.info { "Deleting stale global command: ${existing.name} (${existing.type})" }
+            existing.delete()
+        }
+    }
+}
+
+private suspend fun Kord.deleteStaleGuildCommands(guildId: Snowflake, desired: Set<Pair<String, ApplicationCommandType>>) {
+    getGuildApplicationCommands(guildId).collect { existing ->
+        val type = existing.type
+        if (type !is ApplicationCommandType.Unknown && (existing.name to type) !in desired) {
+            logger.info { "Deleting stale guild command in $guildId: ${existing.name} (${existing.type})" }
+            existing.delete()
+        }
+    }
+}
+
 suspend fun Kord.interactionCommandService() {
     val chatInput = InteractionCommandList.commands.filterIsInstance<ChatInputCommand>().associateBy { it.effectiveName }
     val user = InteractionCommandList.commands.filterIsInstance<UserCommand>().associateBy { it.effectiveName }
     val message = InteractionCommandList.commands.filterIsInstance<MessageCommand>().associateBy { it.effectiveName }
+
+    val globalDesired = InteractionCommandList.commands.filter { it.guildIds.isEmpty() }.toDesiredSet()
+    deleteStaleGlobalCommands(globalDesired)
+
+    InteractionCommandList.commands.flatMap { it.guildIds }.toSet().forEach { guildId ->
+        val guildDesired = InteractionCommandList.commands.filter { guildId in it.guildIds }.toDesiredSet()
+        deleteStaleGuildCommands(guildId, guildDesired)
+    }
 
     InteractionCommandList.commands.forEach { command ->
         try {
