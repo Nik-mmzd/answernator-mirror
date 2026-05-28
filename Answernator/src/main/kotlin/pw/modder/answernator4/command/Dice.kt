@@ -34,7 +34,7 @@ private const val MAX_STATE_LEN = 100 - CUSTOM_ID_PREFIX_LEN
 class Dice : ChatInputCommand() {
     override val name = "dice"
     override val bundleName = "v4.dice"
-    override val buttons = DiceRerollButtons()
+    override val buttons = Buttons()
 
     val dices: Option<String> by string().name("dice.dices").description("dice.dices.description").maxLength(80).default("1d6")
     val public: Option<Boolean> by boolean().name("dice.public").description("dice.public.description").default(false)
@@ -117,11 +117,11 @@ class Dice : ChatInputCommand() {
             }
         }
     }.trimEnd()
-}
 
-class DiceRerollButtons : ButtonGroup() {
-    val reroll by button(
-        style = ButtonStyle.Secondary,
-        emoji = DiscordPartialEmoji(name = "🎲"),
-    )
+    class Buttons : ButtonGroup() {
+        val reroll by button(
+            style = ButtonStyle.Secondary,
+            emoji = DiscordPartialEmoji(name = "🎲"),
+        )
+    }
 }
