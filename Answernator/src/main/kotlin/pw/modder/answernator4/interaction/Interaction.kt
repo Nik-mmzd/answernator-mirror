@@ -33,16 +33,13 @@ operator fun <T> Option<T>.getValue(thisRef: ChatInputCommand, property: KProper
 suspend fun Kord.register(command: ChatInputCommand) {
     val bName = command.bundleName
 
-    val (desc, descLocs) = getAllLocalizations(bName, "${command.name}.description")
     val (nameValue, nameLocs) = getAllLocalizations(bName, command.name)
+    val (desc, descLocs) = getAllLocalizations(bName, "${command.name}.description")
 
     if (command.guildIds.isEmpty()) {
-        createGlobalChatInputCommand(command.name, desc) {
-            if (desc.isNotEmpty()) {
-                descriptionLocalizations?.putAll(descLocs)
-            }
-            name = nameValue
-            nameLocalizations?.putAll(nameLocs)
+        createGlobalChatInputCommand(nameValue, desc) {
+            nameLocalizations = nameLocs.toMutableMap()
+            descriptionLocalizations = descLocs.toMutableMap()
             defaultMemberPermissions = command.defaultMemberPermissions
             dmPermission = command.dmPermission
             command.options.forEach { option(it, bName) }
@@ -51,12 +48,9 @@ suspend fun Kord.register(command: ChatInputCommand) {
     }
 
     command.guildIds.forEach { guildId ->
-        createGuildChatInputCommand(guildId, command.name, desc) {
-            if (desc.isNotEmpty()) {
-                descriptionLocalizations?.putAll(descLocs)
-            }
-            name = nameValue
-            nameLocalizations?.putAll(nameLocs)
+        createGuildChatInputCommand(guildId, nameValue, desc) {
+            nameLocalizations = nameLocs.toMutableMap()
+            descriptionLocalizations = descLocs.toMutableMap()
             defaultMemberPermissions = command.defaultMemberPermissions
             command.options.forEach { option(it, bName) }
         }
@@ -68,9 +62,8 @@ suspend fun Kord.registerUser(command: UserCommand) {
     val (nameValue, nameLocs) = getAllLocalizations(bName, command.name)
 
     if (command.guildIds.isEmpty()) {
-        createGlobalUserCommand(command.name) {
-            name = nameValue
-            nameLocalizations?.putAll(nameLocs)
+        createGlobalUserCommand(nameValue) {
+            nameLocalizations = nameLocs.toMutableMap()
             defaultMemberPermissions = command.defaultMemberPermissions
             dmPermission = command.dmPermission
         }
@@ -78,9 +71,8 @@ suspend fun Kord.registerUser(command: UserCommand) {
     }
 
     command.guildIds.forEach { guildId ->
-        createGuildUserCommand(guildId, command.name) {
-            name = nameValue
-            nameLocalizations?.putAll(nameLocs)
+        createGuildUserCommand(guildId, nameValue) {
+            nameLocalizations = nameLocs.toMutableMap()
             defaultMemberPermissions = command.defaultMemberPermissions
         }
     }
@@ -91,9 +83,8 @@ suspend fun Kord.registerMessage(command: MessageCommand) {
     val (nameValue, nameLocs) = getAllLocalizations(bName, command.name)
 
     if (command.guildIds.isEmpty()) {
-        createGlobalMessageCommand(command.name) {
-            name = nameValue
-            nameLocalizations?.putAll(nameLocs)
+        createGlobalMessageCommand(nameValue) {
+            nameLocalizations = nameLocs.toMutableMap()
             defaultMemberPermissions = command.defaultMemberPermissions
             dmPermission = command.dmPermission
         }
@@ -101,9 +92,8 @@ suspend fun Kord.registerMessage(command: MessageCommand) {
     }
 
     command.guildIds.forEach { guildId ->
-        createGuildMessageCommand(guildId, command.name) {
-            name = nameValue
-            nameLocalizations?.putAll(nameLocs)
+        createGuildMessageCommand(guildId, nameValue) {
+            nameLocalizations = nameLocs.toMutableMap()
             defaultMemberPermissions = command.defaultMemberPermissions
         }
     }
