@@ -1,8 +1,6 @@
 package pw.modder.answernator4.command
 
 import dev.kord.core.behavior.interaction.response.respond
-import dev.kord.core.builder.components.emoji
-import dev.kord.core.entity.ReactionEmoji
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.rest.builder.component.actionRow
 import dev.kord.rest.builder.message.embed

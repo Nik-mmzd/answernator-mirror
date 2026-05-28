@@ -5,7 +5,11 @@ import dev.kord.common.entity.DiscordPartialEmoji
 
 sealed class ButtonField {
     abstract val id: String
-    abstract val text: String
+    /**
+     * Context text shown next to the button as a V2 Section's text component. When `null`, the
+     * button is rendered inside a V2 ActionRow instead (horizontal stack, no associated text).
+     */
+    abstract val text: String?
     abstract val label: String?
     abstract val emoji: DiscordPartialEmoji?
     abstract val disabled: Boolean
@@ -15,7 +19,7 @@ sealed class ButtonField {
 
 internal data class InteractionButtonField(
     override val id: String = "",
-    override val text: String,
+    override val text: String? = null,
     val style: ButtonStyle,
     override val label: String? = null,
     override val emoji: DiscordPartialEmoji? = null,
@@ -31,7 +35,7 @@ internal data class InteractionButtonField(
 
 internal data class LinkButtonField(
     override val id: String = "",
-    override val text: String,
+    override val text: String? = null,
     val url: String,
     override val label: String? = null,
     override val emoji: DiscordPartialEmoji? = null,
@@ -41,10 +45,10 @@ internal data class LinkButtonField(
 }
 
 fun button(
-    text: String,
     style: ButtonStyle = ButtonStyle.Primary,
     label: String? = null,
     emoji: DiscordPartialEmoji? = null,
+    text: String? = null,
     disabled: Boolean = false,
 ): ButtonField {
     require(label != null || emoji != null) { "Button requires either label or emoji" }
@@ -58,10 +62,10 @@ fun button(
 }
 
 fun linkButton(
-    text: String,
     url: String,
     label: String? = null,
     emoji: DiscordPartialEmoji? = null,
+    text: String? = null,
     disabled: Boolean = false,
 ): ButtonField {
     require(label != null || emoji != null) { "Button requires either label or emoji" }

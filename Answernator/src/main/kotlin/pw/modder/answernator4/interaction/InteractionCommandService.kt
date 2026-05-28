@@ -109,16 +109,19 @@ suspend fun Kord.interactionCommandService() {
     }
 
     on<ButtonInteractionCreateEvent> {
-        val parts = interaction.componentId.split(":", limit = 3)
-        if (parts.size != 3 || parts[0] != "cmd") return@on
+        val parts = interaction.componentId.split(":", limit = 4)
+        if (parts.size < 3 || parts[0] != "cmd") return@on
         val commandName = parts[1]
         val buttonId = parts[2]
+        val state = parts.getOrNull(3)
 
         val command = chatInput[commandName] ?: user[commandName] ?: message[commandName] ?: return@on
         val button = command.buttons?.buttons?.firstOrNull { it.id == buttonId } ?: return@on
 
         try {
-            with(command) { onButtonClick(button) }
+            with(command) {
+                if (state != null) onButtonClick(button, state) else onButtonClick(button)
+            }
         } catch (e: Exception) {
             logger.error(e) { "Error in command '$commandName' button click '$buttonId'" }
         }

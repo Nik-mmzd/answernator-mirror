@@ -63,10 +63,24 @@ abstract class Command {
     open val buttons: ButtonGroup? = null
 
     /**
-     * Called by [interactionCommandService] when a button declared in [buttons] is clicked.
+     * Called by [interactionCommandService] when a button declared in [buttons] is clicked without
+     * additional state encoded in the customId.
+     *
      * Default implementation is a no-op.
      */
     open suspend fun ButtonInteractionCreateEvent.onButtonClick(button: ButtonField) {}
+
+    /**
+     * Called by [interactionCommandService] when a button declared in [buttons] is clicked and the
+     * customId carries a state suffix (rendered via [respondWithCommandButtons]'s `state` parameter
+     * or [renderButtons]'s `state` parameter).
+     *
+     * The default implementation forwards to the no-state overload, so existing commands that don't
+     * carry state keep working unchanged.
+     */
+    open suspend fun ButtonInteractionCreateEvent.onButtonClick(button: ButtonField, state: String) {
+        onButtonClick(button)
+    }
 
     /**
      * Provides localization bundle for **member** locale
