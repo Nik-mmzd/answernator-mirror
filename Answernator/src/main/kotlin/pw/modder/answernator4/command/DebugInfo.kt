@@ -9,13 +9,14 @@ import dev.kord.rest.builder.message.embed
 import pw.modder.answernator.utils.extensions.kord.timestampNow
 import pw.modder.answernator4.interaction.ChatInputCommand
 import dev.kord.common.asJavaLocale
+import org.kodein.di.DI
 import pw.modder.answernator4.interaction.boolean
 import pw.modder.answernator4.interaction.default
 import pw.modder.answernator4.interaction.description
 import pw.modder.answernator4.interaction.l
 import pw.modder.answernator4.interaction.name
 
-class DebugInfo : ChatInputCommand() {
+class DebugInfo(di: DI) : ChatInputCommand(di) {
     override val name = "debug_info"
     override val bundleName = "v4.debug"
     override val defaultMemberPermissions = Permissions(Permission.ManageGuild)

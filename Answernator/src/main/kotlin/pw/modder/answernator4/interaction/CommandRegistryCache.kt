@@ -32,6 +32,14 @@ internal class CommandRegistryCache(path: String) {
         props.setProperty(key, hash)
     }
 
+    /** Drops cached hashes for commands that are no longer loaded (e.g. after a module set change). */
+    fun retainOnly(keys: Set<String>) {
+        val stale = props.stringPropertyNames() - keys
+        if (stale.isEmpty()) return
+        stale.forEach { props.remove(it) }
+        logger.info { "Removed ${stale.size} stale command hash cache entr${if (stale.size == 1) "y" else "ies"}: $stale" }
+    }
+
     fun save() {
         try {
             path.bufferedWriter(Charsets.UTF_8).use { props.store(it, null) }

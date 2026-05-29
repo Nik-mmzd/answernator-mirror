@@ -3,10 +3,11 @@ package pw.modder.answernator4.interaction
 import dev.kord.common.entity.ApplicationCommandType
 import dev.kord.core.Kord
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
+import org.kodein.di.DI
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
-abstract class ChatInputCommand : Command() {
+abstract class ChatInputCommand(di: DI) : Command(di) {
     override val discordType = ApplicationCommandType.ChatInput
 
     fun <T> ChatInputCommandInteractionCreateEvent.option(option: Option<T>): ReadOnlyProperty<Any?, T> {

@@ -56,6 +56,7 @@ dependencies {
     implementation(libs.guava)
     implementation(libs.apache.commons.io)
     implementation(libs.bundles.sentry.kotlin)
+    implementation(libs.kodein.di)
     runtimeOnly(libs.h2)
     runtimeOnly(libs.logback.classic)
 

@@ -5,6 +5,7 @@ import dev.kord.common.entity.DiscordPartialEmoji
 import dev.kord.core.behavior.interaction.response.edit
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
+import org.kodein.di.DI
 import pw.modder.answernator4.interaction.ChatInputCommand
 import pw.modder.answernator4.interaction.Option
 import pw.modder.answernator4.interaction.button.ButtonField
@@ -22,7 +23,7 @@ import kotlin.random.Random
 private const val MIN_GAMES = 1L
 private const val MAX_GAMES = 64L
 
-class RandomGame : ChatInputCommand() {
+class RandomGame(di: DI) : ChatInputCommand(di) {
     override val name = "randomgame"
     override val bundleName = "v4.randomgame"
     override val buttons = Buttons()

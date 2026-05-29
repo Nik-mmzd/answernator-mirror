@@ -4,10 +4,11 @@ import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.event.interaction.MessageCommandInteractionCreateEvent
+import org.kodein.di.DI
 import pw.modder.answernator4.interaction.MessageCommand
 import pw.modder.answernator4.interaction.l
 
-class GetCommandIssuer : MessageCommand() {
+class GetCommandIssuer(di: DI) : MessageCommand(di) {
     override val name = "get_author"
     override val bundleName = "v4.get_author"
     override val defaultMemberPermissions = Permissions(Permission.ManageMessages)

@@ -8,6 +8,7 @@ import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
+import org.kodein.di.DI
 import pw.modder.answernator4.interaction.ChatInputCommand
 import pw.modder.answernator4.interaction.button.ButtonField
 import pw.modder.answernator4.interaction.button.ButtonGroup
@@ -15,7 +16,7 @@ import pw.modder.answernator4.interaction.button.button
 import pw.modder.answernator4.interaction.button.renderButtons
 import pw.modder.answernator4.interaction.button.respondWithCommandButtons
 
-class Ubuntu : ChatInputCommand() {
+class Ubuntu(di: DI) : ChatInputCommand(di) {
     override val name = "ubuntu"
     override val bundleName = "v4.ubuntu"
     override val buttons = Buttons()

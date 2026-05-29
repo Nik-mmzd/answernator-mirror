@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.takeWhile
+import org.kodein.di.DI
 import pw.modder.answernator.utils.extensions.kord.authorId
 import pw.modder.answernator4.interaction.ChatInputCommand
 import pw.modder.answernator4.interaction.Option
@@ -31,7 +32,7 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
 
 private val logger = KotlinLogging.logger {}
-class Clean : ChatInputCommand() {
+class Clean(di: DI) : ChatInputCommand(di) {
     override val name = "clean"
     override val bundleName = "v4.clean"
     override val defaultMemberPermissions = Permissions(Permission.ManageMessages)

@@ -4,6 +4,7 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.kodein.di.DI
 import pw.modder.answernator4.interaction.ChatInputCommand
 import pw.modder.answernator4.interaction.Option
 import pw.modder.answernator4.interaction.description
@@ -11,7 +12,7 @@ import pw.modder.answernator4.interaction.l
 import pw.modder.answernator4.interaction.userId
 
 private val logger = KotlinLogging.logger {}
-class BanInfo : ChatInputCommand() {
+class BanInfo(di: DI) : ChatInputCommand(di) {
     override val name = "ban_info"
     override val bundleName = "v4.ban_info"
     override val dmPermission = false

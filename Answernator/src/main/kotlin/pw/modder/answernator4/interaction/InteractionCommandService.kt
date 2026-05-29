@@ -11,11 +11,15 @@ import dev.kord.core.event.interaction.MessageCommandInteractionCreateEvent
 import dev.kord.core.event.interaction.UserCommandInteractionCreateEvent
 import dev.kord.core.on
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.kodein.di.DI
+import org.kodein.di.instance
 
 private val logger = KotlinLogging.logger {}
 
 private fun List<Command>.toDesiredSet(): Set<Pair<String, ApplicationCommandType>> =
     map { it.effectiveName to it.discordType }.toSet()
+
+private fun Command.cacheKey(): String = "$effectiveName:${discordType.value}"
 
 private suspend fun Kord.deleteStaleGlobalCommands(desired: Set<Pair<String, ApplicationCommandType>>) {
     getGlobalApplicationCommands().collect { existing ->
@@ -37,24 +41,30 @@ private suspend fun Kord.deleteStaleGuildCommands(guildId: Snowflake, desired: S
     }
 }
 
-suspend fun Kord.interactionCommandService() {
-    val chatInput = InteractionCommandList.commands.filterIsInstance<ChatInputCommand>().associateBy { it.effectiveName }
-    val user = InteractionCommandList.commands.filterIsInstance<UserCommand>().associateBy { it.effectiveName }
-    val message = InteractionCommandList.commands.filterIsInstance<MessageCommand>().associateBy { it.effectiveName }
+suspend fun Kord.interactionCommandService(di: DI) {
+    val commands: Set<Command> by di.instance()
+    val chatInput = commands.filterIsInstance<ChatInputCommand>().associateBy { it.effectiveName }
+    val user = commands.filterIsInstance<UserCommand>().associateBy { it.effectiveName }
+    val message = commands.filterIsInstance<MessageCommand>().associateBy { it.effectiveName }
 
-    val globalDesired = InteractionCommandList.commands.filter { it.guildIds.isEmpty() }.toDesiredSet()
+    // Publish a snapshot so commands can introspect the set without injecting Set<Command> themselves
+    // (a set member resolving its own set triggers a Kodein dependency loop — see CommandRegistry).
+    val registry: CommandRegistry by di.instance()
+    registry.commands = commands.toList()
+
+    val globalDesired = commands.filter { it.guildIds.isEmpty() }.toDesiredSet()
     deleteStaleGlobalCommands(globalDesired)
 
-    InteractionCommandList.commands.flatMap { it.guildIds }.toSet().forEach { guildId ->
-        val guildDesired = InteractionCommandList.commands.filter { guildId in it.guildIds }.toDesiredSet()
+    commands.flatMap { it.guildIds }.toSet().forEach { guildId ->
+        val guildDesired = commands.filter { guildId in it.guildIds }.toDesiredSet()
         deleteStaleGuildCommands(guildId, guildDesired)
     }
 
     val cache = CommandRegistryCache(Env.COMMAND_HASH_CACHE)
     cache.load()
 
-    InteractionCommandList.commands.forEach { command ->
-        val cacheKey = "${command.effectiveName}:${command.discordType.value}"
+    commands.forEach { command ->
+        val cacheKey = command.cacheKey()
         val hash = try { command.specHash() } catch (e: Exception) {
             logger.warn(e) { "Failed to compute spec hash for '${command.name}', will re-register" }
             null
@@ -72,6 +82,7 @@ suspend fun Kord.interactionCommandService() {
         }
     }
 
+    cache.retainOnly(commands.map { it.cacheKey() }.toSet())
     cache.save()
 
     on<InteractionCreateEvent> {

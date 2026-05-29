@@ -8,6 +8,7 @@ import dev.kord.core.behavior.interaction.respondPublic
 import dev.kord.core.behavior.interaction.response.edit
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
+import org.kodein.di.DI
 import pw.modder.answernator4.dice.DiceException
 import pw.modder.answernator4.dice.DiceExpression
 import pw.modder.answernator4.interaction.ChatInputCommand
@@ -29,7 +30,7 @@ import java.util.ResourceBundle
 private const val CUSTOM_ID_PREFIX_LEN = "cmd:dice:reroll:".length
 private const val MAX_STATE_LEN = 100 - CUSTOM_ID_PREFIX_LEN
 
-class Dice : ChatInputCommand() {
+class Dice(di: DI) : ChatInputCommand(di) {
     override val name = "dice"
     override val bundleName = "v4.dice"
     override val buttons = Buttons()

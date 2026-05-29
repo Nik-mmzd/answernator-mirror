@@ -11,13 +11,17 @@ import dev.kord.rest.builder.component.actionRow
 import dev.kord.rest.builder.message.embed
 import dev.kord.rest.builder.message.modify.InteractionResponseModifyBuilder
 import org.apache.commons.io.FileUtils
+import org.kodein.di.DI
+import org.kodein.di.instance
 import pw.modder.answernator.utils.Utils
 import pw.modder.answernator.utils.extensions.kord.timestampNow
 import pw.modder.answernator.utils.extensions.toUserMention
 import pw.modder.answernator4.BuildConfig
 import pw.modder.answernator4.Env
+import pw.modder.answernator4.di.KodeinModuleList
+import pw.modder.answernator4.di.KodeinModuleProvider
 import pw.modder.answernator4.interaction.ChatInputCommand
-import pw.modder.answernator4.interaction.InteractionCommandList
+import pw.modder.answernator4.interaction.CommandRegistry
 import pw.modder.answernator4.interaction.button.ButtonField
 import pw.modder.answernator4.interaction.button.ButtonGroup
 import pw.modder.answernator4.interaction.button.button
@@ -28,7 +32,7 @@ import pw.modder.answernator4.interaction.l
 import pw.modder.answernator4.kord.getSelfCached
 import java.util.ResourceBundle
 
-class BotInfo : ChatInputCommand() {
+class BotInfo(di: DI) : ChatInputCommand(di) {
     override val name = "bot_info"
     override val bundleName = "v4.debug"
 
@@ -52,8 +56,13 @@ class BotInfo : ChatInputCommand() {
                 field(bundle.l("command.info.heap"), true) { FileUtils.byteCountToDisplaySize(runtime.totalMemory()) }
                 field(bundle.l("command.info.heap.used"), true) { FileUtils.byteCountToDisplaySize(runtime.totalMemory() - Runtime.getRuntime().freeMemory()) }
                 field(bundle.l("command.info.heap.free"), true) { FileUtils.byteCountToDisplaySize(runtime.freeMemory()) }
-                field(bundle.l("command.info.commands"), true) { InteractionCommandList.commands.size.toString() }
-//                field(bundle.l("modules"), true) { CommandList.modules.joinToString("\n") { "${it.name}@${it.version}".trim('\n') } }
+                field(bundle.l("command.info.commands"), true) {
+                    val registry: CommandRegistry by di.instance()
+                    registry.commands.size.toString()
+                }
+                field(bundle.l("command.info.modules"), inline = true) {
+                    KodeinModuleList.providers.joinToString(separator = "\n") { "${it.name}@${it.version}" }
+                }
                 field(bundle.l("command.info.uptime"), true) { Utils.getReadableUptime() }
             }
 

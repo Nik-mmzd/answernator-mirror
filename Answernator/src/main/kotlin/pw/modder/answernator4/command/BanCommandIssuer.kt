@@ -8,6 +8,7 @@ import dev.kord.core.behavior.interaction.respondEphemeral
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.event.interaction.MessageCommandInteractionCreateEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.kodein.di.DI
 import pw.modder.answernator4.interaction.MessageCommand
 import pw.modder.answernator4.interaction.l
 import pw.modder.answernator4.interaction.modal.Modal
@@ -22,7 +23,7 @@ import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 
 private val logger = KotlinLogging.logger {}
-class BanCommandIssuer : MessageCommand() {
+class BanCommandIssuer(di: DI) : MessageCommand(di) {
     override val name = "ban_author"
     override val bundleName = "v4.ban_author"
     override val defaultMemberPermissions = Permissions(Permission.BanMembers)
