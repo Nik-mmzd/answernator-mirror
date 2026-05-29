@@ -25,6 +25,7 @@ import pw.modder.answernator4.interaction.button.linkButton
 import pw.modder.answernator4.interaction.button.renderButtons
 import pw.modder.answernator4.interaction.button.visibleIf
 import pw.modder.answernator4.interaction.l
+import pw.modder.answernator4.kord.getSelfCached
 import java.util.ResourceBundle
 
 class BotInfo : ChatInputCommand() {
@@ -74,7 +75,7 @@ class BotInfo : ChatInputCommand() {
     override suspend fun ChatInputCommandInteractionCreateEvent.execute() {
         val reply = interaction.deferPublicResponse()
         val isAdmin = interaction.user.id == Env.BOT_OWNER_SNOWFLAKE
-        val self = interaction.kord.getSelf() // TODO cache
+        val self = interaction.kord.getSelfCached()
 
         reply.respond {
             render(gbundle, isAdmin, self)
@@ -86,7 +87,7 @@ class BotInfo : ChatInputCommand() {
 
         val reply = interaction.deferPublicMessageUpdate()
         val isAdmin = interaction.user.id == Env.BOT_OWNER_SNOWFLAKE
-        val self = interaction.kord.getSelf() // TODO cache
+        val self = interaction.kord.getSelfCached()
         reply.edit {
             render(gbundle, isAdmin, self)
         }
