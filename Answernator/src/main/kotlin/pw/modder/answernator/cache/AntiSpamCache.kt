@@ -7,6 +7,7 @@ import dev.kord.core.entity.Message
 import pw.modder.answernator.utils.extensions.kord.guildId
 import java.util.concurrent.TimeUnit
 
+@Deprecated("Switch to v4")
 object AntiSpamCache {
     private val cache: Cache<Triple<Snowflake, Snowflake, Int>, Int> = CacheBuilder.newBuilder()
         .maximumSize(1024)

@@ -1,5 +1,6 @@
 package pw.modder.answernator.utils
 
+@Deprecated("Switch to v4")
 data class Dependency(val group: String, val name: String, val version: String) {
     companion object {
         fun fromString(artifact: String): Dependency {

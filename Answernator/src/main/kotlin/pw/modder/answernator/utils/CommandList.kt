@@ -6,6 +6,7 @@ import java.net.URLClassLoader
 import java.util.*
 
 private val logger = KotlinLogging.logger {  }
+@Deprecated("Switch to v4")
 object CommandList {
     var commands: List<Command> = listOf()
     var modules: List<ModuleInfoProvider> = listOf()

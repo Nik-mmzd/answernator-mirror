@@ -10,6 +10,7 @@ import pw.modder.answernator.utils.Globals
 import pw.modder.answernator.utils.locale.LocaleBundle
 import java.util.*
 
+@Deprecated("Switch to v4")
 object Db {
     private const val dbfile = "answernator"
 

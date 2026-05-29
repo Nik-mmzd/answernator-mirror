@@ -19,10 +19,12 @@ private val admin_permissions = listOf(
     Permission.ManageRoles
 )
 
+@Deprecated("Switch to v4")
 suspend fun Member.isAdmin(): Boolean {
     return admin_permissions.any(getPermissions()::contains)
 }
 
+@Deprecated("Switch to v4")
 fun Member.isOwner(guild: Guild): Boolean {
     return guild.ownerId == id
 }
@@ -31,10 +33,12 @@ suspend fun Member.getColor(): Color? {
     return roles.toList().filter { it.color.rgb != 0 }.maxByOrNull { it.rawPosition }?.color
 }
 
+@Deprecated("Switch to v4")
 fun Member.isMuted(): Boolean {
     return Db.isMuted(guildId, id)
 }
 
+@Deprecated("Switch to v4")
 fun Member.mute(): Mute {
     return transaction { Mute.new {
         guild = guildId.toString()
@@ -42,6 +46,7 @@ fun Member.mute(): Mute {
     } }
 }
 
+@Deprecated("Switch to v4")
 fun Member.getMute(): Mute? {
     return Db.getMute(guildId, id)
 }

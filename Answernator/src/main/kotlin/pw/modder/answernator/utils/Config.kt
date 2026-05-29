@@ -9,6 +9,7 @@ import java.util.*
 
 private val JSON = Json { encodeDefaults = true; ignoreUnknownKeys = true }
 
+@Deprecated("Switch to v4")
 @Serializable
 open class Config(
     val token: String = "token-here",

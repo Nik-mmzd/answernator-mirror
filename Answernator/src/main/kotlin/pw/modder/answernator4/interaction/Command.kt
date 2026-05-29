@@ -8,7 +8,6 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.core.event.interaction.InteractionCreateEvent
-import pw.modder.answernator.utils.locale.UTF8Control
 import pw.modder.answernator4.interaction.button.ButtonField
 import pw.modder.answernator4.interaction.button.ButtonGroup
 import java.util.ResourceBundle
@@ -23,7 +22,7 @@ internal fun getAllLocalizations(bundleName: String, key: String): Pair<String, 
 
     SUPPORTED_LOCALES.forEach { kordLocale ->
         try {
-            val bundle = ResourceBundle.getBundle("locale.$bundleName", kordLocale.asJavaLocale(), UTF8Control)
+            val bundle = ResourceBundle.getBundle("locale.$bundleName", kordLocale.asJavaLocale())
             if (bundle.containsKey(key)) {
                 val value = bundle.getString(key)
                 translations[kordLocale] = value
@@ -78,7 +77,7 @@ abstract class Command {
     val InteractionCreateEvent.bundle: ResourceBundle
         get() {
             val discordLocale = interaction.locale ?: DEFAULT_LOCALE
-            return ResourceBundle.getBundle("locale.$bundleName", discordLocale.asJavaLocale(), UTF8Control)
+            return ResourceBundle.getBundle("locale.$bundleName", discordLocale.asJavaLocale())
         }
 
     /**
@@ -87,7 +86,7 @@ abstract class Command {
     val InteractionCreateEvent.gbundle: ResourceBundle
         get() {
             val discordLocale = interaction.guildLocale ?: interaction.locale ?: DEFAULT_LOCALE
-            return ResourceBundle.getBundle("locale.$bundleName", discordLocale.asJavaLocale(), UTF8Control)
+            return ResourceBundle.getBundle("locale.$bundleName", discordLocale.asJavaLocale())
         }
 
 

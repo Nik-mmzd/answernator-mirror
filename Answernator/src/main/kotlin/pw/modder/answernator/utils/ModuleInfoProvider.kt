@@ -1,5 +1,6 @@
 package pw.modder.answernator.utils
 
+@Deprecated("Switch to v4")
 interface ModuleInfoProvider {
     val name: String
     val version: String
@@ -12,6 +13,7 @@ interface ModuleInfoProvider {
         }
 }
 
+@Deprecated("Switch to v4")
 class ModuleInfo: ModuleInfoProvider {
     override val name = "Base"
     override val version = Globals.getDependencyVersion("pw.modder", "Answernator")

@@ -5,6 +5,7 @@ import dev.kord.core.entity.Message
 import pw.modder.answernator.db.guild.Config
 import java.util.*
 
+@Deprecated("Switch to v4")
 interface GuildCommand: Command {
     override val channels: EnumSet<Command.ChannelTypes>
         get() = EnumSet.of(Command.ChannelTypes.GUILD)

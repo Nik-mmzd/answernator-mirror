@@ -4,6 +4,7 @@ import pw.modder.answernator.utils.Globals
 import java.util.*
 import java.util.ResourceBundle as JavaResourceBundle
 
+@Deprecated("Switch to v4")
 interface ResourceBundle {
     val name: String
     val locale: Locale
@@ -13,6 +14,7 @@ interface ResourceBundle {
     fun random(key: String): String?
 }
 
+@Deprecated("Switch to v4")
 class LocaleBundle private constructor(override val name: String, override val locale: Locale, private val bundle: JavaResourceBundle): ResourceBundle {
     constructor(name: String, locale: Locale, classLoader: ClassLoader):
             this(name, locale, JavaResourceBundle.getBundle("locale.$name", locale, classLoader, UTF8Control))
@@ -40,6 +42,7 @@ class LocaleBundle private constructor(override val name: String, override val l
     }
 }
 
+@Deprecated("Switch to v4")
 class CommandLocaleBundle private constructor(override val name: String, override val locale: Locale,
                                               private val bundle: JavaResourceBundle
 ) : ResourceBundle {

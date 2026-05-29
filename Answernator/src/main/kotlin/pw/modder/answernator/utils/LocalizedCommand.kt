@@ -6,6 +6,7 @@ import pw.modder.answernator.utils.locale.CommandLocaleBundle
 import java.util.Locale
 
 //private val logger: KLogger = KotlinLogging.logger {}
+@Deprecated("Switch to v4")
 interface LocalizedCommand: Command {
     fun getTexts(locale: Locale): CommandLocaleBundle {
         return CommandLocaleBundle(name, locale, javaClass.classLoader)

@@ -6,6 +6,7 @@ import pw.modder.answernator.db.guild.Config
 import pw.modder.answernator.utils.locale.CommandLocaleBundle
 import java.util.*
 
+@Deprecated("Switch to v4")
 interface LocalizedGuildCommand: LocalizedCommand {
     override val channels: EnumSet<Command.ChannelTypes>
         get() = EnumSet.of(Command.ChannelTypes.GUILD)

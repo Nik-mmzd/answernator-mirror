@@ -10,6 +10,7 @@ import pw.modder.answernator.utils.extensions.kord.isFromBotAuthor
 import java.util.*
 
 private val logger = KotlinLogging.logger {}
+@Deprecated("Switch to v4")
 interface Command {
     val name: String
     val userGroup: UserGroup get() = UserGroup.ALL

@@ -8,7 +8,9 @@ import io.ktor.http.cookies
 import io.ktor.http.userAgent
 import pw.modder.answernator.utils.Globals
 
+@Deprecated("Switch to v4")
 private val userAgent = "DiscordBot: (https://github.com/kordlib/kord, ${Globals.getDependencyVersion("dev.kord", "kord-core")})"
+@Deprecated("Switch to v4")
 suspend fun Attachment.downloadAsString(proxied: Boolean = false): String {
     return Globals.httpClient.get {
         userAgent(userAgent)

@@ -75,7 +75,7 @@ class Clean : ChatInputCommand() {
         var removed = 0
         @OptIn(ExperimentalCoroutinesApi::class) // for chunked()
         interaction.channel.messages
-            .filter { usersFilter.isEmpty() || it.authorId in usersFilter }
+            .filter { usersFilter.isEmpty() || it.data.author.id in usersFilter }
             .takeWhile { it.timestamp >= minTimestamp }
             .map { it.id }
             .take(limit.toInt())

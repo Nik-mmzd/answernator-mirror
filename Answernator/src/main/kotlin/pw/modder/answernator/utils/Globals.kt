@@ -8,6 +8,7 @@ import java.io.File
 import kotlin.random.Random
 
 private val logger = KotlinLogging.logger {}
+@Deprecated("Switch to v4")
 object Globals {
     private const val configFileName = "config.json"
     private val JSON = Json { prettyPrint = true; encodeDefaults = true }

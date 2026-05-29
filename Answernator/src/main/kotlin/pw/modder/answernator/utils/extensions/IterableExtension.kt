@@ -1,5 +1,6 @@
 package pw.modder.answernator.utils.extensions
 
+@Deprecated("Switch to v4")
 fun Iterable<String>.joinToStrings(limit: Int = 2000, separator: CharSequence = " "): List<String> {
     val result = mutableListOf<String>()
     val builder = StringBuilder()

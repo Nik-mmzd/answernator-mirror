@@ -1,12 +1,16 @@
 package pw.modder.answernator.utils.extensions
 
+@Deprecated("Switch to v4")
 fun String.removeGraves(): String {
     return replace("`", "")
 }
+
+@Deprecated("Switch to v4")
 private enum class MentionType(val prefix: String) {
     USER("@"), NICKNAME("@!"), CHANNEL("#"), ROLE("@&")
 }
 
+@Deprecated("Switch to v4")
 private fun String.toMention(mentionType: MentionType, suffix: String? = null): String {
     if (isEmpty()) return this
     if (suffix == null)

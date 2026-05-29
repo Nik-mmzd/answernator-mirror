@@ -6,7 +6,7 @@ import java.net.URLConnection
 import java.util.*
 import java.util.ResourceBundle as JavaResourceBundle
 
-
+@Deprecated("Switch to v4")
 object UTF8Control : JavaResourceBundle.Control() {
     override fun newBundle(
         baseName: String?,
