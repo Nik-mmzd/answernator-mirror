@@ -5,3 +5,5 @@ pw.modder.answernator4.command.Clean
 pw.modder.answernator4.command.DebugInfo
 pw.modder.answernator4.command.BotInfo
 pw.modder.answernator4.command.Dice
+pw.modder.answernator4.command.RandomGame
+pw.modder.answernator4.command.Ubuntu
