@@ -119,9 +119,7 @@ suspend fun Kord.interactionCommandService() {
         val button = command.buttons?.buttons?.firstOrNull { it.id == buttonId } ?: return@on
 
         try {
-            with(command) {
-                if (state != null) onButtonClick(button, state) else onButtonClick(button)
-            }
+            with(command) { onButtonClick(button, state) }
         } catch (e: Exception) {
             logger.error(e) { "Error in command '$commandName' button click '$buttonId'" }
         }

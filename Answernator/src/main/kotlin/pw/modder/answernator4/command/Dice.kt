@@ -16,8 +16,6 @@ import pw.modder.answernator4.interaction.boolean
 import pw.modder.answernator4.interaction.button.ButtonField
 import pw.modder.answernator4.interaction.button.ButtonGroup
 import pw.modder.answernator4.interaction.button.button
-import pw.modder.answernator4.interaction.button.getValue
-import pw.modder.answernator4.interaction.button.provideDelegate
 import pw.modder.answernator4.interaction.button.renderButtons
 import pw.modder.answernator4.interaction.button.respondWithCommandButtons
 import pw.modder.answernator4.interaction.default
@@ -81,10 +79,10 @@ class Dice : ChatInputCommand() {
         )
     }
 
-    override suspend fun ButtonInteractionCreateEvent.onButtonClick(button: ButtonField, state: String) {
-        if (button.id != "reroll") return
+    override suspend fun ButtonInteractionCreateEvent.onButtonClick(button: ButtonField, state: String?) {
+        if (button != buttons.reroll) return
         val expression = try {
-            DiceExpression.parse(state)
+            DiceExpression.parse(state ?: return)
         } catch (_: DiceException) {
             return
         }

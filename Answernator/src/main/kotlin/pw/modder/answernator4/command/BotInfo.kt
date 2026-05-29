@@ -21,8 +21,9 @@ import pw.modder.answernator4.interaction.InteractionCommandList
 import pw.modder.answernator4.interaction.button.ButtonField
 import pw.modder.answernator4.interaction.button.ButtonGroup
 import pw.modder.answernator4.interaction.button.button
-import pw.modder.answernator4.interaction.button.getValue
-import pw.modder.answernator4.interaction.button.provideDelegate
+import pw.modder.answernator4.interaction.button.linkButton
+import pw.modder.answernator4.interaction.button.renderButtons
+import pw.modder.answernator4.interaction.button.visibleIf
 import pw.modder.answernator4.interaction.l
 import java.util.ResourceBundle
 
@@ -66,24 +67,7 @@ class BotInfo : ChatInputCommand() {
         }
 
         actionRow {
-            interactionButton(
-                style = ButtonStyle.Secondary,
-                customId = "cmd:$name:refresh"
-            ) {
-                emoji = DiscordPartialEmoji(name = "\uD83D\uDD04")
-            }
-            if (BuildConfig.APP_SOURCE_URL.isNotBlank())
-                linkButton(BuildConfig.APP_SOURCE_URL) {
-                    label = bundle.l("command.info.links.source")
-                }
-            if (BuildConfig.APP_ISSUES_URL.isNotBlank())
-                linkButton(BuildConfig.APP_ISSUES_URL) {
-                    label = bundle.l("command.info.links.issues")
-                }
-            if (Env.BOT_INVITE_LINK.isNotBlank())
-                linkButton(Env.BOT_INVITE_LINK) {
-                    label = bundle.l("command.info.links.invite")
-                }
+            renderButtons(buttons, baseId = "cmd:$effectiveName", bundle = bundle)
         }
     }
 
@@ -97,8 +81,8 @@ class BotInfo : ChatInputCommand() {
         }
     }
 
-    override suspend fun ButtonInteractionCreateEvent.onButtonClick(button: ButtonField) {
-        if (button.id != "refresh") return
+    override suspend fun ButtonInteractionCreateEvent.onButtonClick(button: ButtonField, state: String?) {
+        if (button != buttons.refresh) return
 
         val reply = interaction.deferPublicMessageUpdate()
         val isAdmin = interaction.user.id == Env.BOT_OWNER_SNOWFLAKE
@@ -113,5 +97,11 @@ class BotInfo : ChatInputCommand() {
             style = ButtonStyle.Secondary,
             emoji = DiscordPartialEmoji(name = "\uD83D\uDD04")
         )
+        val source by linkButton(BuildConfig.APP_SOURCE_URL, label = "command.info.links.source")
+            .visibleIf(BuildConfig.APP_SOURCE_URL.isNotBlank())
+        val issues by linkButton(BuildConfig.APP_ISSUES_URL, label = "command.info.links.issues")
+            .visibleIf(BuildConfig.APP_ISSUES_URL.isNotBlank())
+        val invite by linkButton(Env.BOT_INVITE_LINK, label = "command.info.links.invite")
+            .visibleIf(Env.BOT_INVITE_LINK.isNotBlank())
     }
 }

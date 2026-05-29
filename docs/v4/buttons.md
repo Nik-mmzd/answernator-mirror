@@ -7,7 +7,12 @@ Buttons let you attach clickable controls to an interaction's response message. 
 
 The framework lives in `pw.modder.answernator4.interaction.button`. Both patterns share the same declaration style (`ButtonGroup` subclasses with `by button(...)` properties) and only differ in *how* you respond to clicks.
 
-A note on Discord's component model: this framework uses Discord's V2 component layout exclusively. Each button is rendered either inside its own **Section** (when the button declares an associated `text`) or inside a V2 **ActionRow** with up to five other text-less buttons (when `text` is omitted). The Section form gives you a context snippet next to each button; the ActionRow form gives you a horizontal stack and is the right choice when the buttons are self-explanatory (e.g. emoji-only). Top-level message text is rendered separately through `ButtonGroup.content` or `renderButtons(contentOverride = ...)`.
+A note on Discord's component model: buttons render into **ActionRows** — a horizontal stack of up to five buttons. The framework supports two render targets:
+
+- **V2** — `MessageBuilder.renderButtons(...)` sets the V2 component flag and lays the buttons out in ActionRows (wrapping to a new row every five). This is what the suspending and stateless helpers use. V2 messages **cannot** carry an `embed`.
+- **Legacy** — `ActionRowBuilder.renderButtons(...)` fills a classic action row you've opened yourself. Use it when the message also needs an `embed` (Discord rejects embeds under V2). See [rendering next to an embed](#rendering-next-to-an-embed).
+
+Top-level message text (V2 only) is rendered through `ButtonGroup.content` or `renderButtons(contentOverride = ...)`.
 
 ---
 
@@ -20,22 +25,18 @@ class GameButtons : ButtonGroup(content = "Choose your action wisely!") {
     val attack by button(
         style = ButtonStyle.Danger,
         label = "Attack",
-        text = "Strike with your sword",
     )
     val defend by button(
         style = ButtonStyle.Primary,
         label = "Defend",
-        text = "Raise your shield",
     )
     val flee by button(
         style = ButtonStyle.Secondary,
         label = "Flee",
-        text = "Run away",
     )
     val docs by linkButton(
         url = "https://example.com/game-rules",
         label = "Rules",
-        text = "Need help?",
     )
 }
 
@@ -73,12 +74,10 @@ class StatusButtons : ButtonGroup(content = "Bot status") {
     val refresh by button(
         style = ButtonStyle.Primary,
         label = "↻ Refresh",
-        text = "Click to refresh",
     )
     val ping by button(
         style = ButtonStyle.Secondary,
         label = "Ping",
-        text = "Latency check",
     )
 }
 
@@ -93,7 +92,7 @@ class StatusCommand : ChatInputCommand() {
         // execute() returns immediately — the coroutine doesn't linger.
     }
 
-    override suspend fun ButtonInteractionCreateEvent.onButtonClick(button: ButtonField) {
+    override suspend fun ButtonInteractionCreateEvent.onButtonClick(button: ButtonField, state: String?) {
         when (button) {
             buttons.refresh -> interaction.updateEphemeralMessage {
                 content = "Status: OK at ${Clock.System.now()}"
@@ -116,15 +115,16 @@ Crucially, the customId format here is `"cmd:${commandName}:${buttonId}"` — co
 
 ### Carrying state through the customId
 
-Stateless buttons can carry a per-invocation payload by appending it to the customId. Both `respondWithCommandButtons(...)` and the lower-level `renderButtons(...)` accept an optional `state: String?` parameter; when set, customIds become `"cmd:${commandName}:${buttonId}:${state}"`. The router strips the suffix and forwards it to a second `onButtonClick` overload:
+Stateless buttons can carry a per-invocation payload by appending it to the customId. Both `respondWithCommandButtons(...)` and the lower-level `renderButtons(...)` accept an optional `state: String?` parameter; when set, customIds become `"cmd:${commandName}:${buttonId}:${state}"`. The router strips the suffix and passes it to `onButtonClick`:
 
 ```kotlin
-override suspend fun ButtonInteractionCreateEvent.onButtonClick(button: ButtonField, state: String) {
-    // state is the same string you passed to respondWithCommandButtons
+override suspend fun ButtonInteractionCreateEvent.onButtonClick(button: ButtonField, state: String?) {
+    // state is the same string you passed to respondWithCommandButtons,
+    // or null when the customId carried no state suffix
 }
 ```
 
-Default behavior: if you don't override the 2-arg method, it delegates to the 1-arg one, so existing commands keep working.
+There's a single `onButtonClick(button, state: String?)` entry point: `state` is `null` when no suffix was rendered, non-null otherwise. Commands that don't care about state simply ignore the parameter.
 
 Why this matters: it lets a button "remember" something about its render without any external storage. For example, a `/dice` reroll button can encode the dice expression in `state`, parse it back on click, and re-roll — no database, no in-memory map, no `waitFor` coroutine to keep alive.
 
@@ -141,8 +141,8 @@ override suspend fun ChatInputCommandInteractionCreateEvent.execute() {
     )
 }
 
-override suspend fun ButtonInteractionCreateEvent.onButtonClick(button: ButtonField, state: String) {
-    val expression = DiceExpression.parse(state)
+override suspend fun ButtonInteractionCreateEvent.onButtonClick(button: ButtonField, state: String?) {
+    val expression = DiceExpression.parse(state ?: return)
     val response = interaction.deferPublicMessageUpdate()
     response.edit {
         renderButtons(
@@ -161,7 +161,7 @@ Discord caps `custom_id` at 100 characters total. The prefix `"cmd:${commandName
 
 #### V2 component edit semantics
 
-A click handler that wants to update the message body cannot edit only the text-display component; Discord requires the full `components` array on every edit. That means re-rendering buttons too, with their `style`, `label`, `emoji`, and `text` reconstructed. The simplest pattern: rebuild the same `ButtonGroup` (or use the class-level one if it's static) and call `renderButtons(...)` inside the edit block — the example above shows it.
+A click handler that wants to update the message body cannot edit only the text-display component; Discord requires the full `components` array on every edit. That means re-rendering buttons too, with their `style`, `label`, and `emoji` reconstructed. The simplest pattern: rebuild the same `ButtonGroup` (or use the class-level one if it's static) and call `renderButtons(...)` inside the edit block — the example above shows it.
 
 ---
 
@@ -208,18 +208,28 @@ Sealed type with two concrete forms:
 Both expose:
 
 - `id: String` — derived from the property name.
-- `text: String?` — when non-null, the button renders inside a V2 Section with this string as the section's text component. When null, the button renders inside a V2 ActionRow (horizontal stack, up to 5 buttons per row).
-- `label: String?` and `emoji: DiscordPartialEmoji?` — at least one is required.
-- `disabled: Boolean` — for greying the button out.
+- `label: String?` and `emoji: DiscordPartialEmoji?` — at least one is required. `label` may be a
+  **localization key**: when a `bundle` is passed to `renderButtons` (see below) each label is
+  resolved against it, and a key that isn't present in the bundle falls through to the literal — so
+  a plain label and a locale key are written identically.
+- `disabled: Boolean` — for greying the button out (still shown).
+- `visible: Boolean` — set via the `visibleIf(condition)` wrapper; a hidden button is omitted from
+  the render entirely (but keeps its slot for click routing). Use it for buttons gated on optional
+  config, e.g. a link button whose URL may be blank. To toggle visibility **per render** (per user
+  / per click) see [toggling visibility per render](#toggling-visibility-per-render).
 
-Construction is via the factories:
+Construction is via the factories (chain `visibleIf` to gate visibility):
+
+```kotlin
+val source by linkButton(BuildConfig.APP_SOURCE_URL, label = "command.info.links.source")
+    .visibleIf(BuildConfig.APP_SOURCE_URL.isNotBlank())
+```
 
 ```kotlin
 fun button(
     style: ButtonStyle = ButtonStyle.Primary,
     label: String? = null,
     emoji: DiscordPartialEmoji? = null,
-    text: String? = null,
     disabled: Boolean = false,
 ): ButtonField
 
@@ -227,7 +237,6 @@ fun linkButton(
     url: String,
     label: String? = null,
     emoji: DiscordPartialEmoji? = null,
-    text: String? = null,
     disabled: Boolean = false,
 ): ButtonField
 ```
@@ -237,7 +246,7 @@ Notes:
 - `ButtonStyle.Link` is rejected by `button(...)` — use `linkButton(...)` for those.
 - `ButtonStyle.Premium` is unsupported by this framework. Premium buttons are tied to Discord's subscription/SKU system; we have no use for them.
 - The framework requires either `label` or `emoji` to be non-null. A button with neither is invisible to the user.
-- The rendering strategy is per-button. If a group mixes text-ful and text-less buttons, each text-ful button gets its own Section, and runs of consecutive text-less buttons collapse into ActionRows (preserving declaration order).
+- All buttons in a group render into ActionRows, wrapping to a new row every five buttons (Discord's per-row limit), preserving declaration order.
 
 ### `respondWithButtons` (suspending)
 
@@ -246,6 +255,7 @@ suspend fun ActionInteractionBehavior.respondWithButtons(
     group: ButtonGroup,
     ephemeral: Boolean = true,
     waitFor: Duration = 5.minutes,
+    bundle: ResourceBundle? = null,
     onClick: suspend ButtonClickContext.() -> Unit = {},
 )
 ```
@@ -260,13 +270,17 @@ suspend fun ActionInteractionBehavior.respondWithCommandButtons(
     ephemeral: Boolean = true,
     state: String? = null,
     content: String? = null,
+    bundle: ResourceBundle? = null,
+    fields: List<ButtonField>? = null,
 )
 ```
 
 Sends the message and returns. The command's `buttons` property must be non-null; the function will throw `IllegalStateException` if it isn't.
 
-- `state` — optional payload encoded into each button's customId; delivered back via the 2-arg `onButtonClick(button, state)` overload. See [carrying state through the customId](#carrying-state-through-the-customid).
+- `state` — optional payload encoded into each button's customId; delivered back via `onButtonClick(button, state)` (non-null state). See [carrying state through the customId](#carrying-state-through-the-customid).
 - `content` — optional top-level text rendered above the buttons. When `null`, the group's own `ButtonGroup.content` is used. Pass it for dynamic message bodies on stateless commands.
+- `bundle` — optional locale bundle for resolving labels written as localization keys; `null` renders labels literally.
+- `fields` — optional explicit list to render instead of the group's full set; pass per-render copies to toggle visibility. See [toggling visibility per render](#toggling-visibility-per-render).
 
 Click events are routed by the global listener registered in `interactionCommandService()`. The listener:
 
@@ -274,20 +288,21 @@ Click events are routed by the global listener registered in `interactionCommand
 2. If the first part isn't `"cmd"` or there are fewer than 3 parts, it bails — that customId belongs to the suspending pattern (or to something else entirely).
 3. Looks up the command by name across all three command-type maps.
 4. Finds the matching `ButtonField` by id in the command's `buttons.buttons` list.
-5. If a 4th part is present (the state payload), invokes `command.onButtonClick(button, state)`; otherwise `command.onButtonClick(button)`. Both calls are inside try/catch.
+5. Invokes `command.onButtonClick(button, state)` inside a try/catch, where `state` is the 4th part of the customId if present, or `null` otherwise.
 
 ### `renderButtons` (low-level)
 
 ```kotlin
-fun MessageBuilder.renderButtons(
-    group: ButtonGroup,
-    baseId: String,
-    state: String? = null,
-    contentOverride: String? = null,
-)
+// V2: sets the components-V2 flag, wraps buttons into ActionRows of 5
+fun MessageBuilder.renderButtons(group: ButtonGroup, baseId, state?, contentOverride?, bundle?)
+fun MessageBuilder.renderButtons(fields: List<ButtonField>, baseId, state?, contentOverride?, bundle?)
+
+// Legacy: fills a classic action row you've already opened (no V2 flag)
+fun ActionRowBuilder.renderButtons(group: ButtonGroup, baseId, state?, bundle?)
+fun ActionRowBuilder.renderButtons(fields: List<ButtonField>, baseId, state?, bundle?)
 ```
 
-The shared render path used by both `respondWithButtons` and `respondWithCommandButtons`. Call it directly inside an interaction-response edit when you need to re-render the same view after a click:
+Each receiver has two overloads: one takes the whole `ButtonGroup`, the other an explicit `List<ButtonField>`. The `MessageBuilder` overload is the shared render path used by both `respondWithButtons` and `respondWithCommandButtons`. Call it directly inside an interaction-response edit when you need to re-render the same view after a click:
 
 ```kotlin
 val response = interaction.deferEphemeralMessageUpdate()
@@ -302,6 +317,30 @@ response.edit {
 ```
 
 Both `baseId` (suspending receives this via `ButtonClickContext.baseId`) and `state` must be the same values the original render used, otherwise Discord and the framework's router won't match the clicked customId back to the right button.
+
+### Toggling visibility per render
+
+`visibleIf(condition)` evaluated in a `ButtonGroup` declaration is fixed at construction — fine for config-gated buttons, but a stateless command's `buttons` is a **single shared instance** across every invocation and user, so you must never mutate `visible` on it at runtime (you'd change what everyone else sees).
+
+Instead, render an explicit list of per-render copies. Because `ButtonField` is immutable and `visibleIf` returns a copy, this leaves the shared group untouched, and routing still works (the listener matches the clicked `id` against the group's full list):
+
+```kotlin
+override suspend fun ButtonInteractionCreateEvent.onButtonClick(button: ButtonField, state: String?) {
+    val expanded = button == buttons.toggle  // or decode from `state`
+    interaction.deferEphemeralMessageUpdate().edit {
+        renderButtons(
+            listOf(
+                buttons.toggle,
+                buttons.detail.visibleIf(expanded),   // copy; shared group unchanged
+            ),
+            baseId = "cmd:$effectiveName",
+            state = state,
+        )
+    }
+}
+```
+
+For the initial render, `respondWithCommandButtons(..., fields = listOf(...))` accepts the same kind of list. Hidden buttons keep their declared slot for click routing — they just aren't drawn.
 
 ### `ButtonClickContext`
 
@@ -325,7 +364,7 @@ class ButtonClickContext(
 - `interaction` — the `ButtonInteraction`. Call `deferEphemeralMessageUpdate()` / `deferPublicMessageUpdate()` then `.edit { ... }` to update the message, or use `updateEphemeralMessage { ... }` / `updatePublicMessage { ... }` for a one-shot update.
 - `stop()` — completes the internal signal and breaks the wait loop. Useful for "first click wins" prompts or any mini-game with an exit condition.
 
-For the stateless pattern, the handler runs as `ButtonInteractionCreateEvent.onButtonClick(button)` or `onButtonClick(button, state)` on the command itself, without the `ButtonClickContext` wrapper. You have `this` (the event) directly.
+For the stateless pattern, the handler runs as `ButtonInteractionCreateEvent.onButtonClick(button, state)` on the command itself, without the `ButtonClickContext` wrapper. You have `this` (the event) directly, and `state` is `null` when the customId carried no payload.
 
 ---
 
@@ -347,10 +386,45 @@ response.edit { content = "..." }
 
 ---
 
+## Rendering next to an embed
+
+V2 messages can't carry an `embed`, so the `MessageBuilder.renderButtons` / `respondWithCommandButtons` path is off-limits when your response is an embed. Use the `ActionRowBuilder` overload instead: declare a `ButtonGroup` on the command as usual, then render it into a classic action row alongside the embed. Clicks still route through `onButtonClick` exactly the same way.
+
+This is also the canonical place to combine **localized labels** (declare them as locale keys, pass the `bundle`) and **conditional buttons** (`visibleIf`):
+
+```kotlin
+class BotInfo : ChatInputCommand() {
+    override val name = "bot_info"
+    override val buttons = Buttons()
+
+    override suspend fun ChatInputCommandInteractionCreateEvent.execute() {
+        interaction.deferPublicResponse().respond {
+            embed { /* ... */ }
+            actionRow { renderButtons(buttons, baseId = "cmd:$effectiveName", bundle = gbundle) }
+        }
+    }
+
+    override suspend fun ButtonInteractionCreateEvent.onButtonClick(button: ButtonField, state: String?) {
+        if (button != buttons.refresh) return
+        // re-render the embed + row inside a deferPublicMessageUpdate().edit { ... }
+    }
+
+    class Buttons : ButtonGroup() {
+        val refresh by button(style = ButtonStyle.Secondary, emoji = DiscordPartialEmoji(name = "🔄"))
+        val source by linkButton(BuildConfig.APP_SOURCE_URL, label = "command.info.links.source")
+            .visibleIf(BuildConfig.APP_SOURCE_URL.isNotBlank())
+    }
+}
+```
+
+The `source` label is a locale key resolved against the passed `bundle`; the button is dropped when its URL is blank. `baseId` must be `"cmd:${effectiveName}"` so the router (which keys on `effectiveName`) matches the click back to the command. A single action row holds at most five buttons.
+
+---
+
 ## Discord-side restrictions you'll bump into
 
-- **`text` is mandatory per button.** Sections in V2 require a text component alongside the accessory. If your UX wants buttons with no associated text, this framework can't express it — you'd need to drop down to the deprecated ActionRow, which isn't supported here.
-- **Components V2 flag is automatic.** The framework sets `MessageFlag.IsComponentsV2` for you when rendering. No manual flag-juggling.
+- **V2 messages can't carry an embed.** `MessageBuilder.renderButtons` sets `MessageFlag.IsComponentsV2`; if you need an `embed`, render the buttons through `ActionRowBuilder.renderButtons` (a classic action row) instead. See [rendering next to an embed](#rendering-next-to-an-embed).
+- **Components V2 flag is automatic.** `MessageBuilder.renderButtons` sets `MessageFlag.IsComponentsV2` for you. No manual flag-juggling. (The `ActionRowBuilder` overload leaves the message classic.)
 - **Buttons can't go in modals.** Discord doesn't allow this — modals have a built-in Submit/Cancel. If you want a flow of `command → modal → buttons`, the modal's submit handler can call `respondWithButtons` or `respondWithCommandButtons` on its own interaction.
 - **Premium buttons are intentionally rejected.** They tie into Discord's SKU/monetization system, which we don't use. Passing `ButtonStyle.Premium` to the `button(...)` factory throws at construction time.
 
@@ -361,8 +435,9 @@ response.edit { content = "..." }
 ```
 interaction/button/
 ├── ButtonField.kt       — sealed class + InteractionButtonField + LinkButtonField + factories
-├── ButtonGroup.kt       — ButtonGroup abstract class + provideDelegate/getValue
-└── ButtonExtensions.kt  — respondWithButtons (suspending), respondWithCommandButtons (stateless), ButtonClickContext
+├── ButtonGroup.kt       — ButtonGroup abstract class + member provideDelegate/getValue
+└── ButtonExtensions.kt  — respondWithButtons (suspending), respondWithCommandButtons (stateless),
+                           renderButtons (MessageBuilder = V2, ActionRowBuilder = legacy), ButtonClickContext
 ```
 
 The global click router lives in `interaction/InteractionCommandService.kt` — the `on<ButtonInteractionCreateEvent>` block at the bottom does the parsing and dispatch.
