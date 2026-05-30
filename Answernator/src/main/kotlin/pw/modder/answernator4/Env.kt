@@ -22,4 +22,12 @@ object Env {
 
     val JRE_VENDOR: String? get() = System.getProperty("java.vendor")
     val JRE_VERSION: String? get() = System.getProperty("java.version")
+
+    object Db {
+        val DB_URL: String = System.getenv("ANSWR4_DB_URL") ?: ""
+        val DB_USER: String = System.getenv("ANSWR4_DB_USER") ?: ""
+        val DB_PASSWORD: String = System.getenv("ANSWR4_DB_PASSWORD") ?: ""
+
+        val DB_BASELINE: String? = System.getenv("ANSWR4_DB_BASELINE")
+    }
 }
