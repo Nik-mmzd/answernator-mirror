@@ -49,7 +49,14 @@ suspend fun Kord.guildLogService(di: DI) {
         val channel = config.memberJoinChannel ?: return@on
         val bundle = ResourceBundle.getBundle("locale.v4.guild_log", config.locale.asJavaLocale())
         rest.channel.createMessage(channel) {
-            userEmbed(member, bundle.l("member.join.title")) { color = COLOR_GOOD }
+            userEmbed(member, bundle.l("member.join.title")) {
+                field {
+                    name = bundle.l("member.join.registered")
+                    value = member.id.timestamp.mention(TimestampFormat.RELATIVE)
+                    inline = true
+                }
+                color = COLOR_GOOD
+            }
         }
     }
 
@@ -141,12 +148,12 @@ suspend fun Kord.guildLogService(di: DI) {
             rest.channel.createMessage(channel) {
                 userEmbed(member, bundle.l("member.username.title")) {
                     field {
-                        name = bundle.l("member.username.old")
+                        name = bundle.l("member.name.old")
                         value = old.username
                         inline = true
                     }
                     field {
-                        name = bundle.l("member.username.new")
+                        name = bundle.l("member.name.new")
                         value = member.username
                         inline = true
                     }
