@@ -11,6 +11,8 @@ import pw.modder.answernator4.BuildConfig
 import pw.modder.answernator4.db.DatabaseModule
 import pw.modder.answernator4.db.cache.LogsConfigRepository
 import pw.modder.answernator4.db.tables.LogsConfigs
+import pw.modder.answernator4.kord.guildLogService
+import pw.modder.answernator4.kord.zombieWatchdog
 
 /**
  * Guild logging feature module. For now it only wires data access — the database ([DatabaseModule]),
@@ -34,6 +36,12 @@ class LogsModule : KodeinModuleProvider {
         inBindSet<Location>(tag = "flyway-migrations") {
             addSingleton {
                 LocationParser.parseLocation("classpath:pw/modder/answernator4/db/migrations/guild_logs")
+            }
+        }
+
+        inBindSet<KordConfiguration> {
+            addSingleton {
+                KordConfiguration { guildLogService(di) }
             }
         }
     }
