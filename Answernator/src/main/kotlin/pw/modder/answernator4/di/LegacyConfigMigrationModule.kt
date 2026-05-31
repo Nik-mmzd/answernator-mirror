@@ -122,8 +122,10 @@ private fun migrateAntiSpam(guildId: Long, legacy: LegacyConfig, bundle: Resourc
         muteText = bundle.l("antispam.mute") // no legacy source
         banText = text(legacy.antiSpamBanText, "antispam.ban")
         warningThreshold = legacy.antiSpamWarn
-        muteThreshold = legacy.antiSpamBan // mirror ban
-        banRepeats = legacy.antiSpamBan
+        muteThreshold = legacy.antiSpamBan // enforcement fires at the legacy ban count
+        mutesBeforeBan = 0 // legacy banned straight away (no mute stage) — preserve that
+        muteDuration = 60 // minutes, default (unused while mutesBeforeBan == 0)
+        muteValidity = 30 // days, default
     }
 }
 

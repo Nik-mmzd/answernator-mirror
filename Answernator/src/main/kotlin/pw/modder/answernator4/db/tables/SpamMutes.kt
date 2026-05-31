@@ -5,7 +5,12 @@ import org.jetbrains.exposed.v1.datetime.CurrentTimestamp
 import org.jetbrains.exposed.v1.datetime.timestamp
 import pw.modder.answernator4.db.asSnowflake
 
-object SpamViolations : Table() {
+/**
+ * One row per spam mute actually applied. This is both an audit log and the escalation state for
+ * the repeat-offender (variant B) logic: the number of rows for a user within `muteValidity`
+ * decides whether the next offence is another mute or a ban.
+ */
+object SpamMutes : Table() {
     val userId = long("user_id").asSnowflake()
     val guildId = long("guild_id").asSnowflake()
     val messageContent = text("message_content")

@@ -14,7 +14,12 @@ data class AntiSpamConfigData(
     val banText: String,
     val warningThreshold: Int,
     val muteThreshold: Int,
-    val banRepeats: Int,
+    /** -1 = never ban (mute-only); 0 = ban immediately; N>0 = ban after N mutes within [muteValidity]. */
+    val mutesBeforeBan: Int,
+    /** Mute timeout length, minutes. */
+    val muteDuration: Int,
+    /** Days a mute keeps counting toward the ban threshold. */
+    val muteValidity: Int,
     val logChannel: Snowflake?,
 )
 
@@ -30,7 +35,9 @@ class AntiSpamConfigRepository(database: Database) : CachedConfigRepository<Anti
                 banText = it.banText,
                 warningThreshold = it.warningThreshold,
                 muteThreshold = it.muteThreshold,
-                banRepeats = it.banRepeats,
+                mutesBeforeBan = it.mutesBeforeBan,
+                muteDuration = it.muteDuration,
+                muteValidity = it.muteValidity,
                 logChannel = it.logChannel,
             )
         }

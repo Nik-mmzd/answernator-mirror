@@ -10,8 +10,11 @@ import org.kodein.di.instance
 import pw.modder.answernator4.BuildConfig
 import pw.modder.answernator4.db.DatabaseModule
 import pw.modder.answernator4.db.cache.AntiSpamConfigRepository
+import pw.modder.answernator4.db.cache.MrBeastRepository
+import pw.modder.answernator4.db.cache.SpamMuteRepository
 import pw.modder.answernator4.db.tables.AntiSpamConfigs
 import pw.modder.answernator4.db.tables.MrBeastLovers
+import pw.modder.answernator4.db.tables.SpamMutes
 
 /**
  * Anti-spam feature module. For now it only wires data access — the database ([DatabaseModule]),
@@ -27,10 +30,13 @@ class AntiSpamModule : KodeinModuleProvider {
         importOnce(DatabaseModule)
 
         bindSingleton { AntiSpamConfigRepository(instance()) }
+        bindSingleton { SpamMuteRepository(instance()) }
+        bindSingleton { MrBeastRepository(instance()) }
 
         inBindSet<Table>(tag = "tables-in-use") {
             addSingleton { AntiSpamConfigs }
             addSingleton { MrBeastLovers }
+            addSingleton { SpamMutes }
         }
 
         inBindSet<Location>(tag = "flyway-migrations") {

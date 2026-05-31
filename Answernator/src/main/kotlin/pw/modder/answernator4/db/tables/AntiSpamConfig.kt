@@ -22,7 +22,12 @@ object AntiSpamConfigs : IdTable<Long>() {
 
     val warningThreshold = integer("warning_threshold")
     val muteThreshold = integer("mute_threshold")
-    val banRepeats = integer("ban_threshold")
+
+    // -1 = never ban (mute-only); 0 = ban immediately (no mute stage); N>0 = ban after N mutes.
+    val mutesBeforeBan = integer("mutes_before_ban")
+
+    val muteDuration = integer("mute_duration") // minutes
+    val muteValidity = integer("mute_validity") // days a mute counts toward the ban threshold
 
     val logChannel = long("log_channel").asSnowflake().nullable()
 
@@ -44,7 +49,10 @@ class AntiSpamConfig(id: EntityID<Long>): LongEntity(id) {
 
     var warningThreshold by AntiSpamConfigs.warningThreshold
     var muteThreshold by AntiSpamConfigs.muteThreshold
-    var banRepeats by AntiSpamConfigs.banRepeats
+    var mutesBeforeBan by AntiSpamConfigs.mutesBeforeBan
+
+    var muteDuration by AntiSpamConfigs.muteDuration
+    var muteValidity by AntiSpamConfigs.muteValidity
 
     var logChannel by AntiSpamConfigs.logChannel
 }
