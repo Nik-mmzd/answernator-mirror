@@ -20,12 +20,14 @@ import org.kodein.di.instance
 import pw.modder.answernator4.antispam.AntiSpamDefaults
 import pw.modder.answernator4.antispam.AttachmentSignature
 import pw.modder.answernator4.antispam.MessageCanonicalizer
+import pw.modder.answernator4.antispam.MrBeastDetector
 import pw.modder.answernator4.antispam.SpamAction
 import pw.modder.answernator4.antispam.SpamThresholds
 import pw.modder.answernator4.antispam.SpamTracker
 import pw.modder.answernator4.antispam.TrackedMessage
 import pw.modder.answernator4.db.cache.AntiSpamConfigData
 import pw.modder.answernator4.db.cache.AntiSpamConfigRepository
+import pw.modder.answernator4.db.cache.MrBeastRepository
 import pw.modder.answernator4.db.cache.SpamMuteRepository
 import pw.modder.answernator4.interaction.l
 import java.util.ResourceBundle
@@ -41,19 +43,27 @@ private val COLOR_BAN = Color(255, 99, 126)
 /** Discord caps a member timeout at 28 days. */
 private val MAX_TIMEOUT = 28.days
 
+/** MrBeast repeat-offender window (Phase 3): mute on the first hit, ban on the next within this window. */
+private val MRBEAST_WINDOW = 90.days
+
+/** Fixed timeout applied on a first MrBeast violation. */
+private val MRBEAST_MUTE = 7.days
+
 /**
  * Normal anti-spam enforcement (Phase 2): detects repeated/similar messages per (guild, user),
  * warns, then mutes or bans based on the guild's repeat-offender configuration.
  *
- * MrBeast detection (Phase 3) and command-spam attribution (Phase 4) are layered on later; for now
- * bot messages are ignored entirely.
+ * MrBeast detection (Phase 3) covers image dumps with trivial text; command-spam attribution
+ * (Phase 4) is layered on later. For now bot messages are ignored entirely.
  */
 suspend fun Kord.antiSpamService(di: DI) {
     val configRepository by di.instance<AntiSpamConfigRepository>()
     val muteRepository by di.instance<SpamMuteRepository>()
+    val mrBeastRepository by di.instance<MrBeastRepository>()
 
-    // One ephemeral tracker for the whole process; intentionally not persisted across restarts.
+    // Ephemeral state for the whole process; intentionally not persisted across restarts.
     val tracker = SpamTracker()
+    val mrBeastDetector = MrBeastDetector()
 
     on<MessageCreateEvent> {
         val gid = guildId ?: return@on
@@ -63,6 +73,22 @@ suspend fun Kord.antiSpamService(di: DI) {
 
         val config = configRepository.get(gid) ?: return@on
         if (!config.isEnabled) return@on
+
+        // MrBeast image-dump detection (Phase 3), independent of similarity tracking. A triggered
+        // violation is handled here and short-circuits the normal similarity path.
+        if (config.isMrBeastEnabled && message.attachments.isNotEmpty()) {
+            val classification = mrBeastDetector.classify(
+                guildId = gid.value,
+                userId = author.id.value,
+                message = TrackedMessage(message.channelId.value, message.id.value),
+                content = message.content,
+                attachmentCount = message.attachments.size,
+            )
+            if (classification is MrBeastDetector.Classification.Triggered) {
+                enforceMrBeast(config, author, message.attachments.size, classification.messages, mrBeastRepository)
+                return@on
+            }
+        }
 
         val canon = MessageCanonicalizer.canonicalize(
             message.content,
@@ -237,15 +263,128 @@ private suspend fun MessageCreateEvent.sendLog(
     color: Color,
     fields: EmbedBuilder.(ResourceBundle) -> Unit,
 ) {
-    val locale = (message.getGuildOrNull()?.preferredLocale)?.asJavaLocale()
-    val bundle = if (locale != null) ResourceBundle.getBundle("locale.v4.anti_spam", locale)
-    else ResourceBundle.getBundle("locale.v4.anti_spam")
+    val bundle = antiSpamBundle()
     try {
         kord.rest.channel.createMessage(channelId) {
             antiSpamEmbed(user, bundle.l(titleKey), color) { fields(bundle) }
         }
     } catch (e: Exception) {
         logger.warn(e) { "Anti-spam: failed to write to log channel $channelId" }
+    }
+}
+
+/** Resolves the anti-spam resource bundle in the guild's preferred locale (root bundle as fallback). */
+private suspend fun MessageCreateEvent.antiSpamBundle(): ResourceBundle {
+    val locale = message.getGuildOrNull()?.preferredLocale?.asJavaLocale()
+    return if (locale != null) ResourceBundle.getBundle("locale.v4.anti_spam", locale)
+    else ResourceBundle.getBundle("locale.v4.anti_spam")
+}
+
+/**
+ * Handles a detected MrBeast image-dump violation: persists it, then mutes (first hit within
+ * [MRBEAST_WINDOW]) or bans (any prior hit in the window), and reports to the log channel.
+ */
+private suspend fun MessageCreateEvent.enforceMrBeast(
+    config: AntiSpamConfigData,
+    author: User,
+    attachmentCount: Int,
+    tracked: List<TrackedMessage>,
+    repository: MrBeastRepository,
+) {
+    val priorViolations = repository.countViolations(config.guildId, author.id, MRBEAST_WINDOW)
+
+    try {
+        repository.insertViolation(config.guildId, author.id, attachmentCount, message.content)
+    } catch (e: Exception) {
+        logger.warn(e) { "Anti-spam: failed to persist MrBeast violation for ${author.id} in $guildId" }
+    }
+
+    if (priorViolations >= 1) {
+        // The ban's deleteMessageDuration sweeps the offending messages; no manual cleanup needed.
+        mrBeastBan(config, author, priorViolations)
+    } else {
+        mrBeastMute(config, author)
+        cleanupTracked(tracked, "MrBeast filter")
+    }
+}
+
+private suspend fun MessageCreateEvent.mrBeastMute(config: AntiSpamConfigData, author: User) {
+    val until = Clock.System.now() + MRBEAST_MUTE
+    val bundle = antiSpamBundle()
+
+    val member = member ?: message.getGuildOrNull()?.getMemberOrNull(author.id)
+    if (member == null) {
+        logger.warn { "Anti-spam: cannot MrBeast-mute ${author.id} in $guildId — member unavailable" }
+        return
+    }
+
+    try {
+        member.edit {
+            communicationDisabledUntil = until
+            reason = bundle.l("antispam.mrbeast.mute")
+        }
+    } catch (e: Exception) {
+        logger.warn(e) { "Anti-spam: failed to MrBeast-mute ${author.id} in $guildId" }
+        return
+    }
+
+    try {
+        message.reply { content = bundle.l("antispam.mrbeast.mute").safeFormat(author.mention) }
+    } catch (e: Exception) {
+        logger.warn(e) { "Anti-spam: failed to reply after MrBeast-mute in ${message.channelId}" }
+    }
+
+    config.logChannel?.let { channel ->
+        sendLog(channel, author, "antispam.log.mrbeast.mute.title", COLOR_MUTE) { bundle ->
+            field {
+                name = bundle.l("antispam.log.field.channel")
+                value = "<#${message.channelId.value}>"
+                inline = true
+            }
+            field {
+                name = bundle.l("antispam.log.field.duration")
+                value = bundle.l("antispam.log.days").safeFormat(MRBEAST_MUTE.inWholeDays)
+                inline = true
+            }
+        }
+    }
+}
+
+private suspend fun MessageCreateEvent.mrBeastBan(
+    config: AntiSpamConfigData,
+    author: User,
+    priorViolations: Long,
+) {
+    val guild = message.getGuildOrNull()
+    if (guild == null) {
+        logger.warn { "Anti-spam: cannot MrBeast-ban ${author.id} — guild $guildId unavailable" }
+        return
+    }
+    val bundle = antiSpamBundle()
+
+    try {
+        guild.ban(author.id) {
+            deleteMessageDuration = AntiSpamDefaults.DETECTION_WINDOW
+            reason = bundle.l("antispam.mrbeast.ban")
+        }
+    } catch (e: Exception) {
+        logger.warn(e) { "Anti-spam: failed to MrBeast-ban ${author.id} in $guildId" }
+        return
+    }
+
+    config.logChannel?.let { channel ->
+        sendLog(channel, author, "antispam.log.mrbeast.ban.title", COLOR_BAN) { bundle ->
+            field {
+                name = bundle.l("antispam.log.field.channel")
+                value = "<#${message.channelId.value}>"
+                inline = true
+            }
+            field {
+                name = bundle.l("antispam.log.field.violations")
+                value = priorViolations.toString()
+                inline = true
+            }
+        }
     }
 }
 
