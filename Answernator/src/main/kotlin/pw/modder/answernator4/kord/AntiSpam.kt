@@ -67,61 +67,102 @@ suspend fun Kord.antiSpamService(di: DI) {
 
     on<MessageCreateEvent> {
         val gid = guildId ?: return@on
-        val author = message.author ?: return@on
-        if (author.isBot) return@on
-        if (message.content.isEmpty() && message.attachments.isEmpty()) return@on
+        val messageAuthor = message.author ?: return@on
 
         val config = configRepository.get(gid) ?: return@on
         if (!config.isEnabled) return@on
+
+        // Command spam (Phase 4): a slash-command response message. Ignore our own responses;
+        // attribute another bot's response to the user who invoked the command, keyed by the
+        // command name (so different commands accumulate independently).
+        val commandInteraction = message.interaction
+        if (commandInteraction != null) {
+            if (messageAuthor.id == kord.selfId) return@on
+            val issuer = commandInteraction.user.asUserOrNull() ?: return@on
+            handleSpam(
+                gid,
+                issuer,
+                MessageCanonicalizer.commandCanon(commandInteraction.name),
+                config,
+                tracker,
+                muteRepository,
+            )
+            return@on
+        }
+
+        // Plain messages: ignore every bot (including ourselves) and content-less messages.
+        if (messageAuthor.isBot) return@on
+        if (message.content.isEmpty() && message.attachments.isEmpty()) return@on
 
         // MrBeast image-dump detection (Phase 3), independent of similarity tracking. A triggered
         // violation is handled here and short-circuits the normal similarity path.
         if (config.isMrBeastEnabled && message.attachments.isNotEmpty()) {
             val classification = mrBeastDetector.classify(
                 guildId = gid.value,
-                userId = author.id.value,
+                userId = messageAuthor.id.value,
                 message = TrackedMessage(message.channelId.value, message.id.value),
                 content = message.content,
                 attachmentCount = message.attachments.size,
             )
             if (classification is MrBeastDetector.Classification.Triggered) {
-                enforceMrBeast(config, author, message.attachments.size, classification.messages, mrBeastRepository)
+                enforceMrBeast(config, messageAuthor, message.attachments.size, classification.messages, mrBeastRepository)
                 return@on
             }
         }
 
-        val canon = MessageCanonicalizer.canonicalize(
-            message.content,
-            message.attachments.map { AttachmentSignature(it.filename, it.size.toLong()) },
+        handleSpam(
+            gid,
+            messageAuthor,
+            MessageCanonicalizer.canonicalize(
+                message.content,
+                message.attachments.map { AttachmentSignature(it.filename, it.size.toLong()) },
+            ),
+            config,
+            tracker,
+            muteRepository,
         )
-        val decision = tracker.record(
-            guildId = gid.value,
-            userId = author.id.value,
-            canon = canon,
-            message = TrackedMessage(message.channelId.value, message.id.value),
-            thresholds = SpamThresholds(config.warningThreshold, config.muteThreshold),
-        )
+    }
+}
 
-        when (decision.action) {
-            SpamAction.NONE -> Unit
+/**
+ * Runs one message through the similarity [tracker] for [offender] under [canon], then applies the
+ * resulting warn/mute/ban decision. Shared by the plain-message and command-spam paths.
+ */
+private suspend fun MessageCreateEvent.handleSpam(
+    gid: Snowflake,
+    offender: User,
+    canon: String,
+    config: AntiSpamConfigData,
+    tracker: SpamTracker,
+    muteRepository: SpamMuteRepository,
+) {
+    val decision = tracker.record(
+        guildId = gid.value,
+        userId = offender.id.value,
+        canon = canon,
+        message = TrackedMessage(message.channelId.value, message.id.value),
+        thresholds = SpamThresholds(config.warningThreshold, config.muteThreshold),
+    )
 
-            SpamAction.WARN -> reply(message, config.warningText, author)
+    when (decision.action) {
+        SpamAction.NONE -> Unit
 
-            SpamAction.ESCALATE -> {
-                // Decide mute vs ban from persisted mute history within the validity window.
-                val priorMutes = if (config.mutesBeforeBan == 0) 0L
-                else muteRepository.countMutes(gid, author.id, config.muteValidity.days)
-                val shouldBan = when {
-                    config.mutesBeforeBan < 0 -> false // -1: never ban, mute only
-                    config.mutesBeforeBan == 0 -> true // 0: ban immediately
-                    else -> priorMutes >= config.mutesBeforeBan
-                }
+        SpamAction.WARN -> reply(message, config.warningText, offender)
 
-                if (shouldBan) {
-                    banUser(config, author, priorMutes)
-                } else {
-                    muteUser(config, author, priorMutes, decision.trackedMessages, muteRepository)
-                }
+        SpamAction.ESCALATE -> {
+            // Decide mute vs ban from persisted mute history within the validity window.
+            val priorMutes = if (config.mutesBeforeBan == 0) 0L
+            else muteRepository.countMutes(gid, offender.id, config.muteValidity.days)
+            val shouldBan = when {
+                config.mutesBeforeBan < 0 -> false // -1: never ban, mute only
+                config.mutesBeforeBan == 0 -> true // 0: ban immediately
+                else -> priorMutes >= config.mutesBeforeBan
+            }
+
+            if (shouldBan) {
+                banUser(config, offender, priorMutes)
+            } else {
+                muteUser(config, offender, priorMutes, decision.trackedMessages, muteRepository)
             }
         }
     }
@@ -150,7 +191,9 @@ private suspend fun MessageCreateEvent.muteUser(
     val duration = minOf(config.muteDuration.minutes, MAX_TIMEOUT)
     val until = Clock.System.now() + duration
 
-    val member = member ?: message.getGuildOrNull()?.getMemberOrNull(author.id)
+    // event.member is the message author, which for a command-spam hit is the responding bot — only
+    // trust it when it actually matches the offender; otherwise resolve the offender's member.
+    val member = member?.takeIf { it.id == author.id } ?: message.getGuildOrNull()?.getMemberOrNull(author.id)
     if (member == null) {
         logger.warn { "Anti-spam: cannot mute ${author.id} in $guildId — member unavailable" }
         return

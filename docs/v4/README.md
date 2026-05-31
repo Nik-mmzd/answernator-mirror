@@ -11,8 +11,9 @@ The framework is the successor to the legacy text-prefix command system (`pw.mod
 | [`commands.md`](commands.md) | The three command base classes, how to declare options, register a command, and localize its text. |
 | [`modals.md`](modals.md) | The modal framework — a typed wrapper around Kord's modal API that lets you collect structured input from users. |
 | [`buttons.md`](buttons.md) | Two ways to add clickable buttons to interaction responses: a short-lived "wait for a click" pattern, and a command-bound stateless pattern. |
+| [`anti-spam.md`](anti-spam.md) | The anti-spam subsystem — the pure detection layer (canonicalization, similarity, the tracker, MrBeast), its persistence/escalation, and the runtime enforcement service. |
 
-If you're new to the codebase, read them in that order — modals and buttons both build on the command framework.
+If you're new to the codebase, read them in that order — modals and buttons both build on the command framework. The anti-spam doc is a standalone feature reference, not part of the framework.
 
 ## Mental model
 
