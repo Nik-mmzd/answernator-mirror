@@ -14,7 +14,6 @@ data class LogsConfigData(
     val memberUnbanLogChannel: Snowflake?,
     val memberMuteLogChannel: Snowflake?,
     val memberUpdateLogChannel: Snowflake?,
-    val botLogChannel: Snowflake?,
     val locale: Locale
 )
 
@@ -29,7 +28,6 @@ class LogsConfigRepository(database: Database) : CachedConfigRepository<LogsConf
                 memberUnbanLogChannel = it.memberUnbanLogChannel,
                 memberMuteLogChannel = it.memberMuteLogChannel,
                 memberUpdateLogChannel = it.memberUpdateLogChannel,
-                botLogChannel = it.botLogChannel,
                 locale = it.locale
             )
         }

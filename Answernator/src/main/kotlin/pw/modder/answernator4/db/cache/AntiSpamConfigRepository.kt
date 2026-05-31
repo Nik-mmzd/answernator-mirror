@@ -15,6 +15,7 @@ data class AntiSpamConfigData(
     val warningThreshold: Int,
     val muteThreshold: Int,
     val banRepeats: Int,
+    val logChannel: Snowflake?,
 )
 
 class AntiSpamConfigRepository(database: Database) : CachedConfigRepository<AntiSpamConfigData>(database) {
@@ -30,6 +31,7 @@ class AntiSpamConfigRepository(database: Database) : CachedConfigRepository<Anti
                 warningThreshold = it.warningThreshold,
                 muteThreshold = it.muteThreshold,
                 banRepeats = it.banRepeats,
+                logChannel = it.logChannel,
             )
         }
 }

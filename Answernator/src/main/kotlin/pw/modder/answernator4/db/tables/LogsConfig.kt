@@ -19,7 +19,6 @@ object LogsConfigs : IdTable<Long>() {
     val memberUnbanLogChannel = long("member_unban_log").asSnowflake().nullable()
     val memberMuteLogChannel = long("member_mute_log").asSnowflake().nullable()
     val memberUpdateLogChannel = long("member_update_log").asSnowflake().nullable()
-    val botLogChannel = long("bot_log").asSnowflake().nullable()
     val locale = varchar("locale", 16).transform(
         wrap = { Locale.fromString(it) },
         unwrap = { "${it.language}${it.country?.let { c -> "-$c" } ?: ""}" }
@@ -35,6 +34,5 @@ class LogsConfig(id: EntityID<Long>): LongEntity(id) {
     var memberUnbanLogChannel by LogsConfigs.memberUnbanLogChannel
     var memberMuteLogChannel by LogsConfigs.memberMuteLogChannel
     var memberUpdateLogChannel by LogsConfigs.memberUpdateLogChannel
-    var botLogChannel by LogsConfigs.botLogChannel
     var locale by LogsConfigs.locale
 }

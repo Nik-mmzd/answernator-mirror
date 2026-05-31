@@ -5,6 +5,7 @@ import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.dao.id.IdTable
 import org.jetbrains.exposed.v1.dao.LongEntity
 import org.jetbrains.exposed.v1.dao.LongEntityClass
+import pw.modder.answernator4.db.asSnowflake
 import pw.modder.answernator4.db.integerBoolean
 
 object AntiSpamConfigs : IdTable<Long>() {
@@ -22,6 +23,8 @@ object AntiSpamConfigs : IdTable<Long>() {
     val warningThreshold = integer("warning_threshold")
     val muteThreshold = integer("mute_threshold")
     val banRepeats = integer("ban_threshold")
+
+    val logChannel = long("log_channel").asSnowflake().nullable()
 
     init {
         index(false, isEnabled)
@@ -42,4 +45,6 @@ class AntiSpamConfig(id: EntityID<Long>): LongEntity(id) {
     var warningThreshold by AntiSpamConfigs.warningThreshold
     var muteThreshold by AntiSpamConfigs.muteThreshold
     var banRepeats by AntiSpamConfigs.banRepeats
+
+    var logChannel by AntiSpamConfigs.logChannel
 }

@@ -6,6 +6,5 @@ CREATE TABLE LOGSCONFIGS (
     MEMBER_UNBAN_LOG   ${datatype:long},
     MEMBER_MUTE_LOG    ${datatype:long},
     MEMBER_UPDATE_LOG  ${datatype:long},
-    BOT_LOG            ${datatype:long},
     LOCALE             VARCHAR(16) NOT NULL
 );
