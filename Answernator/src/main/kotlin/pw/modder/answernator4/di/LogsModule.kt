@@ -1,5 +1,8 @@
 package pw.modder.answernator4.di
 
+import dev.kord.gateway.Intent
+import dev.kord.gateway.Intents
+import dev.kord.gateway.PrivilegedIntent
 import org.flywaydb.core.api.Location
 import org.flywaydb.core.api.locations.LocationParser
 import org.jetbrains.exposed.v1.core.Table
@@ -24,6 +27,7 @@ import pw.modder.answernator4.kord.zombieWatchdog
  * namespace; keep its migration versions distinct from other modules' (e.g. AntiSpam owns `1.x`).
  */
 class LogsModule : KodeinModuleProvider {
+    @OptIn(PrivilegedIntent::class)
     override val module = DI.Module("Logs") {
         importOnce(DatabaseModule)
 
@@ -42,6 +46,14 @@ class LogsModule : KodeinModuleProvider {
         inBindSet<KordConfiguration> {
             addSingleton {
                 KordConfiguration { guildLogService(di) }
+            }
+        }
+
+        // GuildMembers (privileged) drives join/leave/member-update events; GuildModeration covers
+        // ban add/remove. Enable GuildMembers in the Dev Portal.
+        inBindSet<Intents> {
+            addSingleton {
+                Intents { +Intent.GuildMembers; +Intent.GuildModeration }
             }
         }
     }
