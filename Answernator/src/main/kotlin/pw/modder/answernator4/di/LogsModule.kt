@@ -11,9 +11,11 @@ import org.kodein.di.bindSingleton
 import org.kodein.di.inBindSet
 import org.kodein.di.instance
 import pw.modder.answernator4.BuildConfig
+import pw.modder.answernator4.command.GuildLogsConfig
 import pw.modder.answernator4.db.DatabaseModule
 import pw.modder.answernator4.db.cache.LogsConfigRepository
 import pw.modder.answernator4.db.tables.LogsConfigs
+import pw.modder.answernator4.interaction.Command
 import pw.modder.answernator4.kord.guildLogService
 import pw.modder.answernator4.kord.zombieWatchdog
 
@@ -32,6 +34,10 @@ class LogsModule : KodeinModuleProvider {
         importOnce(DatabaseModule)
 
         bindSingleton { LogsConfigRepository(instance()) }
+
+        inBindSet<Command> {
+            addSingleton { GuildLogsConfig(di) }
+        }
 
         inBindSet<Table>(tag = "tables-in-use") {
             addSingleton { LogsConfigs }

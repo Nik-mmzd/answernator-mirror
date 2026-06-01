@@ -21,7 +21,7 @@ object Env {
     val JRE_VENDOR: String? get() = System.getProperty("java.vendor")
     val JRE_VERSION: String? get() = System.getProperty("java.version")
 
-    val ENABLED_MODULES = System.getenv("ANSWR4_ENABLED_MODULES")?.split(',', ' ', ';')?.filterNot { it.isBlank() } ?: emptyList()
+    val ENABLED_MODULES = System.getenv("ANSWR4_ENABLED_MODULES")?.split(',', ' ', ';')?.filterNot { it.isBlank() }?.map { it.lowercase() } ?: emptyList()
 
     object Db {
         val DB_URL: String = System.getenv("ANSWR4_DB_URL") ?: ""
