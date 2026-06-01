@@ -15,11 +15,9 @@ import org.kodein.di.DI
 import org.kodein.di.instance
 import pw.modder.answernator.utils.Utils
 import pw.modder.answernator.utils.extensions.kord.timestampNow
-import pw.modder.answernator.utils.extensions.toUserMention
 import pw.modder.answernator4.BuildConfig
 import pw.modder.answernator4.Env
 import pw.modder.answernator4.di.KodeinModuleList
-import pw.modder.answernator4.di.KodeinModuleProvider
 import pw.modder.answernator4.interaction.ChatInputCommand
 import pw.modder.answernator4.interaction.CommandRegistry
 import pw.modder.answernator4.interaction.button.ButtonField
@@ -70,8 +68,8 @@ class BotInfo(di: DI) : ChatInputCommand(di) {
             field(bundle.l("command.info.version.library"), true) { BuildConfig.KORD_VERSION }
             field(bundle.l("command.info.version.bot"), true) { BuildConfig.APP_VERSION }
 
-            field(bundle.l("command.info.owner"), true) { Env.BOT_OWNER_ID.toUserMention() }
-            field(bundle.l("command.info.creator"), true) { BuildConfig.APP_CREATOR_ID.toUserMention() }
+            field(bundle.l("command.info.owner"), true) { "<@${Env.BOT_OWNER_ID}>" }
+            field(bundle.l("command.info.creator"), true) { "<@${BuildConfig.APP_CREATOR_ID}>" }
 
             timestampNow()
         }

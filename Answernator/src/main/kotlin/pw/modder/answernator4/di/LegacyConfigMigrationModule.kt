@@ -49,6 +49,8 @@ class LegacyConfigMigrationModule : KodeinModuleProvider {
     override val version = BuildConfig.APP_VERSION
 }
 
+
+@Suppress("DEPRECATION")
 private fun migrateLegacyConfigs(database: Database) {
     // TODO(you): idempotency gate + cleanup. Run only when the legacy `Configs` table is present,
     //   and after a successful migration RENAME it (e.g. Configs -> CONFIGS_MIGRATED) so this does

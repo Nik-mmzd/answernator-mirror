@@ -11,13 +11,6 @@ object Utils {
             ?: throw IOException("Resource $path not found")
     }
 
-    @Deprecated("Switch to v4")
-    fun loadDependenciesList(): List<Dependency> {
-        return getResource("dependencies.txt").reader().readLines().map {
-            Dependency.fromString(it)
-        }
-    }
-
     fun getReadableUptime(): String {
         val uptime = ManagementFactory.getRuntimeMXBean().uptime
 

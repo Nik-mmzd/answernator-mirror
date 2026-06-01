@@ -14,10 +14,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.takeWhile
 import org.kodein.di.DI
-import pw.modder.answernator.utils.extensions.kord.authorId
 import pw.modder.answernator4.interaction.ChatInputCommand
 import pw.modder.answernator4.interaction.Option
-import pw.modder.answernator4.interaction.default
 import pw.modder.answernator4.interaction.description
 import pw.modder.answernator4.interaction.l
 import pw.modder.answernator4.interaction.long
@@ -29,7 +27,6 @@ import pw.modder.answernator4.interaction.userId
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Instant
 
 private val logger = KotlinLogging.logger {}
 class Clean(di: DI) : ChatInputCommand(di) {

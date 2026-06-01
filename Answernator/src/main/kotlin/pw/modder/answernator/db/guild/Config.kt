@@ -5,7 +5,8 @@ import org.jetbrains.exposed.v1.core.dao.id.IntIdTable
 import org.jetbrains.exposed.v1.dao.IntEntity
 import org.jetbrains.exposed.v1.dao.IntEntityClass
 
-object Configs: IntIdTable() {
+@Deprecated("Deprecated. Use for migrations only")
+internal object Configs: IntIdTable() {
     val guildId = varchar("guild_id", 18).uniqueIndex("guild_index")
     val features = integer("features")
     val lang = varchar("lang", 2)
