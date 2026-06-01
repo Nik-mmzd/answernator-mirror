@@ -34,7 +34,8 @@ private fun MessageCreateBuilder.userEmbed(user: User, title: String, builder: E
     footer {
         text = "ID: ${user.id.value}"
     }
-    image = ((user as? Member)?.memberAvatar ?: avatar).cdnUrl.toUrl()
+
+    thumbnail { url = ((user as? Member)?.memberAvatar ?: avatar).cdnUrl.toUrl() }
     timestamp = Clock.System.now()
 }
 

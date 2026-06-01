@@ -13,6 +13,7 @@ import dev.kord.core.behavior.interaction.updateEphemeralMessage
 import dev.kord.core.entity.interaction.Interaction
 import dev.kord.core.event.interaction.ButtonInteractionCreateEvent
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
+import dev.kord.rest.builder.component.actionRow
 import dev.kord.rest.builder.component.interactionButtonAccessory
 import dev.kord.rest.builder.component.section
 import dev.kord.rest.builder.component.textDisplay
@@ -29,7 +30,6 @@ import pw.modder.answernator4.interaction.l
 import pw.modder.answernator4.interaction.modal.Modal
 import pw.modder.answernator4.interaction.modal.channelSelect
 import pw.modder.answernator4.interaction.modal.getValue
-import pw.modder.answernator4.interaction.modal.optional
 import pw.modder.answernator4.interaction.modal.provideDelegate
 import pw.modder.answernator4.interaction.modal.showModal
 import pw.modder.answernator4.interaction.modal.textField
@@ -119,6 +119,7 @@ class AntiSpamConfig(di: DI) : ChatInputCommand(di) {
             ) { c, v -> c.copy(muteValidity = v) }
 
             buttons.editLogChannel -> editLogChannel(bundle, config)
+            buttons.disableLogChannel -> toggle(bundle, config.copy(logChannel = null))
 
             else -> Unit // link buttons / unknown ids never reach here, but `when` must be exhaustive
         }
@@ -181,7 +182,7 @@ class AntiSpamConfig(di: DI) : ChatInputCommand(di) {
         reply.interaction.updateEphemeralMessage { renderPanel(bundle, updated, perms) }
     }
 
-    /** Opens a channel-select modal; an empty selection clears the log channel. */
+    /** Opens a channel-select modal that always picks a channel; the separate Disable button clears it. */
     private suspend fun ButtonInteractionCreateEvent.editLogChannel(bundle: ResourceBundle, config: AntiSpamConfigData) {
         val modal = ChannelEditModal(bundle.l("antispam.config.log_channel"), config.logChannel)
         val reply = interaction.showModal(modal) ?: return
@@ -215,7 +216,29 @@ class AntiSpamConfig(di: DI) : ChatInputCommand(di) {
         editSection(bundle, bundle.l("antispam.config.mutes_before_ban"), mutesBeforeBanText(config.mutesBeforeBan, bundle), buttons.editMutesBeforeBan.id)
         editSection(bundle, bundle.l("antispam.config.mute_duration"), bundle.l("antispam.config.minutes").format(config.muteDuration), buttons.editMuteDuration.id)
         editSection(bundle, bundle.l("antispam.config.mute_validity"), bundle.l("antispam.config.days").format(config.muteValidity), buttons.editMuteValidity.id)
-        editSection(bundle, bundle.l("antispam.config.log_channel"), config.logChannel?.let { "<#${it.value}>" } ?: bundle.l("antispam.config.none"), buttons.editLogChannel.id)
+        logChannelSection(bundle, config.logChannel)
+    }
+
+    /**
+     * The log-channel setting: a section with an Edit accessory that opens the channel-select modal, plus a
+     * Disable button (rendered only when a channel is set) that clears it — Discord modals can't host an
+     * optional select, so clearing lives outside the modal.
+     */
+    private fun MessageBuilder.logChannelSection(bundle: ResourceBundle, channel: Snowflake?) {
+        val value = channel?.let { "<#${it.value}>" } ?: bundle.l("antispam.config.none")
+        section {
+            textDisplay { content = "**${bundle.l("antispam.config.log_channel")}**\n$value" }
+            interactionButtonAccessory(ButtonStyle.Secondary, "cmd:$effectiveName:${buttons.editLogChannel.id}") {
+                label = bundle.l("antispam.config.edit")
+            }
+        }
+        if (channel != null) {
+            actionRow {
+                interactionButton(ButtonStyle.Danger, "cmd:$effectiveName:${buttons.disableLogChannel.id}") {
+                    label = bundle.l("antispam.config.disable")
+                }
+            }
+        }
     }
 
     /** Lines flagging enforcement that the bot can't actually carry out with its current permissions. */
@@ -298,6 +321,7 @@ class AntiSpamConfig(di: DI) : ChatInputCommand(di) {
         val editMuteDuration by button(label = "edit")
         val editMuteValidity by button(label = "edit")
         val editLogChannel by button(label = "edit")
+        val disableLogChannel by button(label = "disable")
     }
 
     private class TextEditModal(
@@ -322,6 +346,6 @@ class AntiSpamConfig(di: DI) : ChatInputCommand(di) {
             label = label,
             channelTypes = listOf(ChannelType.GuildText, ChannelType.GuildNews),
             defaultChannels = current?.let { listOf(it) } ?: emptyList(),
-        ).optional()
+        )
     }
 }
