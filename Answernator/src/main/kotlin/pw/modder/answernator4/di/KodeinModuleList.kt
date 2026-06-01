@@ -2,6 +2,7 @@ package pw.modder.answernator4.di
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import pw.modder.answernator4.Env
+import pw.modder.answernator4.interaction.BundleClassLoader
 import java.io.File
 import java.net.URLClassLoader
 import java.util.ServiceLoader
@@ -26,6 +27,9 @@ object KodeinModuleList {
                 .listFiles { file -> file.isFile && file.extension.equals("jar", ignoreCase = true) }
                 ?.map { it.toURI().toURL() }?.toTypedArray() ?: arrayOf()
         )
+        // Route command resource-bundle lookups through this loader so plugin-module bundles
+        // (e.g. fun's locale/fun/*) resolve in addition to the core bundles reached via the parent.
+        BundleClassLoader.value = classLoader
         providers = ServiceLoader.load(KodeinModuleProvider::class.java, classLoader).onEach {
             logger.info { "Discovered module $it" }
         }.filter {

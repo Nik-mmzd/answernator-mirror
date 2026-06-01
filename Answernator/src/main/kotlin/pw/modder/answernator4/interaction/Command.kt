@@ -18,13 +18,27 @@ private val DEFAULT_LOCALE = Locale("en-US")
 
 internal val SUPPORTED_LOCALES: Set<Locale> = linkedSetOf(DEFAULT_LOCALE, Locale("ru"))
 
+/**
+ * Classloader used to resolve command resource bundles.
+ *
+ * Defaults to this framework's own loader. At startup [pw.modder.answernator4.di.KodeinModuleList]
+ * swaps in the loader spanning the hot-swappable plugin JARs in `./commands`; since that loader
+ * delegates to the app loader as its parent, it resolves both the core bundles under `locale/v4`
+ * and plugin-module bundles (e.g. `fun`'s bundles under `locale/fun`), which the app loader alone
+ * cannot see.
+ */
+internal object BundleClassLoader {
+    @Volatile
+    var value: ClassLoader = BundleClassLoader::class.java.classLoader
+}
+
 internal fun getAllLocalizations(bundleName: String, key: String): Pair<String, Map<Locale, String>> {
     val translations = mutableMapOf<Locale, String>()
     var name = key
 
     SUPPORTED_LOCALES.forEach { kordLocale ->
         try {
-            val bundle = ResourceBundle.getBundle("locale.$bundleName", kordLocale.asJavaLocale())
+            val bundle = ResourceBundle.getBundle("locale.$bundleName", kordLocale.asJavaLocale(), BundleClassLoader.value)
             if (bundle.containsKey(key)) {
                 val value = bundle.getString(key)
                 translations[kordLocale] = value
@@ -79,7 +93,7 @@ abstract class Command(override val di: DI) : DIAware {
     val InteractionCreateEvent.bundle: ResourceBundle
         get() {
             val discordLocale = interaction.locale ?: DEFAULT_LOCALE
-            return ResourceBundle.getBundle("locale.$bundleName", discordLocale.asJavaLocale())
+            return ResourceBundle.getBundle("locale.$bundleName", discordLocale.asJavaLocale(), BundleClassLoader.value)
         }
 
     /**
@@ -88,7 +102,7 @@ abstract class Command(override val di: DI) : DIAware {
     val InteractionCreateEvent.gbundle: ResourceBundle
         get() {
             val discordLocale = interaction.guildLocale ?: interaction.locale ?: DEFAULT_LOCALE
-            return ResourceBundle.getBundle("locale.$bundleName", discordLocale.asJavaLocale())
+            return ResourceBundle.getBundle("locale.$bundleName", discordLocale.asJavaLocale(), BundleClassLoader.value)
         }
 
 
