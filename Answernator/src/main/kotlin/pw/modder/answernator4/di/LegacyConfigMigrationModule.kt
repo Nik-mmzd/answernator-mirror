@@ -120,7 +120,6 @@ private fun migrateAntiSpam(guildId: Long, legacy: LegacyConfig, bundle: Resourc
         isMrBeastEnabled = false // new feature, no legacy source
         warningText = text(legacy.antiSpamWarnText, "antispam.warning")
         muteText = bundle.l("antispam.mute") // no legacy source
-        banText = text(legacy.antiSpamBanText, "antispam.ban")
         warningThreshold = legacy.antiSpamWarn
         muteThreshold = legacy.antiSpamBan // enforcement fires at the legacy ban count
         mutesBeforeBan = 0 // legacy banned straight away (no mute stage) — preserve that

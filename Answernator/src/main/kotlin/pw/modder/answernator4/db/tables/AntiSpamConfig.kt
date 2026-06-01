@@ -16,9 +16,9 @@ object AntiSpamConfigs : IdTable<Long>() {
     val isEnabled = integerBoolean("is_enabled")
     val isMrBeastEnabled = integerBoolean("filter_mrbeast")
 
+    // User-facing notification texts (the warning reply, and the reply shown when muted).
     val warningText = varchar("warning_text", 255)
     val muteText = varchar("mute_text", 255)
-    val banText = varchar("ban_text", 255)
 
     val warningThreshold = integer("warning_threshold")
     val muteThreshold = integer("mute_threshold")
@@ -45,7 +45,6 @@ class AntiSpamConfig(id: EntityID<Long>): LongEntity(id) {
 
     var warningText by AntiSpamConfigs.warningText
     var muteText by AntiSpamConfigs.muteText
-    var banText by AntiSpamConfigs.banText
 
     var warningThreshold by AntiSpamConfigs.warningThreshold
     var muteThreshold by AntiSpamConfigs.muteThreshold

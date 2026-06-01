@@ -86,6 +86,12 @@ class SpamTracker(private val clock: () -> Long = System::currentTimeMillis) {
             while (group.messages.size > thresholds.maxTrackedPerGroup) group.messages.removeFirst()
 
             val count = group.events.size
+
+            // Skip the warning stage entirely when a mute would trigger at or before it
+            // (muteThreshold <= warningThreshold): enforcement happens straight away, no warning.
+            val warnEnabled = thresholds.warningThreshold > 0 &&
+                (thresholds.muteThreshold <= 0 || thresholds.warningThreshold < thresholds.muteThreshold)
+
             return when {
                 thresholds.muteThreshold > 0 && count >= thresholds.muteThreshold -> {
                     val tracked = group.messages.map { it.second }
@@ -93,7 +99,7 @@ class SpamTracker(private val clock: () -> Long = System::currentTimeMillis) {
                     SpamDecision(SpamAction.ESCALATE, count, tracked)
                 }
 
-                thresholds.warningThreshold > 0 && count == thresholds.warningThreshold ->
+                warnEnabled && count == thresholds.warningThreshold ->
                     SpamDecision(SpamAction.WARN, count)
 
                 else -> SpamDecision(SpamAction.NONE, count)

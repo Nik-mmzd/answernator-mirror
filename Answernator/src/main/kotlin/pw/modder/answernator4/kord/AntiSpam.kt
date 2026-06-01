@@ -190,6 +190,8 @@ private suspend fun MessageCreateEvent.muteUser(
 ) {
     val duration = minOf(config.muteDuration.minutes, MAX_TIMEOUT)
     val until = Clock.System.now() + duration
+    // Audit-log reason is a fixed bundle string, separate from the user-facing [config.muteText] reply.
+    val reason = antiSpamBundle().l("antispam.reason.mute")
 
     // event.member is the message author, which for a command-spam hit is the responding bot — only
     // trust it when it actually matches the offender; otherwise resolve the offender's member.
@@ -202,7 +204,7 @@ private suspend fun MessageCreateEvent.muteUser(
     try {
         member.edit {
             communicationDisabledUntil = until
-            reason = config.muteText
+            this.reason = reason
         }
     } catch (e: Exception) {
         logger.warn(e) { "Anti-spam: failed to mute ${author.id} in $guildId" }
@@ -216,7 +218,7 @@ private suspend fun MessageCreateEvent.muteUser(
     } catch (e: Exception) {
         logger.warn(e) { "Anti-spam: failed to persist mute for ${author.id} in $guildId" }
     }
-    cleanupTracked(tracked, config.muteText)
+    cleanupTracked(tracked, reason)
 
     config.logChannel?.let { channel ->
         sendLog(channel, author, "antispam.log.mute.title", COLOR_MUTE) { bundle ->
@@ -254,7 +256,7 @@ private suspend fun MessageCreateEvent.banUser(
         guild.ban(author.id) {
             // Discord cleans messages itself for the detection window; no manual tracking needed.
             deleteMessageDuration = AntiSpamDefaults.DETECTION_WINDOW
-            reason = config.banText
+            reason = antiSpamBundle().l("antispam.reason.ban")
         }
     } catch (e: Exception) {
         logger.warn(e) { "Anti-spam: failed to ban ${author.id} in $guildId" }
@@ -371,12 +373,7 @@ private suspend fun MessageCreateEvent.mrBeastMute(config: AntiSpamConfigData, a
         return
     }
 
-    try {
-        message.reply { content = bundle.l("antispam.mrbeast.mute").safeFormat(author.mention) }
-    } catch (e: Exception) {
-        logger.warn(e) { "Anti-spam: failed to reply after MrBeast-mute in ${message.channelId}" }
-    }
-
+    // MrBeast lovers get no user-facing warning reply — only the log-channel report below.
     config.logChannel?.let { channel ->
         sendLog(channel, author, "antispam.log.mrbeast.mute.title", COLOR_MUTE) { bundle ->
             field {

@@ -11,6 +11,7 @@ import org.kodein.di.bindSingleton
 import org.kodein.di.inBindSet
 import org.kodein.di.instance
 import pw.modder.answernator4.BuildConfig
+import pw.modder.answernator4.command.AntiSpamConfig
 import pw.modder.answernator4.db.DatabaseModule
 import pw.modder.answernator4.db.cache.AntiSpamConfigRepository
 import pw.modder.answernator4.db.cache.MrBeastRepository
@@ -38,6 +39,10 @@ class AntiSpamModule : KodeinModuleProvider {
         bindSingleton { AntiSpamConfigRepository(instance()) }
         bindSingleton { SpamMuteRepository(instance()) }
         bindSingleton { MrBeastRepository(instance()) }
+
+        inBindSet<pw.modder.answernator4.interaction.Command> {
+            addSingleton { AntiSpamConfig(di) }
+        }
 
         inBindSet<Table>(tag = "tables-in-use") {
             addSingleton { AntiSpamConfigs }
