@@ -1,7 +1,8 @@
 plugins {
-    id(libs.plugins.shadow.get().pluginId)
     `maven-publish`
     `version-catalog`
+    application
+    alias(libs.plugins.buildconfig)
 }
 
 val gitVersion: groovy.lang.Closure<String> by extra
@@ -14,6 +15,11 @@ catalog {
         from(files("../gradle/libs.versions.toml"))
         version("answernator", project.version.toString())
         library("answernator", project.group.toString(), "answernator").versionRef("answernator")
+
+        bundle(
+            "extension-common",
+            listOf("kotlin-stdlib", "ktor-client-core", "ktor-client-cio", "kord", "kodein-di", "answernator"),
+        )
     }
 }
 
@@ -35,7 +41,7 @@ publishing {
 
     repositories {
         maven {
-            name = "gitlab.modder.pw"
+            name = "gitlab-ci"
             url = uri("${System.getenv("CI_API_V4_URL")}/projects/${System.getenv("CI_PROJECT_ID")}/packages/maven")
 
             credentials(HttpHeaderCredentials::class) {
@@ -51,17 +57,20 @@ publishing {
 
 val slf4jVersion: String by project
 dependencies {
+    api(libs.bundles.common)
+    implementation(libs.bundles.database)
     implementation(libs.guava)
     implementation(libs.apache.commons.io)
     implementation(libs.bundles.sentry.kotlin)
     runtimeOnly(libs.h2)
     runtimeOnly(libs.logback.classic)
+
+    testImplementation(libs.kotlin.test)
 }
 
-val jar by tasks.getting(Jar::class) {
-    manifest {
-        attributes["Main-Class"] = "pw.modder.answernator.MainKt"
-    }
+application {
+    applicationName = "Answernator"
+    mainClass = "pw.modder.answernator4.MainKt"
 }
 
 java {
@@ -69,24 +78,29 @@ java {
 }
 
 tasks {
-    val createDependenciesFile by creating {
-        doLast {
-            file("$buildDir/dependencies.txt").printWriter().use { pw ->
-                pw.appendLine("${project.group}:${project.name}:${project.version}")
-                configurations.runtimeClasspath.get().resolvedConfiguration.resolvedArtifacts.forEach {
-                    pw.appendLine(it.moduleVersion.toString())
-                }
-            }
-        }
+    test {
+        useJUnitPlatform()
+        failOnNoDiscoveredTests = false
     }
 
-    jar {
-        dependsOn(createDependenciesFile)
-        from("$buildDir/dependencies.txt")
+    distTar {
+        compression = Compression.GZIP
+        archiveVersion.convention(null as String?)
     }
 
-    shadowJar {
-        dependsOn(createDependenciesFile)
-        from("$buildDir/dependencies.txt")
+    distZip {
+        archiveVersion.convention(null as String?)
     }
+}
+
+buildConfig {
+    className("BuildConfig")
+    packageName("pw.modder.answernator4")
+
+    buildConfigField("APP_VERSION", project.version.toString())
+    buildConfigField("APP_NAME", project.name)
+    buildConfigField("APP_CREATOR_ID", providers.gradleProperty("answernator.author.id"))
+    buildConfigField("APP_SOURCE_URL", providers.gradleProperty("answernator.url.source"))
+    buildConfigField("APP_ISSUES_URL", providers.gradleProperty("answernator.url.issues"))
+    buildConfigField("KORD_VERSION", libs.versions.kord)
 }

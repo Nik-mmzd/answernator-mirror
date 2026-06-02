@@ -1,6 +1,6 @@
 package pw.modder.answernator.utils
 
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 enum class TimestampFormat(val suffix: String) {
     SHORT_TIME("t"), LONG_TIME("T"),

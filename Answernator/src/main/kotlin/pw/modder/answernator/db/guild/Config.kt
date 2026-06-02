@@ -1,11 +1,9 @@
 package pw.modder.answernator.db.guild
 
-import org.jetbrains.exposed.dao.IntEntity
-import org.jetbrains.exposed.dao.IntEntityClass
-import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.dao.id.IntIdTable
+import org.jetbrains.exposed.v1.core.dao.id.IntIdTable
 
-object Configs: IntIdTable() {
+@Deprecated("Deprecated. Use for migrations only")
+internal object Configs: IntIdTable() {
     val guildId = varchar("guild_id", 18).uniqueIndex("guild_index")
     val features = integer("features")
     val lang = varchar("lang", 2)
@@ -31,89 +29,6 @@ object Configs: IntIdTable() {
 //    val messageDeleteLogChannel = varchar("message_delete_channel", 18).default("") // https://discordapp.com/developers/docs/topics/gateway#message-delete
 //    val messageBulkDeleteLogChannel = varchar("message_bulk_delete_channel", 18).default("") // https://discordapp.com/developers/docs/topics/gateway#message-delete-bulk
 //    val messageChangedLogChannel = varchar("message_update_channel", 18).default("") // https://discordapp.com/developers/docs/topics/gateway#message-update
-}
-
-abstract class BaseConfig(id: EntityID<Int>): IntEntity(id) {
-    companion object : IntEntityClass<BaseConfig>(Configs)
-
-    var guildId by Configs.guildId
-    var features by Configs.features
-    var lang by Configs.lang
-    var cmdPrefix by Configs.commandPrefix
-
-    fun isEnabled(feature: Features): Boolean {
-        return (features and(1 shl feature.ordinal)) > 0
-    }
-
-    fun getEnabled(): List<Features> {
-        return Features.values().filter { isEnabled(it) }
-    }
-
-    fun enable(feature: Features) {
-        features = features or(1 shl feature.ordinal)
-    }
-
-    fun disable(feature: Features) {
-        features = features and((1 shl feature.ordinal).inv())
-    }
-}
-
-class GuildConfig(id: EntityID<Int>): BaseConfig(id) {
-    companion object : IntEntityClass<GuildConfig>(Configs)
-
-    var greeting by Configs.greetingText
-    var greetingChannel by Configs.greetingChannel
-    var defaultRole by Configs.defaultRoleId
-}
-
-class AntiSpamConfig(id: EntityID<Int>): BaseConfig(id) {
-    companion object : IntEntityClass<AntiSpamConfig>(Configs)
-
-    var antiSpamWarnText by Configs.antiSpamWarnText
-    var antiSpamBanText by Configs.antiSpamBanText
-    var antiSpamWarn by Configs.antiSpamWarn
-    var antiSpamBan by Configs.antiSpamBan
-}
-
-class LogConfig(id: EntityID<Int>): BaseConfig(id) {
-    companion object : IntEntityClass<LogConfig>(Configs)
-
-    var muteRole by Configs.muteRoleId
-    var memberJoinLogChannel by Configs.memberJoinLogChannel
-    var memberLeaveLogChannel by Configs.memberLeaveLogChannel
-    var memberBanLogChannel by Configs.memberBanLogChannel
-    var memberUnbanLogChannel by Configs.memberUnbanLogChannel
-    var memberMuteLogChannel by Configs.memberMuteLogChannel
-    var memberUnmuteLogChannel by Configs.memberUnmuteLogChannel
-
-//    var messageDeleteLogChannel by Configs.messageDeleteLogChannel
-//    var messageBulkDeleteLogChannel by Configs.messageBulkDeleteLogChannel
-//    var messageChangedLogChannel by Configs.messageChangedLogChannel
-}
-
-class Config(id: EntityID<Int>): BaseConfig(id) {
-    companion object : IntEntityClass<Config>(Configs)
-
-    var greeting by Configs.greetingText
-    var greetingChannel by Configs.greetingChannel
-    var muteRole by Configs.muteRoleId
-    var defaultRole by Configs.defaultRoleId
-
-    var antiSpamWarnText by Configs.antiSpamWarnText
-    var antiSpamBanText by Configs.antiSpamBanText
-    var antiSpamWarn by Configs.antiSpamWarn
-    var antiSpamBan by Configs.antiSpamBan
-
-    var memberJoinLogChannel by Configs.memberJoinLogChannel
-    var memberLeaveLogChannel by Configs.memberLeaveLogChannel
-    var memberBanLogChannel by Configs.memberBanLogChannel
-    var memberUnbanLogChannel by Configs.memberUnbanLogChannel
-    var memberMuteLogChannel by Configs.memberMuteLogChannel
-    var memberUnmuteLogChannel by Configs.memberUnmuteLogChannel
-
-//    var messageDeleteLogChannel by Configs.messageDeleteLogChannel
-//    var messageBulkDeleteLogChannel by Configs.messageBulkDeleteLogChannel
-//    var messageChangedLogChannel by Configs.messageChangedLogChannel
 }
 
 enum class Features {

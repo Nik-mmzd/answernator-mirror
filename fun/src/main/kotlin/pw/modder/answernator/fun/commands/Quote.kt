@@ -1,58 +1,95 @@
 package pw.modder.answernator.`fun`.commands
 
-import dev.kord.core.entity.Message
+import dev.kord.common.entity.ButtonStyle
+import dev.kord.common.entity.DiscordPartialEmoji
+import dev.kord.core.behavior.interaction.response.respond
+import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
+import dev.kord.rest.builder.component.actionRow
+import dev.kord.rest.builder.message.embed
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.get
-import io.ktor.client.request.parameter
-import io.ktor.client.statement.*
-import kotlinx.datetime.Instant
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.isSuccess
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import pw.modder.answernator.db.guild.Config
-import pw.modder.answernator.utils.Command
-import pw.modder.answernator.utils.Globals
-import pw.modder.answernator.utils.extensions.kord.reply
-import pw.modder.answernator.utils.extensions.kord.replyEmbed
-import java.util.*
-import pw.modder.answernator.`fun`.utils.Quote as QuoteData
+import org.kodein.di.DI
+import pw.modder.answernator.`fun`.Env
+import pw.modder.answernator4.interaction.ChatInputCommand
+import pw.modder.answernator4.interaction.Option
+import pw.modder.answernator4.interaction.description
+import pw.modder.answernator4.interaction.long
+import pw.modder.answernator4.interaction.minValue
+import pw.modder.answernator4.interaction.name
+import pw.modder.answernator4.interaction.optional
+import kotlin.time.Instant
 
-private val json = Json { ignoreUnknownKeys = true }
-
-class Quote: Command {
+/**
+ * `/quote [номер]` — fetches a quote from the modder.pw quote book (https://modder.pw/api/v2).
+ * Without an id a random quote is returned.
+ *
+ * ru-specific and intentionally scoped to a single guild via [guildIds]; the placeholder ID `0`
+ * must be replaced with the real guild before deployment.
+ */
+class Quote(di: DI) : ChatInputCommand(di) {
     override val name = "quote"
-    override val cmdType = Command.CommandGroup.FUN
-    override val localesWhitelist: List<Locale> = listOf(Locale("ru"))
+    override val bundleName = "fun.quote"
+    override val guildIds = Env.QuotesEnabledGuilds
 
-    override fun getHelp(locale: Locale): String? {
-        return "Возвращает цитату с https://modder.pw. Использование: `quote [номер цитаты]`"
-    }
+    val id: Option<Long?> by long().name("id").description("id.description").minValue(1).optional()
 
-    override fun getDescription(locale: Locale): String? {
-        return "цитата из цитатника modder.pw"
-    }
+    override suspend fun ChatInputCommandInteractionCreateEvent.execute() {
+        val reply = interaction.deferPublicResponse()
+        val id by option(id)
 
-    override suspend fun action(message: Message, args: List<String>, locale: Locale, config: Config?) {
-        val request: String = when(val id = args.firstOrNull()?.toIntOrNull()) {
-            null -> Globals.httpClient.get("https://modder.pw/api/random.php").bodyAsText(Charsets.UTF_8)
-            else -> Globals.httpClient.get("https://modder.pw/api/get.php") { parameter("id", id) }.bodyAsText(Charsets.UTF_8)
+        val requestUrl = if (id == null) "$API_BASE/quotes/random" else "$API_BASE/quotes/$id"
+        val response = httpClient.get(requestUrl)
+
+        if (!response.status.isSuccess()) {
+            reply.respond { content = "Неверный номер цитаты" }
+            return
         }
 
-        val data = try {
-            json.decodeFromString(QuoteData.serializer(), request)
-        } catch (e: Exception) {
-            if (!json.decodeFromString(QuoteData.Error.serializer(), request).success) {
-                message.reply("Неверный номер цитаты")
-                return
+        val quote = json.decodeFromString(QuoteData.serializer(), response.bodyAsText())
+
+        reply.respond {
+            embed {
+                title = "Цитата #${quote.id}"
+                url = "https://modder.pw/quotes/${quote.id}"
+                description = quote.text.takeIf { it.length < 2000 } ?: (quote.text.take(1999) + "…")
+                timestamp = Instant.fromEpochMilliseconds(quote.created)
+                author {
+                    name = quote.author.name.ifBlank { "Автор неизвестен" }
+                    url = "https://modder.pw/authors/${quote.author.id}"
+                }
+                footer { text = "Цитатник McModder'а | modder.pw" }
             }
-            throw e
+            actionRow {
+                interactionButton(ButtonStyle.Secondary, "quote:likes") {
+                    emoji = DiscordPartialEmoji(name = "❤️")
+                    label = quote.likes.toString()
+                    disabled = true
+                }
+            }
         }
+    }
 
-        message.replyEmbed {
-            title = "Цитата #${data.id}"
-            url = "https://modder.pw/?id=${data.id}"
-            description = data.text.takeIf { it.length < 2000 } ?: (data.text.take(1999) + "…")
-            timestamp = Instant.fromEpochSeconds(data.createdAt)
-            field("Автор", true) { data.creatorMention }
-            field("Лайков", true) { data.likesCount.toString() }
-            footer { text = "Источник: Цитатник McModder'а | modder.pw" }
-        }
+    @Serializable
+    private data class QuoteData(
+        val id: Int,
+        val author: Author,
+        val created: Long,
+        val text: String,
+        val likes: Long,
+    ) {
+        @Serializable
+        data class Author(val id: Long, val name: String)
+    }
+
+    private companion object {
+        const val API_BASE = "https://modder.pw/api/v2"
+
+        val httpClient = HttpClient(CIO)
+        val json = Json { ignoreUnknownKeys = true }
     }
 }

@@ -1,3 +1,7 @@
+plugins {
+    alias(libs.plugins.buildconfig)
+}
+
 val gitVersion: groovy.lang.Closure<String> by extra
 
 group = "pw.modder.answernator"
@@ -7,17 +11,9 @@ dependencies {
     implementation(project(":Answernator"))
 }
 
-tasks {
-    val createModuleVersionFile by creating {
-        doLast {
-            file("$buildDir/module.fun.txt").printWriter().use { pw ->
-                pw.appendLine(project.version.toString())
-            }
-        }
-    }
+buildConfig {
+    packageName("pw.modder.answernator.fun")
+    className("BuildConfig")
 
-    jar {
-        dependsOn(createModuleVersionFile)
-        from("$buildDir/module.fun.txt")
-    }
+    buildConfigField("APP_VERSION", project.version.toString())
 }

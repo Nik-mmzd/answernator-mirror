@@ -12,6 +12,5 @@ pluginManagement {
         }
     }
 }
-include("tools")
 include("Answernator")
 include("fun")

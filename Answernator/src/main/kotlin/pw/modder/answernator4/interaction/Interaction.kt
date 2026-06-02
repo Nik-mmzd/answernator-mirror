@@ -1,0 +1,92 @@
+package pw.modder.answernator4.interaction
+
+import dev.kord.common.entity.ApplicationCommandOptionType
+import dev.kord.core.Kord
+import dev.kord.rest.builder.interaction.*
+import kotlin.reflect.KProperty
+
+fun ChatInputCreateBuilder.option(option: Option<*>, bundleName: String) {
+    val impl = option as OptionImpl<*>
+    when (impl.type) {
+        ApplicationCommandOptionType.String -> string(impl.name.key, impl.description.key) { impl.buildSpec(this, bundleName) }
+        ApplicationCommandOptionType.Integer -> integer(impl.name.key, impl.description.key) { impl.buildSpec(this, bundleName) }
+        ApplicationCommandOptionType.Boolean -> boolean(impl.name.key, impl.description.key) { impl.buildSpec(this, bundleName) }
+        ApplicationCommandOptionType.User -> user(impl.name.key, impl.description.key) { impl.buildSpec(this, bundleName) }
+        ApplicationCommandOptionType.Channel -> channel(impl.name.key, impl.description.key) { impl.buildSpec(this, bundleName) }
+        ApplicationCommandOptionType.Role -> role(impl.name.key, impl.description.key) { impl.buildSpec(this, bundleName) }
+        ApplicationCommandOptionType.Mentionable -> mentionable(impl.name.key, impl.description.key) { impl.buildSpec(this, bundleName) }
+        ApplicationCommandOptionType.Number -> number(impl.name.key, impl.description.key) { impl.buildSpec(this, bundleName) }
+        ApplicationCommandOptionType.Attachment -> attachment(impl.name.key, impl.description.key) { impl.buildSpec(this, bundleName) }
+        else -> error("Unsupported option type: ${impl.type}")
+    }
+}
+
+
+suspend fun Kord.register(command: ChatInputCommand) {
+    val bName = command.bundleName
+
+    val (nameValue, nameLocs) = getAllLocalizations(bName, command.name)
+    val (desc, descLocs) = getAllLocalizations(bName, "${command.name}.description")
+
+    if (command.guildIds.isEmpty()) {
+        createGlobalChatInputCommand(nameValue, desc) {
+            nameLocalizations = nameLocs.toMutableMap()
+            descriptionLocalizations = descLocs.toMutableMap()
+            defaultMemberPermissions = command.defaultMemberPermissions
+            dmPermission = command.dmPermission
+            command.options.forEach { option(it, bName) }
+        }
+        return
+    }
+
+    command.guildIds.forEach { guildId ->
+        createGuildChatInputCommand(guildId, nameValue, desc) {
+            nameLocalizations = nameLocs.toMutableMap()
+            descriptionLocalizations = descLocs.toMutableMap()
+            defaultMemberPermissions = command.defaultMemberPermissions
+            command.options.forEach { option(it, bName) }
+        }
+    }
+}
+
+suspend fun Kord.registerUser(command: UserCommand) {
+    val bName = command.bundleName
+    val (nameValue, nameLocs) = getAllLocalizations(bName, command.name)
+
+    if (command.guildIds.isEmpty()) {
+        createGlobalUserCommand(nameValue) {
+            nameLocalizations = nameLocs.toMutableMap()
+            defaultMemberPermissions = command.defaultMemberPermissions
+            dmPermission = command.dmPermission
+        }
+        return
+    }
+
+    command.guildIds.forEach { guildId ->
+        createGuildUserCommand(guildId, nameValue) {
+            nameLocalizations = nameLocs.toMutableMap()
+            defaultMemberPermissions = command.defaultMemberPermissions
+        }
+    }
+}
+
+suspend fun Kord.registerMessage(command: MessageCommand) {
+    val bName = command.bundleName
+    val (nameValue, nameLocs) = getAllLocalizations(bName, command.name)
+
+    if (command.guildIds.isEmpty()) {
+        createGlobalMessageCommand(nameValue) {
+            nameLocalizations = nameLocs.toMutableMap()
+            defaultMemberPermissions = command.defaultMemberPermissions
+            dmPermission = command.dmPermission
+        }
+        return
+    }
+
+    command.guildIds.forEach { guildId ->
+        createGuildMessageCommand(guildId, nameValue) {
+            nameLocalizations = nameLocs.toMutableMap()
+            defaultMemberPermissions = command.defaultMemberPermissions
+        }
+    }
+}
