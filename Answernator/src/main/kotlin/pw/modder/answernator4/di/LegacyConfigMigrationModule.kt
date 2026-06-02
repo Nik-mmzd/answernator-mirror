@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package pw.modder.answernator4.di
 
 import dev.kord.common.Locale
@@ -5,12 +7,16 @@ import dev.kord.common.asJavaLocale
 import dev.kord.common.entity.Snowflake
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.jetbrains.exposed.v1.jdbc.Database
+import org.jetbrains.exposed.v1.jdbc.SchemaUtils
+import org.jetbrains.exposed.v1.jdbc.exists
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.kodein.di.DI
 import org.kodein.di.instance
+import pw.modder.answernator.db.guild.BlacklistedCommands
 import pw.modder.answernator.db.guild.Configs
 import pw.modder.answernator.db.guild.Features
+import pw.modder.answernator.db.guild.Mutes
 import pw.modder.answernator4.BuildConfig
 import pw.modder.answernator4.db.DatabaseModule
 import pw.modder.answernator4.db.tables.AntiSpamConfig
@@ -50,13 +56,12 @@ class LegacyConfigMigrationModule : KodeinModuleProvider {
 }
 
 
-@Suppress("DEPRECATION")
 private fun migrateLegacyConfigs(database: Database) {
-    // TODO(you): idempotency gate + cleanup. Run only when the legacy `Configs` table is present,
-    //   and after a successful migration RENAME it (e.g. Configs -> CONFIGS_MIGRATED) so this does
-    //   not run again. Until that gate exists, a missing legacy table is swallowed below.
     val legacyRows = try {
         transaction(db = database) {
+            if (!Configs.exists())
+                return@transaction emptyList()
+
             Configs.selectAll().map { row ->
                 LegacyConfig(
                     guildId = row[Configs.guildId],
@@ -107,6 +112,11 @@ private fun migrateLegacyConfigs(database: Database) {
                     "logs=${legacy.enabledLogChannelCount()} channel(s), locale=${legacy.lang}"
             }
         }
+
+        logger.warn { "Dropping old tables!" }
+        SchemaUtils.drop(Configs)
+        if (Mutes.exists()) SchemaUtils.drop(Mutes)
+        if (BlacklistedCommands.exists()) SchemaUtils.drop(BlacklistedCommands)
     }
 
     logger.info { "Legacy config migration finished: $migrated/${legacyRows.size} migrated." }

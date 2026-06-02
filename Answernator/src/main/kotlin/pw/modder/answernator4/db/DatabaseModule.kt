@@ -16,6 +16,7 @@ import org.kodein.di.bindSingleton
 import org.kodein.di.inBindSet
 import org.kodein.di.instance
 import pw.modder.answernator4.Env
+import pw.modder.answernator4.PluginClassLoader
 import javax.sql.DataSource
 
 val DatabaseModule = DI.Module("AnswernatorDB") {
@@ -64,7 +65,7 @@ val DatabaseModule = DI.Module("AnswernatorDB") {
             }
         }
 
-        val flyway = Flyway.configure()
+        val flyway = Flyway.configure(PluginClassLoader.value)
             .dataSource(instance())
             .outOfOrder(true)
             .locations(*locations.sorted().toTypedArray())
