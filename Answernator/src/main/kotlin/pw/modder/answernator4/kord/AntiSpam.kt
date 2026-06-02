@@ -43,18 +43,19 @@ private val COLOR_BAN = Color(255, 99, 126)
 /** Discord caps a member timeout at 28 days. */
 private val MAX_TIMEOUT = 28.days
 
-/** MrBeast repeat-offender window (Phase 3): mute on the first hit, ban on the next within this window. */
+/** MrBeast repeat-offender window: mute on the first hit, ban on the next within this window. */
 private val MRBEAST_WINDOW = 90.days
 
 /** Fixed timeout applied on a first MrBeast violation. */
 private val MRBEAST_MUTE = 7.days
 
 /**
- * Normal anti-spam enforcement (Phase 2): detects repeated/similar messages per (guild, user),
+ * Normal anti-spam enforcement: detects repeated/similar messages per (guild, user),
  * warns, then mutes or bans based on the guild's repeat-offender configuration.
  *
- * MrBeast detection (Phase 3) covers image dumps with trivial text; command-spam attribution
- * (Phase 4) is layered on later. For now bot messages are ignored entirely.
+ * MrBeast detection covers image dumps with trivial text, and command-spam attribution charges
+ * another bot's command responses to the user who invoked them; plain bot messages are otherwise
+ * ignored entirely.
  */
 suspend fun Kord.antiSpamService(di: DI) {
     val configRepository by di.instance<AntiSpamConfigRepository>()
@@ -72,7 +73,7 @@ suspend fun Kord.antiSpamService(di: DI) {
         val config = configRepository.get(gid) ?: return@on
         if (!config.isEnabled) return@on
 
-        // Command spam (Phase 4): a slash-command response message. Ignore our own responses;
+        // Command spam: a slash-command response message. Ignore our own responses;
         // attribute another bot's response to the user who invoked the command, keyed by the
         // command name (so different commands accumulate independently).
         val commandInteraction = message.interaction
@@ -94,7 +95,7 @@ suspend fun Kord.antiSpamService(di: DI) {
         if (messageAuthor.isBot) return@on
         if (message.content.isEmpty() && message.attachments.isEmpty()) return@on
 
-        // MrBeast image-dump detection (Phase 3), independent of similarity tracking. A triggered
+        // MrBeast image-dump detection, independent of similarity tracking. A triggered
         // violation is handled here and short-circuits the normal similarity path.
         if (config.isMrBeastEnabled && message.attachments.isNotEmpty()) {
             val classification = mrBeastDetector.classify(

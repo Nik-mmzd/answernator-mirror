@@ -5,7 +5,6 @@ import com.zaxxer.hikari.HikariDataSource
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.flywaydb.core.Flyway
 import org.flywaydb.core.api.Location
-import org.flywaydb.core.api.locations.LocationParser
 import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
@@ -42,11 +41,6 @@ val DatabaseModule = DI.Module("AnswernatorDB") {
     bindSet<Table>(tag = "tables-in-use")
 
     bindSet<Location>(tag = "flyway-migrations")
-//    inBindSet(tag = "flyway-migrations") {
-//        addSingleton {
-//            LocationParser.parseLocation("classpath:pw/modder/answernator4/db/migrations")
-//        }
-//    }
     bindSet<Pair<String, String>>(tag = "flyway-placeholders")
     bindSet<FlywayPlaceholdersProvider>(tag = "flyway-placeholder-providers")
     inBindSet<FlywayPlaceholdersProvider>(tag = "flyway-placeholder-providers") {

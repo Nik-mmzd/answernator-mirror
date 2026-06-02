@@ -25,7 +25,7 @@ import pw.modder.answernator4.kord.antiSpamService
  * Anti-spam feature module. Wires data access (the database [DatabaseModule], the config cache
  * [AntiSpamConfigRepository], the [SpamMuteRepository]/[MrBeastRepository] stores and Flyway
  * migrations) and the runtime enforcement service ([antiSpamService]) plus the gateway intents it
- * needs. MrBeast (Phase 3) and command-spam (Phase 4) handling are layered onto the same service.
+ * needs. MrBeast and command-spam handling are layered onto the same service.
  *
  * Contributes its own migration location individually (the parent `db/migrations` folder is not
  * scanned). All locations share a single Flyway history, so this module owns the `1.x` version

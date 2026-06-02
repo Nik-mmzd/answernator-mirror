@@ -35,7 +35,7 @@ private const val ANTI_SPAM_BUNDLE = "locale.v4.anti_spam"
  *
  * Runs in [DI.Module.onReady], i.e. after [DatabaseModule] has run Flyway and created the v4 tables.
  *
- * Mapping decisions (see the migration discussion):
+ * Mapping decisions:
  *  - a log channel is copied only when its legacy `LOG_*` feature flag was enabled;
  *  - anti-spam texts come from the legacy row, falling back to the [ANTI_SPAM_BUNDLE] bundle (in the
  *    guild's locale) when blank — `muteText` has no legacy source, so it always comes from the bundle;

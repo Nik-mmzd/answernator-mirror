@@ -2,7 +2,6 @@ package pw.modder.answernator.`fun`.commands
 
 import dev.kord.common.entity.ButtonStyle
 import dev.kord.common.entity.DiscordPartialEmoji
-import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.interaction.response.respond
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.rest.builder.component.actionRow
@@ -15,6 +14,7 @@ import io.ktor.http.isSuccess
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.kodein.di.DI
+import pw.modder.answernator.`fun`.Env
 import pw.modder.answernator4.interaction.ChatInputCommand
 import pw.modder.answernator4.interaction.Option
 import pw.modder.answernator4.interaction.description
@@ -34,7 +34,7 @@ import kotlin.time.Instant
 class Quote(di: DI) : ChatInputCommand(di) {
     override val name = "quote"
     override val bundleName = "fun.quote"
-    override val guildIds = listOf(GUILD_ID)
+    override val guildIds = Env.QuotesEnabledGuilds
 
     val id: Option<Long?> by long().name("id").description("id.description").minValue(1).optional()
 
@@ -87,8 +87,6 @@ class Quote(di: DI) : ChatInputCommand(di) {
     }
 
     private companion object {
-        val GUILD_ID = Snowflake(0UL)
-
         const val API_BASE = "https://modder.pw/api/v2"
 
         val httpClient = HttpClient(CIO)

@@ -71,10 +71,10 @@ class BanCommandIssuer(di: DI) : MessageCommand(di) {
 
         try {
             logger.info { "Banning user ${msgInteraction.user.id} from ${guild}, reason: $reason, cleanup: $duration" }
-//            msgInteraction.kord.rest.guild.addGuildBan(guild, msgInteraction.user.id) {
-//                deleteMessageDuration = duration
-//                this.reason = reason
-//            }
+            msgInteraction.kord.rest.guild.addGuildBan(guild, msgInteraction.user.id) {
+                deleteMessageDuration = duration
+                this.reason = reason
+            }
         } catch (e: Exception) {
             logger.warn(e) { "An error occurred while adding guild to ban" }
             reply.respond {

@@ -1,11 +1,11 @@
 package pw.modder.answernator.`fun`.commands
 
 import dev.kord.common.Color
-import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.interaction.respondPublic
 import dev.kord.core.event.interaction.ChatInputCommandInteractionCreateEvent
 import dev.kord.rest.builder.message.embed
 import org.kodein.di.DI
+import pw.modder.answernator.`fun`.Env
 import pw.modder.answernator4.interaction.ChatInputCommand
 import kotlin.time.Clock
 
@@ -18,7 +18,7 @@ import kotlin.time.Clock
 class Tsar(di: DI) : ChatInputCommand(di) {
     override val name = "царь"
     override val bundleName = "fun.tsar"
-    override val guildIds = listOf(GUILD_ID)
+    override val guildIds = Env.TsarEnabledGuilds
 
     override suspend fun ChatInputCommandInteractionCreateEvent.execute() {
         interaction.respondPublic {
@@ -37,8 +37,6 @@ class Tsar(di: DI) : ChatInputCommand(di) {
     }
 
     private companion object {
-        val GUILD_ID = Snowflake(0UL)
-
         const val TITLE = "Повеление Царя:"
         const val DECREE_FIELD = "Царь Велитъ"
         const val THUMBNAIL = "https://files.modder.pw/answernator/tsar.jpg"
