@@ -1,5 +1,4 @@
 plugins {
-    alias(libs.plugins.shadow)
     `maven-publish`
     `version-catalog`
     application
@@ -64,6 +63,7 @@ dependencies {
 }
 
 application {
+    applicationName = "Answernator"
     mainClass = "pw.modder.answernator4.MainKt"
 }
 
@@ -75,6 +75,15 @@ tasks {
     test {
         useJUnitPlatform()
         failOnNoDiscoveredTests = false
+    }
+
+    distTar {
+        compression = Compression.GZIP
+        archiveVersion.convention(null as String?)
+    }
+
+    distZip {
+        archiveVersion.convention(null as String?)
     }
 }
 
