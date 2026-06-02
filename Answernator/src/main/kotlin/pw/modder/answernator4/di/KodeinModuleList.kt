@@ -5,7 +5,13 @@ import pw.modder.answernator4.Env
 import pw.modder.answernator4.PluginClassLoader
 import java.io.File
 import java.net.URLClassLoader
+import java.nio.file.Paths
 import java.util.ServiceLoader
+import kotlin.io.path.createDirectories
+import kotlin.io.path.extension
+import kotlin.io.path.isDirectory
+import kotlin.io.path.isRegularFile
+import kotlin.io.path.listDirectoryEntries
 
 private val logger = KotlinLogging.logger {}
 
@@ -22,10 +28,13 @@ object KodeinModuleList {
 
     fun load() {
         val classLoader = URLClassLoader(
-            File(".").resolve("commands")
-                .also { if (!it.exists()) it.mkdirs() }
-                .listFiles { file -> file.isFile && file.extension.equals("jar", ignoreCase = true) }
-                ?.map { it.toURI().toURL() }?.toTypedArray() ?: arrayOf()
+            Paths.get(Env.PLUGINS_FOLDER)
+                .also { if (!it.isDirectory()) it.createDirectories() }
+                .listDirectoryEntries()
+                .filter { it.isRegularFile() && it.extension.equals("jar", true) }
+                .onEach { logger.info { "Found plugin jar: $it" } }
+                .map { it.toUri().toURL() }
+                .toTypedArray()
         )
         // Route plugin-aware resource lookups through this loader so plugin-module resources resolve
         // in addition to the core ones reached via the parent: command bundles (e.g. fun's locale/fun/*)

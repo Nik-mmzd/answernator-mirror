@@ -6,6 +6,7 @@ import dev.kord.common.Locale
 import dev.kord.common.asJavaLocale
 import dev.kord.common.entity.Snowflake
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.jdbc.exists
@@ -33,7 +34,10 @@ private const val ANTI_SPAM_BUNDLE = "locale.v4.anti_spam"
  * split tables `AntiSpamConfigs` and `LogsConfigs`. Assumes the legacy DB file has been moved so it
  * lives in the **same** datasource as v4 — no separate connection is opened.
  *
- * Runs in [DI.Module.onReady], i.e. after [DatabaseModule] has run Flyway and created the v4 tables.
+ * Runs in [DI.Module.onReady]. Since onReady callbacks fire in module-import order — which is fragile
+ * (service-file order, `ENABLED_MODULES`, plugin jars) — this does not rely on [DatabaseModule]'s own
+ * onReady having migrated first: it runs [Flyway.migrate] itself (idempotent) before touching any
+ * table, guaranteeing the v4 schema exists regardless of callback ordering.
  *
  * Mapping decisions:
  *  - a log channel is copied only when its legacy `LOG_*` feature flag was enabled;
@@ -48,6 +52,9 @@ class LegacyConfigMigrationModule : KodeinModuleProvider {
         importOnce(DatabaseModule)
 
         onReady {
+            // Ensure the v4 schema is migrated before reading/writing it, independent of whether
+            // DatabaseModule's onReady has already run. migrate() is a no-op once up to date.
+            instance<Flyway>().migrate()
             migrateLegacyConfigs(instance())
         }
     }
