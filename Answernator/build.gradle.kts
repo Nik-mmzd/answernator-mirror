@@ -15,6 +15,11 @@ catalog {
         from(files("../gradle/libs.versions.toml"))
         version("answernator", project.version.toString())
         library("answernator", project.group.toString(), "answernator").versionRef("answernator")
+
+        bundle(
+            "extension-common",
+            listOf("kotlin-stdlib", "ktor-client-core", "ktor-client-cio", "kord", "kodein-di", "answernator"),
+        )
     }
 }
 
@@ -36,7 +41,7 @@ publishing {
 
     repositories {
         maven {
-            name = "gitlab.modder.pw"
+            name = "gitlab-ci"
             url = uri("${System.getenv("CI_API_V4_URL")}/projects/${System.getenv("CI_PROJECT_ID")}/packages/maven")
 
             credentials(HttpHeaderCredentials::class) {
@@ -52,10 +57,11 @@ publishing {
 
 val slf4jVersion: String by project
 dependencies {
+    api(libs.bundles.common)
+    implementation(libs.bundles.database)
     implementation(libs.guava)
     implementation(libs.apache.commons.io)
     implementation(libs.bundles.sentry.kotlin)
-    implementation(libs.kodein.di)
     runtimeOnly(libs.h2)
     runtimeOnly(libs.logback.classic)
 

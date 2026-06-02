@@ -9,7 +9,6 @@ version = gitVersion(mapOf ("prefix" to "fun@"))
 
 dependencies {
     implementation(project(":Answernator"))
-    implementation(libs.kodein.di)
 }
 
 buildConfig {
@@ -17,21 +16,4 @@ buildConfig {
     className("BuildConfig")
 
     buildConfigField("APP_VERSION", project.version.toString())
-}
-
-tasks {
-    val depsFile = layout.buildDirectory.file("module.fun.txt")
-
-    val createModuleVersionFile by registering {
-        doLast {
-            depsFile.get().asFile.printWriter().use { pw ->
-                pw.appendLine(project.version.toString())
-            }
-        }
-    }
-
-    jar {
-        dependsOn(createModuleVersionFile)
-        from(depsFile)
-    }
 }

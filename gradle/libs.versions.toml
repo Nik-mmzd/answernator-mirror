@@ -39,8 +39,9 @@ sentry-extensions-kotlin = { module = "io.sentry:sentry-kotlin-extensions", vers
 sentry-exrensions-jdbc = { module = "io.sentry:sentry-jdbc", version.ref = "sentry" }
 
 [bundles]
-common = [ "kotlin-stdlib", "ktor-client-core", "ktor-client-cio", "kord" ]
+common = [ "kotlin-stdlib", "ktor-client-core", "ktor-client-cio", "kord", "kodein-di" ]
 database = [ "exposed-dao", "exposed-jdbc", "exposed-kotlin-datetime", "exposed-migration-jdbc", "hikari-cp", "flyway" ]
+extension-extra-db = [ "exposed-dao", "exposed-jdbc", "exposed-kotlin-datetime" ]
 sentry-kotlin = [ "sentry", "sentry-extensions-kotlin" ]
 sentry-jdbc = [ "sentry", "sentry-exrensions-jdbc" ]
 

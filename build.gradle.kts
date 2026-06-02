@@ -12,14 +12,6 @@ allprojects {
     }
 }
 
-val exposedVersion: String by project
-val ktorVersion: String by project
-val commonsIoVersion: String by project
-val kotlinLoggingVersion: String by project
-val guavaVersion: String by project
-val h2Version: String by project
-val kordVersion: String by project
-
 subprojects {
     apply(plugin = rootProject.libs.plugins.kotlin.jvm.get().pluginId)
     apply(plugin = rootProject.libs.plugins.kotlin.plugin.serialization.get().pluginId)
@@ -27,12 +19,6 @@ subprojects {
 
     repositories {
         mavenCentral()
-    }
-
-    dependencies {
-        api(rootProject.libs.bundles.common)
-        api(rootProject.libs.kotlin.logging)
-        api(rootProject.libs.bundles.database)
     }
 
     kotlin.jvmToolchain(17)

@@ -17,6 +17,10 @@ variables:
     --label com.gitlab.ci.commiturl=$CI_PROJECT_URL/commit/$CI_COMMIT_SHA
     --label com.gitlab.ci.cijoburl=$CI_JOB_URL
 
+stages:
+  - build
+  - publish
+
 .build_with_kaniko:
   image:
     name: gcr.io/kaniko-project/executor:debug
@@ -88,3 +92,19 @@ docker-image:
   needs:
     - job: build
       artifacts: true
+
+publish:
+  image:
+    name: gradle:9-jdk17-alpine
+    pull_policy: always
+  stage: publish
+  tags:
+    - linux
+    - amd64
+    - docker
+  variables:
+    GIT_DEPTH: 0 # git-version needs full history/tags to compute the version
+  script: gradle --no-daemon :Answernator:publish
+  rules:
+    - if: '$CI_COMMIT_TAG'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
