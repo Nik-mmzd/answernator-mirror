@@ -2,7 +2,13 @@ package pw.modder.answernator4.kord
 
 import dev.kord.common.Color
 import dev.kord.common.asJavaLocale
+import dev.kord.common.entity.AuditLogChangeKey
+import dev.kord.common.entity.AuditLogEvent
+import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
+import dev.kord.core.behavior.GuildBehavior
+import dev.kord.core.behavior.getAuditLogEntries
+import dev.kord.core.entity.AuditLogEntry
 import dev.kord.core.entity.Member
 import dev.kord.core.entity.User
 import dev.kord.core.event.guild.BanAddEvent
@@ -14,6 +20,8 @@ import dev.kord.core.on
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.MessageCreateBuilder
 import dev.kord.rest.builder.message.embed
+import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.flow.firstOrNull
 import org.kodein.di.DI
 import org.kodein.di.instance
 import pw.modder.answernator.utils.TimestampFormat
@@ -22,6 +30,9 @@ import pw.modder.answernator4.db.cache.LogsConfigRepository
 import pw.modder.answernator4.interaction.l
 import java.util.ResourceBundle
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.seconds
+
+private val logger = KotlinLogging.logger("pw.modder.answernator4.kord.GuildLogService")
 
 private fun MessageCreateBuilder.userEmbed(user: User, title: String, builder: EmbedBuilder.() -> Unit = {}) = embed {
     val avatar = (user.avatar ?: user.defaultAvatar)
@@ -37,6 +48,43 @@ private fun MessageCreateBuilder.userEmbed(user: User, title: String, builder: E
 
     thumbnail { url = ((user as? Member)?.memberAvatar ?: avatar).cdnUrl.toUrl() }
     timestamp = Clock.System.now()
+}
+
+private fun MessageCreateBuilder.userEmbed(user: User, title: String, bundle: ResourceBundle, auditLogEntry: AuditLogEntry?, builder: EmbedBuilder.() -> Unit = {}) = userEmbed(user, title) {
+    builder()
+
+    if (auditLogEntry?.userId != null) {
+        field {
+            name = bundle.l("audit.log.issuer")
+            value = "<@${auditLogEntry.userId!!.value}>"
+            inline = true
+        }
+    }
+    if (auditLogEntry?.reason?.isNotBlank() == true) {
+        field {
+            name = bundle.l("audit.log.reason")
+            value = auditLogEntry.reason!!
+            inline = false
+        }
+    }
+}
+
+private suspend fun GuildBehavior.getAuditLogEntryOrNull(
+    target: Snowflake,
+    type: AuditLogEvent,
+    filter: (AuditLogEntry) -> Boolean = { it.targetId == target }
+): AuditLogEntry? {
+    val now = Clock.System.now()
+    try {
+        return getAuditLogEntries {
+            action = AuditLogEvent.MemberBanAdd
+            after = Snowflake(now.minus(30.seconds))
+            before = Snowflake(now.plus(30.seconds))
+        }.firstOrNull(filter)
+    } catch (e: Exception) {
+        logger.debug(e) { "Error fetching auditLogEntry" }
+        return null
+    }
 }
 
 private val COLOR_GOOD = Color(49, 201, 80)
@@ -73,18 +121,24 @@ suspend fun Kord.guildLogService(di: DI) {
     on<BanAddEvent> {
         val config = configRepository.get(guildId) ?: return@on
         val channel = config.memberBanLogChannel ?: return@on
+        val auditLogEntry = guild.getAuditLogEntryOrNull(user.id, AuditLogEvent.MemberBanAdd)
         val bundle = ResourceBundle.getBundle("locale.v4.guild_log", config.locale.asJavaLocale())
         rest.channel.createMessage(channel) {
-            userEmbed(user, bundle.l("member.ban.title")) { color = COLOR_BAD }
+            userEmbed(user, bundle.l("member.ban.title"), bundle, auditLogEntry) {
+                color = COLOR_BAD
+            }
         }
     }
 
     on<BanRemoveEvent> {
         val config = configRepository.get(guildId) ?: return@on
         val channel = config.memberUnbanLogChannel ?: return@on
+        val auditLogEntry = guild.getAuditLogEntryOrNull(user.id, AuditLogEvent.MemberBanRemove)
         val bundle = ResourceBundle.getBundle("locale.v4.guild_log", config.locale.asJavaLocale())
         rest.channel.createMessage(channel) {
-            userEmbed(user, bundle.l("member.unban.title")) { color = COLOR_GOOD }
+            userEmbed(user, bundle.l("member.unban.title"), bundle, auditLogEntry) {
+                color = COLOR_GOOD
+            }
         }
     }
 
@@ -94,12 +148,15 @@ suspend fun Kord.guildLogService(di: DI) {
         val bundle = ResourceBundle.getBundle("locale.v4.guild_log", config.locale.asJavaLocale())
         if (member.communicationDisabledUntil != old.communicationDisabledUntil) {
             val channel = config.memberMuteLogChannel ?: return@on
+            val auditLogEntry = guild.getAuditLogEntryOrNull(member.id, AuditLogEvent.MemberUpdate) {
+                it.targetId == member.id && it[AuditLogChangeKey.CommunicationDisabledUntil] != null
+            }
             // timeout update
             rest.channel.createMessage(channel) {
                 if (member.communicationDisabledUntil == null)
-                    userEmbed(member, bundle.l("member.timeout.gone")) { color = COLOR_GOOD }
+                    userEmbed(member, bundle.l("member.timeout.gone"), bundle, auditLogEntry) { color = COLOR_GOOD }
                 else
-                    userEmbed(member, bundle.l("member.timeout.set")) {
+                    userEmbed(member, bundle.l("member.timeout.set"), bundle, auditLogEntry) {
                         field {
                             name = bundle.l("member.timeout.until")
                             value = member.communicationDisabledUntil!!.mention(TimestampFormat.LONG_DATETIME)
