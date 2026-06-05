@@ -9,6 +9,15 @@ plugins {
 allprojects {
     repositories {
         mavenCentral()
+        // Patched Kord fork published to the answernator GitLab Maven registry.
+        // Scoped to only the forked modules; everything else (incl. dev.kord:kord-cache-*) stays on Maven Central.
+        maven {
+            name = "gitlab-local"
+            url = uri("https://gitlab.modder.pw/api/v4/groups/answernator/-/packages/maven")
+            content {
+                includeGroup("dev.kord")
+            }
+        }
     }
 }
 

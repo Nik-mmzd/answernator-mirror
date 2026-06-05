@@ -13,10 +13,13 @@ import dev.kord.core.entity.Member
 import dev.kord.core.entity.User
 import dev.kord.core.event.guild.BanAddEvent
 import dev.kord.core.event.guild.BanRemoveEvent
+import dev.kord.core.event.guild.GuildAuditLogEntryCreateEvent
 import dev.kord.core.event.guild.MemberJoinEvent
 import dev.kord.core.event.guild.MemberLeaveEvent
 import dev.kord.core.event.guild.MemberUpdateEvent
+import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
+import dev.kord.core.supplier.EntitySupplyStrategy
 import dev.kord.rest.builder.message.EmbedBuilder
 import dev.kord.rest.builder.message.create.MessageCreateBuilder
 import dev.kord.rest.builder.message.embed
@@ -91,8 +94,48 @@ private val COLOR_GOOD = Color(49, 201, 80)
 private val COLOR_BAD = Color(255, 99, 126)
 private val COLOR_NEUTRAL = Color(52, 166, 244)
 
+private val ACCEPTED_EVENTS = setOf(
+    AuditLogEvent.MemberBanAdd,
+    AuditLogEvent.MemberBanRemove,
+    AuditLogEvent.MemberUpdate,
+)
+
 suspend fun Kord.guildLogService(di: DI) {
     val configRepository by di.instance<LogsConfigRepository>()
+
+    on<GuildAuditLogEntryCreateEvent> {
+        logger.trace { with(auditLogEntry) { "Got GuildAuditLogEntryCreateEvent id $id type $actionType from guild $guildId, user: $userId, target: $targetId" } }
+        val guildId = auditLogEntry.guildId ?: return@on
+        val targetId = auditLogEntry.targetId ?: return@on
+        if (auditLogEntry.actionType !in ACCEPTED_EVENTS) return@on
+        val config = configRepository.get(guildId) ?: return@on
+        logger.trace { "GuildAuditLogEntryCreateEvent ${auditLogEntry.id} got config $config" }
+        val (channel, title) = when (auditLogEntry.actionType) {
+            AuditLogEvent.MemberBanAdd -> config.memberBanLogChannel to "member.ban.title"
+            AuditLogEvent.MemberBanRemove -> config.memberUnbanLogChannel to "member.unban.title"
+            AuditLogEvent.MemberUpdate -> config.memberMuteLogChannel to "member.timeout.set"
+            else -> return@on
+        }
+        if (channel == null) return@on
+        val user = getUser(targetId, EntitySupplyStrategy.cacheWithRestFallback) ?: return@on
+        logger.trace { "GuildAuditLogEntryCreateEvent ${auditLogEntry.id} got user" }
+        val bundle = ResourceBundle.getBundle("locale.v4.guild_log", config.locale.asJavaLocale())
+        logger.info { "Got Audit Log: Guild $guildId, action ${auditLogEntry.actionType}, performed by ${auditLogEntry.userId}, target ${user.username} (id ${user.id}), report to $channel" }
+        rest.channel.createMessage(channel) {
+            userEmbed(user, bundle.l(title), bundle, auditLogEntry) {
+                color = if (auditLogEntry.actionType == AuditLogEvent.MemberBanRemove) COLOR_GOOD else COLOR_BAD
+
+                auditLogEntry[AuditLogChangeKey.CommunicationDisabledUntil]?.new?.let { timestamp ->
+                    field {
+                        name = bundle.l("member.timeout.until")
+                        value = timestamp.mention(TimestampFormat.LONG_DATETIME)
+                        inline = true
+                    }
+                }
+            }
+        }
+    }
+
     on<MemberJoinEvent> {
         val config = configRepository.get(guildId) ?: return@on
         val channel = config.memberJoinChannel ?: return@on
@@ -118,56 +161,12 @@ suspend fun Kord.guildLogService(di: DI) {
         }
     }
 
-    on<BanAddEvent> {
-        val config = configRepository.get(guildId) ?: return@on
-        val channel = config.memberBanLogChannel ?: return@on
-        val auditLogEntry = guild.getAuditLogEntryOrNull(user.id, AuditLogEvent.MemberBanAdd)
-        val bundle = ResourceBundle.getBundle("locale.v4.guild_log", config.locale.asJavaLocale())
-        rest.channel.createMessage(channel) {
-            userEmbed(user, bundle.l("member.ban.title"), bundle, auditLogEntry) {
-                color = COLOR_BAD
-            }
-        }
-    }
-
-    on<BanRemoveEvent> {
-        val config = configRepository.get(guildId) ?: return@on
-        val channel = config.memberUnbanLogChannel ?: return@on
-        val auditLogEntry = guild.getAuditLogEntryOrNull(user.id, AuditLogEvent.MemberBanRemove)
-        val bundle = ResourceBundle.getBundle("locale.v4.guild_log", config.locale.asJavaLocale())
-        rest.channel.createMessage(channel) {
-            userEmbed(user, bundle.l("member.unban.title"), bundle, auditLogEntry) {
-                color = COLOR_GOOD
-            }
-        }
-    }
-
     on<MemberUpdateEvent> {
         val old = old ?: return@on // we do not have any data to compare with
         val config = configRepository.get(guildId) ?: return@on
-        val bundle = ResourceBundle.getBundle("locale.v4.guild_log", config.locale.asJavaLocale())
-        if (member.communicationDisabledUntil != old.communicationDisabledUntil) {
-            val channel = config.memberMuteLogChannel ?: return@on
-            val auditLogEntry = guild.getAuditLogEntryOrNull(member.id, AuditLogEvent.MemberUpdate) {
-                it.targetId == member.id && it[AuditLogChangeKey.CommunicationDisabledUntil] != null
-            }
-            // timeout update
-            rest.channel.createMessage(channel) {
-                if (member.communicationDisabledUntil == null)
-                    userEmbed(member, bundle.l("member.timeout.gone"), bundle, auditLogEntry) { color = COLOR_GOOD }
-                else
-                    userEmbed(member, bundle.l("member.timeout.set"), bundle, auditLogEntry) {
-                        field {
-                            name = bundle.l("member.timeout.until")
-                            value = member.communicationDisabledUntil!!.mention(TimestampFormat.LONG_DATETIME)
-                            inline = true
-                        }
-                        color = COLOR_BAD
-                    }
-            }
-        }
-
         val channel = config.memberUpdateLogChannel ?: return@on
+        val bundle = ResourceBundle.getBundle("locale.v4.guild_log", config.locale.asJavaLocale())
+
         if (member.memberAvatarHash != old.memberAvatarHash) {
             // member avatar update
             rest.channel.createMessage(channel) {
